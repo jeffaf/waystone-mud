@@ -1,0 +1,483 @@
+"""Main game engine for Waystone MUD."""
+
+import asyncio
+from pathlib import Path
+from uuid import UUID
+
+import structlog
+
+from waystone.config import get_settings
+from waystone.database.engine import close_db, init_db
+from waystone.game.commands.base import CommandContext, get_registry
+from waystone.game.world import Room, load_all_rooms
+from waystone.network import (
+    WELCOME_BANNER,
+    Connection,
+    Session,
+    SessionManager,
+    SessionState,
+    TelnetServer,
+    colorize,
+)
+
+logger = structlog.get_logger(__name__)
+
+
+class GameEngine:
+    """
+    Main game engine coordinating all MUD systems.
+
+    Manages the game world, connections, sessions, and command execution.
+    """
+
+    def __init__(self) -> None:
+        """Initialize the game engine."""
+        self.world: dict[str, Room] = {}
+        self.connections: dict[UUID, Connection] = {}
+        self.session_manager: SessionManager = SessionManager()
+        self.character_to_session: dict[str, Session] = {}
+        self.telnet_server: TelnetServer | None = None
+        self._running = False
+        self._cleanup_task: asyncio.Task | None = None
+        self._settings = get_settings()
+
+        logger.info("game_engine_initialized")
+
+    async def start(self) -> None:
+        """
+        Initialize database, load world, and start server.
+
+        This should be called once at application startup.
+        """
+        logger.info("game_engine_starting")
+
+        # Initialize database
+        logger.info("initializing_database")
+        await init_db()
+
+        # Load world
+        logger.info("loading_world")
+        try:
+            world_path = self._settings.world_dir / "rooms"
+            self.world = load_all_rooms(world_path)
+            logger.info(
+                "world_loaded",
+                total_rooms=len(self.world),
+            )
+        except Exception as e:
+            logger.error("world_load_failed", error=str(e), exc_info=True)
+            raise
+
+        # Register all commands
+        self._register_commands()
+
+        # Start telnet server
+        logger.info("starting_telnet_server")
+        self.telnet_server = TelnetServer(
+            host=self._settings.host,
+            port=self._settings.telnet_port,
+            connection_handler=self.handle_connection,
+        )
+
+        # Start cleanup task
+        self._running = True
+        self._cleanup_task = asyncio.create_task(self._periodic_cleanup())
+
+        await self.telnet_server.start()
+        logger.info(
+            "game_engine_started",
+            host=self._settings.host,
+            port=self._settings.telnet_port,
+        )
+
+    async def stop(self) -> None:
+        """
+        Gracefully shutdown the game engine.
+
+        Stops the server, disconnects all clients, and closes the database.
+        """
+        logger.info("game_engine_stopping")
+        self._running = False
+
+        # Cancel cleanup task
+        if self._cleanup_task:
+            self._cleanup_task.cancel()
+            try:
+                await self._cleanup_task
+            except asyncio.CancelledError:
+                pass
+
+        # Stop telnet server
+        if self.telnet_server:
+            await self.telnet_server.stop()
+
+        # Disconnect all connections
+        for connection in list(self.connections.values()):
+            try:
+                await connection.send_line(
+                    colorize("\nServer is shutting down. Goodbye!", "YELLOW")
+                )
+                connection.close()
+            except Exception as e:
+                logger.error(
+                    "connection_shutdown_error",
+                    connection_id=str(connection.id),
+                    error=str(e),
+                )
+
+        # Close database
+        await close_db()
+
+        logger.info("game_engine_stopped")
+
+    def _register_commands(self) -> None:
+        """Register all game commands with the command registry."""
+        from waystone.game.commands.auth import (
+            LoginCommand,
+            LogoutCommand,
+            QuitCommand,
+            RegisterCommand,
+        )
+        from waystone.game.commands.character import (
+            CharactersCommand,
+            CreateCommand,
+            DeleteCommand,
+            PlayCommand,
+        )
+        from waystone.game.commands.communication import (
+            ChatCommand,
+            EmoteCommand,
+            SayCommand,
+            TellCommand,
+        )
+        from waystone.game.commands.info import (
+            HelpCommand,
+            ScoreCommand,
+            TimeCommand,
+            WhoCommand,
+        )
+        from waystone.game.commands.movement import (
+            DownCommand,
+            EastCommand,
+            ExitsCommand,
+            GoCommand,
+            LookCommand,
+            NorthCommand,
+            NortheastCommand,
+            NorthwestCommand,
+            SouthCommand,
+            SoutheastCommand,
+            SouthwestCommand,
+            UpCommand,
+            WestCommand,
+        )
+
+        registry = get_registry()
+
+        # Auth commands
+        registry.register(RegisterCommand())
+        registry.register(LoginCommand())
+        registry.register(LogoutCommand())
+        registry.register(QuitCommand())
+
+        # Character commands
+        registry.register(CharactersCommand())
+        registry.register(CreateCommand())
+        registry.register(PlayCommand())
+        registry.register(DeleteCommand())
+
+        # Movement commands
+        registry.register(NorthCommand())
+        registry.register(SouthCommand())
+        registry.register(EastCommand())
+        registry.register(WestCommand())
+        registry.register(UpCommand())
+        registry.register(DownCommand())
+        registry.register(NortheastCommand())
+        registry.register(NorthwestCommand())
+        registry.register(SoutheastCommand())
+        registry.register(SouthwestCommand())
+        registry.register(GoCommand())
+        registry.register(LookCommand())
+        registry.register(ExitsCommand())
+
+        # Communication commands
+        registry.register(SayCommand())
+        registry.register(EmoteCommand())
+        registry.register(ChatCommand())
+        registry.register(TellCommand())
+
+        # Info commands
+        registry.register(HelpCommand())
+        registry.register(WhoCommand())
+        registry.register(ScoreCommand())
+        registry.register(TimeCommand())
+
+        logger.info(
+            "commands_registered",
+            total_commands=len(registry.get_all_commands()),
+        )
+
+    async def handle_connection(self, connection: Connection) -> None:
+        """
+        Main loop for handling a single client connection.
+
+        Args:
+            connection: The client connection to handle
+        """
+        self.connections[connection.id] = connection
+        session = self.session_manager.create_session(connection)
+
+        logger.info(
+            "connection_handler_started",
+            connection_id=str(connection.id),
+            session_id=str(session.id),
+            ip_address=connection.ip_address,
+        )
+
+        try:
+            # Show welcome banner
+            await connection.send_line(WELCOME_BANNER)
+            await connection.send_line(
+                colorize(
+                    "Type 'help' for a list of commands.\n",
+                    "DIM"
+                )
+            )
+            await connection.send_line(
+                "To get started:\n"
+                "  " + colorize("register <username> <password> <email>", "YELLOW") +
+                " - Create a new account\n"
+                "  " + colorize("login <username> <password>", "YELLOW") +
+                " - Log into existing account\n"
+            )
+
+            # Main command loop
+            while not connection.is_closed:
+                try:
+                    # Show prompt
+                    prompt = self._get_prompt(session)
+                    await connection.send(prompt)
+
+                    # Read input
+                    raw_input = await connection.readline()
+
+                    if not raw_input:
+                        continue
+
+                    # Update session activity
+                    session.update_activity()
+
+                    # Process command
+                    await self.process_command(session, raw_input)
+
+                except ConnectionError:
+                    logger.info(
+                        "connection_lost",
+                        connection_id=str(connection.id),
+                    )
+                    break
+                except Exception as e:
+                    logger.error(
+                        "command_loop_error",
+                        connection_id=str(connection.id),
+                        error=str(e),
+                        exc_info=True,
+                    )
+                    await connection.send_line(
+                        colorize("An error occurred. Please try again.", "RED")
+                    )
+
+        except Exception as e:
+            logger.error(
+                "connection_handler_error",
+                connection_id=str(connection.id),
+                error=str(e),
+                exc_info=True,
+            )
+        finally:
+            # Cleanup
+            if session.character_id:
+                if session.character_id in self.character_to_session:
+                    del self.character_to_session[session.character_id]
+
+            self.session_manager.destroy_session(session.id)
+
+            if connection.id in self.connections:
+                del self.connections[connection.id]
+
+            connection.close()
+
+            logger.info(
+                "connection_handler_ended",
+                connection_id=str(connection.id),
+                session_id=str(session.id),
+            )
+
+    def _get_prompt(self, session: Session) -> str:
+        """
+        Get the appropriate prompt for a session.
+
+        Args:
+            session: The session to get a prompt for
+
+        Returns:
+            Formatted prompt string
+        """
+        if session.state == SessionState.PLAYING:
+            return colorize("> ", "GREEN")
+        elif session.state == SessionState.AUTHENTICATING:
+            return colorize("(Character Select) > ", "CYAN")
+        else:
+            return colorize("(Login) > ", "YELLOW")
+
+    async def process_command(self, session: Session, raw_input: str) -> None:
+        """
+        Parse and execute a command.
+
+        Args:
+            session: The session executing the command
+            raw_input: Raw input string from the player
+        """
+        raw_input = raw_input.strip()
+
+        if not raw_input:
+            return
+
+        # Parse command and arguments
+        parts = raw_input.split()
+        command_name = parts[0].lower()
+        args = parts[1:] if len(parts) > 1 else []
+
+        # Handle special shortcuts
+        if command_name.startswith("'"):
+            # Say shortcut
+            command_name = "say"
+            args = [raw_input[1:].strip()]
+        elif command_name.startswith(":"):
+            # Emote shortcut
+            command_name = "emote"
+            args = [raw_input[1:].strip()]
+
+        # Get command from registry
+        registry = get_registry()
+        command = registry.get(command_name)
+
+        if not command:
+            await session.connection.send_line(
+                colorize(f"Unknown command: {command_name}", "RED")
+            )
+            await session.connection.send_line(
+                "Type " + colorize("help", "YELLOW") + " for a list of commands."
+            )
+            return
+
+        # Check if command requires a character
+        if command.requires_character and not session.character_id:
+            await session.connection.send_line(
+                colorize(
+                    "You must be playing a character to use this command.",
+                    "RED"
+                )
+            )
+            return
+
+        # Validate arguments
+        is_valid, error_msg = command.validate_args(args)
+        if not is_valid:
+            await session.connection.send_line(
+                colorize(error_msg or "Invalid arguments.", "YELLOW")
+            )
+            return
+
+        # Execute command
+        ctx = CommandContext(
+            session=session,
+            connection=session.connection,
+            engine=self,
+            args=args,
+            raw_input=raw_input,
+        )
+
+        try:
+            await command.execute(ctx)
+            logger.debug(
+                "command_executed",
+                command=command_name,
+                session_id=str(session.id),
+                character_id=session.character_id,
+            )
+        except Exception as e:
+            logger.error(
+                "command_execution_error",
+                command=command_name,
+                session_id=str(session.id),
+                error=str(e),
+                exc_info=True,
+            )
+            await session.connection.send_line(
+                colorize(
+                    "An error occurred while executing the command.",
+                    "RED"
+                )
+            )
+
+    def broadcast_to_room(
+        self,
+        room_id: str,
+        message: str,
+        exclude: UUID | None = None
+    ) -> None:
+        """
+        Send a message to all players in a room.
+
+        Args:
+            room_id: The room ID to broadcast to
+            message: The message to send
+            exclude: Optional session ID to exclude from broadcast
+        """
+        room = self.world.get(room_id)
+        if not room:
+            return
+
+        # Get all sessions in the room
+        for character_id in room.players:
+            session = self.character_to_session.get(character_id)
+
+            if session and session.id != exclude:
+                try:
+                    asyncio.create_task(
+                        session.connection.send_line(message)
+                    )
+                except Exception as e:
+                    logger.error(
+                        "broadcast_failed",
+                        room_id=room_id,
+                        character_id=character_id,
+                        error=str(e),
+                    )
+
+    async def _periodic_cleanup(self) -> None:
+        """Periodically clean up expired sessions and other resources."""
+        while self._running:
+            try:
+                # Wait 5 minutes between cleanups
+                await asyncio.sleep(300)
+
+                # Clean up expired sessions
+                expired_count = self.session_manager.cleanup_expired()
+
+                if expired_count > 0:
+                    logger.info(
+                        "periodic_cleanup_completed",
+                        expired_sessions=expired_count,
+                    )
+
+            except asyncio.CancelledError:
+                break
+            except Exception as e:
+                logger.error(
+                    "periodic_cleanup_error",
+                    error=str(e),
+                    exc_info=True,
+                )
