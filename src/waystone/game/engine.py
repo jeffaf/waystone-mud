@@ -74,16 +74,17 @@ class GameEngine:
         # Start telnet server
         logger.info("starting_telnet_server")
         self.telnet_server = TelnetServer(
-            host=self._settings.host,
-            port=self._settings.telnet_port,
-            connection_handler=self.handle_connection,
+            connection_callback=self.handle_connection,
         )
 
         # Start cleanup task
         self._running = True
         self._cleanup_task = asyncio.create_task(self._periodic_cleanup())
 
-        await self.telnet_server.start()
+        await self.telnet_server.start(
+            host=self._settings.host,
+            port=self._settings.telnet_port,
+        )
         logger.info(
             "game_engine_started",
             host=self._settings.host,
