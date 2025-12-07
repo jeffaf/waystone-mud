@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
 import structlog
+import telnetlib3
 
 if TYPE_CHECKING:
     from telnetlib3 import TelnetReader, TelnetWriter
@@ -44,6 +45,14 @@ class Connection:
         self.connected_at = datetime.now(UTC)
         self.session: Session | None = None
         self._closed = False
+        self._echo_enabled = True  # Server-side echo for visibility
+
+        # Enable server-side echo via telnet negotiation
+        # This tells the client that we will handle echo
+        try:
+            writer.iac(telnetlib3.WILL, telnetlib3.ECHO)
+        except Exception:
+            pass  # Some clients may not support option negotiation
 
         logger.info(
             "connection_created",
@@ -66,7 +75,10 @@ class Connection:
             return
 
         try:
-            self.writer.write(message)
+            # Normalize line endings for telnet (must be \r\n)
+            # First convert any \r\n to \n, then convert all \n to \r\n
+            normalized = message.replace("\r\n", "\n").replace("\n", "\r\n")
+            self.writer.write(normalized)
             await self.writer.drain()
         except (ConnectionResetError, BrokenPipeError) as e:
             logger.warning(
@@ -93,9 +105,12 @@ class Connection:
         """
         await self.send(f"{message}\r\n")
 
-    async def readline(self) -> str:
+    async def readline(self, echo: bool = True) -> str:
         """
-        Read a line of input from the client.
+        Read a line of input from the client with optional echo.
+
+        Args:
+            echo: Whether to echo characters back to client (default True)
 
         Returns:
             The line read from the client (stripped of whitespace)
@@ -107,12 +122,43 @@ class Connection:
             raise ConnectionError("Connection is closed")
 
         try:
-            # Read until newline with timeout
-            line = await asyncio.wait_for(
-                self.reader.readline(),
-                timeout=300.0,  # 5 minute timeout
-            )
-            return line.strip()
+            # Read character by character with echo for better UX
+            line_buffer = []
+            while True:
+                char = await asyncio.wait_for(
+                    self.reader.read(1),
+                    timeout=300.0,  # 5 minute timeout
+                )
+
+                if not char:
+                    # Connection closed
+                    raise ConnectionError("Connection closed by client")
+
+                # Handle special characters
+                if char in ('\r', '\n'):
+                    # End of line - send newline and return
+                    if echo and self._echo_enabled:
+                        self.writer.write('\r\n')
+                        await self.writer.drain()
+                    break
+                elif char == '\x7f' or char == '\b':
+                    # Backspace - remove last character if any
+                    if line_buffer:
+                        line_buffer.pop()
+                        if echo and self._echo_enabled:
+                            # Move cursor back, overwrite with space, move back again
+                            self.writer.write('\b \b')
+                            await self.writer.drain()
+                elif char == '\x03':
+                    # Ctrl+C - cancel current input
+                    raise ConnectionError("Input cancelled")
+                elif ord(char) >= 32:  # Printable characters
+                    line_buffer.append(char)
+                    if echo and self._echo_enabled:
+                        self.writer.write(char)
+                        await self.writer.drain()
+
+            return ''.join(line_buffer).strip()
         except TimeoutError:
             logger.warning(
                 "readline_timeout",
@@ -136,6 +182,15 @@ class Connection:
             )
             self._closed = True
             raise ConnectionError(f"Read error: {e}") from e
+
+    async def read_password(self) -> str:
+        """
+        Read a password from the client without echo.
+
+        Returns:
+            The password entered by the user
+        """
+        return await self.readline(echo=False)
 
     def close(self) -> None:
         """Close the connection gracefully."""

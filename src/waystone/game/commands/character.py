@@ -180,6 +180,22 @@ class CreateCommand(Command):
                     "charisma": 10,
                 }
 
+                # Shortcuts for attributes
+                attr_shortcuts = {
+                    "str": "strength",
+                    "dex": "dexterity",
+                    "con": "constitution",
+                    "int": "intelligence",
+                    "wis": "wisdom",
+                    "cha": "charisma",
+                    "s": "strength",
+                    "d": "dexterity",
+                    "c": "constitution",
+                    "i": "intelligence",
+                    "w": "wisdom",
+                    "ch": "charisma",
+                }
+
                 points_remaining = 5
                 while points_remaining > 0:
                     await ctx.connection.send_line(
@@ -188,29 +204,40 @@ class CreateCommand(Command):
                             "GREEN"
                         )
                     )
-                    await ctx.connection.send_line("Current attributes:")
-                    for attr, value in attributes.items():
-                        await ctx.connection.send_line(f"  {attr.capitalize()}: {value}")
+                    await ctx.connection.send_line("Attributes (shortcuts in parentheses):")
+                    await ctx.connection.send_line(f"  Strength (str/s): {attributes['strength']}")
+                    await ctx.connection.send_line(f"  Dexterity (dex/d): {attributes['dexterity']}")
+                    await ctx.connection.send_line(f"  Constitution (con/c): {attributes['constitution']}")
+                    await ctx.connection.send_line(f"  Intelligence (int/i): {attributes['intelligence']}")
+                    await ctx.connection.send_line(f"  Wisdom (wis/w): {attributes['wisdom']}")
+                    await ctx.connection.send_line(f"  Charisma (cha/ch): {attributes['charisma']}")
 
                     await ctx.connection.send_line(
                         colorize(
-                            "\nEnter attribute name to increase (or 'done' to finish): ",
+                            "\nEnter attribute to increase (or 'done'/'d' to finish): ",
                             "YELLOW"
                         )
                     )
-                    attr_choice = (await ctx.connection.readline()).lower()
+                    attr_choice = (await ctx.connection.readline()).lower().strip()
 
-                    if attr_choice == "done":
+                    if attr_choice in ("done", "dn"):
                         break
+
+                    # Resolve shortcut to full name
+                    if attr_choice in attr_shortcuts:
+                        attr_choice = attr_shortcuts[attr_choice]
 
                     if attr_choice not in attributes:
                         await ctx.connection.send_line(
-                            colorize("Invalid attribute name.", "RED")
+                            colorize("Invalid attribute. Use: str, dex, con, int, wis, cha", "RED")
                         )
                         continue
 
                     attributes[attr_choice] += 1
                     points_remaining -= 1
+                    await ctx.connection.send_line(
+                        colorize(f"  +1 {attr_choice.capitalize()} (now {attributes[attr_choice]})", "GREEN")
+                    )
 
                 # Confirmation
                 await ctx.connection.send_line(
@@ -228,7 +255,7 @@ class CreateCommand(Command):
                 )
 
                 await ctx.connection.send_line(
-                    colorize("\nConfirm creation? (yes/no): ", "GREEN")
+                    colorize("\nConfirm creation? (y/n): ", "GREEN")
                 )
                 confirm = (await ctx.connection.readline()).lower()
 
