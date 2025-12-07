@@ -28,7 +28,6 @@ dev = [
     "ruff>=0.1.0",
     "mypy>=1.7.0",
     "types-PyYAML>=6.0.0",
-    "types-bcrypt>=4.0.0",
 ]
 
 [project.scripts]

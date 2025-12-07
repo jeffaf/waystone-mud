@@ -1,0 +1,96 @@
+rooms:
+  - id: stonebridge
+    name: "Stonebridge"
+    area: imre
+    description: |
+      The great Stonebridge spans the wide Omethi River, connecting the
+      University to the town of Imre. Built from massive grey stones fitted so
+      perfectly that no mortar was needed, it has stood for centuries. The
+      river rushes far below, and you can see fishing boats and barges making
+      their way upstream. Students cross constantly, heading to Imre's taverns,
+      shops, and entertainments.
+
+      The University gates stand to the north. Imre's main square lies to the
+      south.
+    exits:
+      north: university_main_gates
+      south: imre_main_square
+    properties:
+      outdoor: true
+      lit: true
+      safe_zone: true
+
+  - id: imre_main_square
+    name: "Imre Main Square"
+    area: imre
+    description: |
+      Imre's main square bustles with activity day and night. A grand fountain
+      dominates the center, depicting the founding of the town with detailed
+      stonework. Market stalls line the edges, selling everything from fresh
+      bread to questionable "magical" trinkets. Street performers entertain
+      crowds while pickpockets work the distracted audience. The famous Eolian
+      music house stands to the east, while various shops and taverns branch
+      off in all directions.
+    exits:
+      north: stonebridge
+      east: imre_eolian
+      west: imre_devi_shop
+      south: imre_inn_waystone
+    properties:
+      outdoor: true
+      lit: true
+      safe_zone: true
+
+  - id: imre_eolian
+    name: "The Eolian"
+    area: imre
+    description: |
+      The Eolian is the finest music hall in Imre - perhaps in all the
+      Commonwealth. Rich wood paneling and excellent acoustics make this the
+      premier venue for musicians seeking to make their name. A small stage
+      dominates one end, where performers can attempt to earn their talent
+      pipes if they're brave enough. The crowd here is discerning and
+      sometimes cruel. Elegant tables fill the room, and the scent of good
+      wine and expensive pipe smoke hangs in the air.
+    exits:
+      west: imre_main_square
+    properties:
+      outdoor: false
+      lit: true
+      safe_zone: true
+
+  - id: imre_devi_shop
+    name: "Devi's Gaelet"
+    area: imre
+    description: |
+      Devi's establishment is reached by climbing a narrow staircase to the
+      third floor of an otherwise unremarkable building. The room is small but
+      well-appointed, with comfortable chairs and locked cabinets containing
+      her business records. Devi herself is a former student expelled from the
+      Arcanum, now making her living as a gaelet - a money lender. Her rates
+      are steep but fair, and she has a reputation for both discretion and
+      ruthlessness when collecting debts.
+    exits:
+      east: imre_main_square
+    properties:
+      outdoor: false
+      lit: true
+      safe_zone: true
+
+  - id: imre_inn_waystone
+    name: "The Waystone Inn"
+    area: imre
+    description: |
+      The Waystone Inn is a quiet, respectable establishment tucked away from
+      the busier parts of Imre. Unlike the rowdy taverns near the square, this
+      inn caters to travelers and students seeking a peaceful place to rest.
+      The common room features a large fireplace, comfortable chairs, and the
+      scent of good cooking from the kitchen. A few travelers sit at the bar,
+      sharing road stories. The innkeeper maintains strict rules against
+      fighting and excessive noise.
+    exits:
+      north: imre_main_square
+    properties:
+      outdoor: false
+      lit: true
+      safe_zone: true

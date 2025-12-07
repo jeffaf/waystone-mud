@@ -1,0 +1,176 @@
+rooms:
+  - id: university_main_gates
+    name: "The University Main Gates"
+    area: university
+    description: |
+      Massive stone gates mark the entrance to the University, the greatest
+      center of learning in the Four Corners. Iron-bound oak doors stand open
+      during the day, revealing cobblestone paths beyond. Students in various
+      colored robes hurry past, clutching books and instruments.
+
+      The Arcanum looms to the north, its spires reaching toward the sky.
+      The road to Imre lies to the south across the great stone bridge.
+    exits:
+      north: university_courtyard
+      south: stonebridge
+    properties:
+      outdoor: true
+      lit: true
+      safe_zone: true
+
+  - id: university_courtyard
+    name: "The University Courtyard"
+    area: university
+    description: |
+      The central courtyard of the University bustles with academic life. Worn
+      cobblestones radiate outward to various buildings - the Archives to the
+      east, the Medica to the west, and the Masters' Hall to the north. A
+      fountain depicting Teccam the Sage occupies the center, its waters
+      catching the sunlight. Students gather in small groups, debating theories
+      and trading gossip.
+    exits:
+      south: university_main_gates
+      north: university_masters_hall
+      east: university_archives
+      west: university_medica
+      northeast: university_mews
+    properties:
+      outdoor: true
+      lit: true
+      safe_zone: true
+
+  - id: university_mews
+    name: "The University Mews"
+    area: university
+    description: |
+      The Mews houses hundreds of students in narrow stone buildings arranged
+      in long rows. Each room is barely large enough for a bed, desk, and
+      small wardrobe, yet students personalize them with pride. The smell of
+      lamp oil and old books permeates the air. Laundry lines stretch between
+      buildings, and the sounds of late-night studying echo through the
+      corridors.
+    exits:
+      southwest: university_courtyard
+    properties:
+      outdoor: false
+      lit: true
+      safe_zone: true
+
+  - id: university_archives
+    name: "The Archives Entrance"
+    area: university
+    description: |
+      The Archives stand before you, a monument to knowledge itself. Master
+      Lorren's domain holds countless books, scrolls, and secrets accumulated
+      over centuries. The entrance is flanked by stone pillars carved with
+      ancient runes. A stern scriv sits at the admission desk, enforcing the
+      strict rules of silence and decorum. Beyond the desk, endless rows of
+      shelves disappear into shadow.
+    exits:
+      west: university_courtyard
+    properties:
+      outdoor: false
+      lit: true
+      safe_zone: true
+
+  - id: university_artificery
+    name: "The Artificery Workshop"
+    area: university
+    description: |
+      The Artificery is a large workshop filled with workbenches, tools, and
+      half-finished projects. The sharp smell of metal and chemicals fills the
+      air. Students practice sygaldry here, carefully inscribing runes onto
+      metal and glass. Master Kilvin's enormous forge dominates the far wall,
+      its heat making the room uncomfortably warm even from this distance.
+    exits:
+      south: university_fishery
+      east: university_masters_hall
+    properties:
+      outdoor: false
+      lit: true
+      safe_zone: true
+
+  - id: university_medica
+    name: "The Medica"
+    area: university
+    description: |
+      The Medica smells of herbs, antiseptic, and linen. Rows of clean beds
+      line the walls, most empty but a few occupied by students recovering from
+      accidents or illness. Shelves hold countless jars of remedies, tinctures,
+      and poultices. Master Arwyl and his students move quietly between
+      patients, their green robes marking them as healers. A small garden of
+      medicinal plants is visible through the eastern windows.
+    exits:
+      east: university_courtyard
+    properties:
+      outdoor: false
+      lit: true
+      safe_zone: true
+
+  - id: university_fishery
+    name: "The Fishery"
+    area: university
+    description: |
+      The Fishery is where advanced students of the Artificery create wonders.
+      Unlike the Artificery above, this workshop is quieter and more focused.
+      Completed sympathy lamps line the shelves, their soft glow requiring no
+      fuel. Half-finished projects cover the workbenches - gear assemblies,
+      inscribed metal plates, and mysterious devices. The walls are covered
+      with complex sygaldry diagrams and Master Kilvin's notes.
+    exits:
+      north: university_artificery
+    properties:
+      outdoor: false
+      lit: true
+      safe_zone: true
+
+  - id: university_masters_hall
+    name: "The Masters' Hall"
+    area: university
+    description: |
+      The Masters' Hall is an imposing stone building where the Nine Masters
+      conduct University business. High-arched windows let in natural light
+      that illuminates portraits of past masters. The admissions chamber lies
+      beyond the heavy oak doors - it is here that students face the terror of
+      Advanced Sympathy examinations and tuition hearings. Few students linger
+      here without good reason.
+    exits:
+      south: university_courtyard
+      west: university_artificery
+    properties:
+      outdoor: false
+      lit: true
+      safe_zone: true
+
+  - id: university_crockery
+    name: "The Crockery"
+    area: university
+    description: |
+      The Crockery serves as the University's facility for students suffering
+      from mental distress - though its name suggests a darker, less
+      compassionate time. The building is quiet and isolated, with small rooms
+      designed for rest and recovery. A few staff members tend to patients with
+      gentle efficiency. Most students speak of the Crockery in whispers,
+      hoping never to need its services.
+    exits:
+      south: university_underthing_entrance
+    properties:
+      outdoor: false
+      lit: true
+      safe_zone: true
+
+  - id: university_underthing_entrance
+    name: "The Underthing Entrance"
+    area: university
+    description: |
+      A nondescript door leads down to the Underthing - the vast network of
+      tunnels and forgotten chambers beneath the University. Most students
+      don't even know this entrance exists, hidden as it is behind old storage
+      rooms. The stairs descend into darkness, and a faint smell of dampness
+      and old stone drifts up from below. Strange sounds echo in the depths.
+    exits:
+      north: university_crockery
+    properties:
+      outdoor: false
+      lit: false
+      safe_zone: false
