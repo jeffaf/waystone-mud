@@ -44,6 +44,11 @@ class NPCInstance:
     is_alive: bool = True
     last_hit_by: str | None = None  # Character ID who last hit this NPC
     spawned_at: datetime = field(default_factory=datetime.now)
+    keywords: list[str] = field(default_factory=list)  # Keywords for player targeting
+    short_description: str = ""  # Used in action messages
+    long_description: str = ""  # Shown in room descriptions
+    equipment: dict[str, str] = field(default_factory=dict)  # Equipped items by slot
+    inventory: list[str] = field(default_factory=list)  # Items this NPC carries
 
 
 # Global NPC instance tracking: room_id -> {instance_id: NPCInstance}
@@ -74,6 +79,11 @@ def spawn_npc(template: "NPCTemplate", room_id: str) -> NPCInstance:
         level=template.level,
         attributes=dict(template.attributes),
         behavior=template.behavior,
+        keywords=list(template.keywords) if template.keywords else [],
+        short_description=template.short_description or template.name,
+        long_description=template.long_description or f"{template.name} is here.",
+        equipment=dict(template.equipment) if template.equipment else {},
+        inventory=list(template.inventory) if template.inventory else [],
     )
 
     if room_id not in _npc_instances:

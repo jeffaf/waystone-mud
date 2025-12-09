@@ -4,6 +4,14 @@
 npcs:
   - id: student
     name: "a university student"
+    keywords: [student, novice, scholar]
+    short_description: "a university student"
+    long_description: "A university student hurries past, arms loaded with books and worry."
+    equipment:
+      body: grey_novice_robe
+    inventory:
+      - textbook
+      - quill_and_ink
     description: |
       A young student wearing the grey robe of a novice. They carry an
       armload of books and look perpetually worried about upcoming
@@ -32,6 +40,15 @@ npcs:
 
   - id: master_lorren
     name: "Master Lorren, the Chancellor"
+    keywords: [lorren, master, chancellor, archivist]
+    short_description: "Master Lorren, the Chancellor"
+    long_description: "Master Lorren stands in stern silence, his dark eyes missing nothing in his domain."
+    equipment:
+      body: black_masters_robe_with_grey_trim
+      accessory: chancellors_chain_of_office
+    inventory:
+      - master_archivist_keys
+      - leather_bound_journal
     description: |
       Master Lorren, Chancellor of the University and Master Archivist.
       He is tall and thin with prematurely grey hair and dark, intelligent
@@ -62,6 +79,15 @@ npcs:
 
   - id: scriv
     name: "a stern scriv"
+    keywords: [scriv, assistant, archivist, librarian]
+    short_description: "a stern scriv"
+    long_description: "A stern scriv watches over the Archives with sharp, vigilant eyes."
+    equipment:
+      body: dark_scriv_robes
+      accessory: archive_badge
+    inventory:
+      - checkout_ledger
+      - quill_and_ink
     description: |
       A scriv - one of Master Lorren's assistants in the Archives. This
       one has sharp features and sharper eyes that miss nothing. They
@@ -90,6 +116,18 @@ npcs:
 
   - id: master_kilvin
     name: "Master Kilvin, the Artificer"
+    keywords: [kilvin, master, artificer, smith]
+    short_description: "Master Kilvin, the Artificer"
+    long_description: "Master Kilvin towers over his forge, powerful hands shaping metal and magic alike."
+    equipment:
+      body: black_masters_robe_over_work_clothes
+      hands: heavy_work_gloves
+      main_hand: artificers_hammer
+      accessory: protective_goggles
+    inventory:
+      - sygaldry_reference_tome
+      - precision_tools
+      - heat_resistant_tongs
     description: |
       Master Kilvin is an imposing figure, tall and broad-shouldered with
       the build of a blacksmith. His dark skin gleams with sweat from the
@@ -120,6 +158,17 @@ npcs:
 
   - id: master_arwyl
     name: "Master Arwyl, the Physician"
+    keywords: [arwyl, master, physician, healer, doctor]
+    short_description: "Master Arwyl, the Physician"
+    long_description: "Master Arwyl moves with calm efficiency, his gentle hands always ready to heal."
+    equipment:
+      body: black_masters_robe_over_green_healers_garb
+      accessory: physicians_stethoscope
+    inventory:
+      - medical_reference_tome
+      - surgical_instruments
+      - bandages_and_salves
+      - herb_collection
     description: |
       Master Arwyl is a middle-aged man with kind eyes and gentle hands.
       He wears the black master's robes over green healer's garb. His
@@ -150,6 +199,16 @@ npcs:
 
   - id: elodin
     name: "Master Elodin, the Namer"
+    keywords: [elodin, master, namer, teacher]
+    short_description: "Master Elodin, the Namer"
+    long_description: "Master Elodin stands here, wild-eyed and wild-haired, seeing things others cannot."
+    equipment:
+      body: carelessly_worn_masters_robe
+      feet: mismatched_shoes
+    inventory:
+      - cryptic_notes
+      - random_leaf
+      - smooth_stone
     description: |
       Master Elodin is unlike any other master. Young for his rank, he
       has wild hair and wilder eyes that seem to see beyond the surface
@@ -180,6 +239,16 @@ npcs:
 
   - id: master_hemme
     name: "Master Hemme, the Rhetorician"
+    keywords: [hemme, master, rhetorician, teacher]
+    short_description: "Master Hemme, the Rhetorician"
+    long_description: "Master Hemme stands with arms crossed, looking down his nose at everyone around him."
+    equipment:
+      body: immaculately_pressed_masters_robe
+      accessory: gold_chain_of_office
+      main_hand: lecturing_staff
+    inventory:
+      - sympathy_theory_notes
+      - student_evaluation_book
     description: |
       Master Hemme is a portly man with a perpetually smug expression.
       He wears his master's robes like a badge of superiority, looking
@@ -210,6 +279,18 @@ npcs:
 
   - id: master_mandrag
     name: "Master Mandrag, the Alchemist"
+    keywords: [mandrag, master, alchemist, chemist]
+    short_description: "Master Mandrag, the Alchemist"
+    long_description: "Master Mandrag works at his alchemical bench, surrounded by bubbling potions and chemical fumes."
+    equipment:
+      body: stained_masters_robe
+      hands: chemical_resistant_gloves
+      accessory: protective_goggles
+    inventory:
+      - alchemy_reference_tome
+      - rare_reagents
+      - alchemical_tools
+      - measuring_instruments
     description: |
       Master Mandrag is a gruff, no-nonsense man with stained fingers
       and the perpetual smell of chemicals. His skin is weathered from
@@ -240,6 +321,17 @@ npcs:
 
   - id: master_elxa_dal
     name: "Master Elxa Dal, the Sympathist"
+    keywords: [elxa_dal, elxa, dal, master, sympathist, teacher]
+    short_description: "Master Elxa Dal, the Sympathist"
+    long_description: "Master Elxa Dal stands with encouraging warmth, ready to guide students to greatness."
+    equipment:
+      body: distinguished_masters_robe
+      accessory: sympathy_focus_amulet
+      main_hand: teaching_staff
+    inventory:
+      - sympathy_instruction_tome
+      - binding_practice_materials
+      - mommet_examples
     description: |
       Master Elxa Dal is a distinguished man with greying temples and
       warm, encouraging eyes. He wears his master's robes with quiet
@@ -270,6 +362,17 @@ npcs:
 
   - id: master_brandeur
     name: "Master Brandeur, the Rhetorician"
+    keywords: [brandeur, master, rhetorician, teacher]
+    short_description: "Master Brandeur, the Rhetorician"
+    long_description: "Master Brandeur stands with perfect posture, every word and gesture measured and precise."
+    equipment:
+      body: perfectly_tailored_masters_robe
+      accessory: silver_oratory_medal
+      main_hand: speaking_stick
+    inventory:
+      - rhetoric_textbook
+      - debate_notes
+      - speech_examples
     description: |
       Master Brandeur is a tall, formal man who speaks with precise
       diction and perfect grammar. His posture is ramrod straight, and
@@ -300,6 +403,17 @@ npcs:
 
   - id: master_herma
     name: "Master Herma, the Historian"
+    keywords: [herma, master, historian, teacher]
+    short_description: "Master Herma, the Historian"
+    long_description: "Master Herma peers through thin spectacles, surrounded by ancient tomes and chronicles."
+    equipment:
+      body: well_worn_masters_robe
+      accessory: reading_spectacles
+    inventory:
+      - historical_chronicles
+      - annotated_timeline
+      - research_notes
+      - ancient_maps
     description: |
       Master Herma is an elderly woman with sharp eyes behind thin
       spectacles. She has devoted her life to preserving and teaching

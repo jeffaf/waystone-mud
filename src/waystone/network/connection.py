@@ -142,7 +142,7 @@ class Connection:
             while True:
                 char = await asyncio.wait_for(
                     self.reader.read(1),
-                    timeout=300.0,  # 5 minute timeout
+                    timeout=3600.0,  # 1 hour timeout
                 )
 
                 if not char:

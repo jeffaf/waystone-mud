@@ -38,6 +38,11 @@ class NPCTemplate(BaseModel):
         loot_table_id: Optional reference to loot table for drops
         dialogue: Optional dialogue data for interactive NPCs
         respawn_time: Respawn time in seconds (0 = no respawn)
+        keywords: Keywords for player commands (e.g., ['rat', 'giant', 'sewer'])
+        short_description: Used in action messages (e.g., 'a giant sewer rat')
+        long_description: Shown in room when present (e.g., 'A giant sewer rat is here.')
+        equipment: Equipped items by slot (e.g., {'weapon': 'rusty_shortsword'})
+        inventory: Item template IDs this NPC carries
     """
 
     id: str = Field(..., description="Unique NPC template identifier")
@@ -55,6 +60,26 @@ class NPCTemplate(BaseModel):
         default=None, description="Dialogue data for interactive NPCs"
     )
     respawn_time: int = Field(default=300, description="Respawn time in seconds (0 = no respawn)")
+    keywords: list[str] = Field(
+        default_factory=list,
+        description="Keywords for player commands (e.g., ['rat', 'giant', 'sewer'])"
+    )
+    short_description: str = Field(
+        default="",
+        description="Used in action messages (e.g., 'a giant sewer rat')"
+    )
+    long_description: str = Field(
+        default="",
+        description="Shown in room when present (e.g., 'A giant sewer rat is here.')"
+    )
+    equipment: dict[str, str] = Field(
+        default_factory=dict,
+        description="Equipped items by slot: {'main_hand': 'rusty_shortsword', 'body': 'leather_armor'}"
+    )
+    inventory: list[str] = Field(
+        default_factory=list,
+        description="Item template IDs this NPC carries"
+    )
 
     class Config:
         """Pydantic configuration."""

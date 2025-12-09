@@ -4,6 +4,11 @@
 npcs:
   - id: merchant_imre
     name: "Devi, the merchant"
+    keywords: [devi, merchant, shopkeeper, trader]
+    short_description: "Devi, the merchant"
+    long_description: "Devi stands behind her counter, watching customers with keen eyes."
+    equipment:
+      body: fine_merchants_robe
     description: |
       A shrewd merchant woman with sharp eyes and a calculating smile.
       Devi runs a profitable business in Imre, buying and selling all
@@ -32,6 +37,13 @@ npcs:
 
   - id: blacksmith_imre
     name: "Caleb, the blacksmith"
+    keywords: [caleb, blacksmith, smith, forger]
+    short_description: "Caleb, the blacksmith"
+    long_description: "Caleb works at his forge, hammer ringing against hot steel."
+    equipment:
+      body: leather_apron
+      hands: blacksmiths_gloves
+      main_hand: blacksmiths_hammer
     description: |
       A burly blacksmith with muscled arms and soot-stained hands. Caleb's
       forge has served Imre for two generations. He specializes in weapons,
@@ -59,6 +71,14 @@ npcs:
 
   - id: innkeeper_anker
     name: "Anker, the innkeeper"
+    keywords: [anker, innkeeper, barkeep, proprietor]
+    short_description: "Anker, the innkeeper"
+    long_description: "Anker stands behind the bar, polishing glasses with a friendly smile."
+    equipment:
+      body: innkeepers_apron
+    inventory:
+      - wooden_cudgel
+      - bar_rag
     description: |
       The proprietor of the Barrel and Tap, one of Imre's more respectable
       establishments. Anker is a rotund man with a friendly demeanor and
@@ -87,6 +107,15 @@ npcs:
 
   - id: apothecary_imre
     name: "Manet, the apothecary"
+    keywords: [manet, apothecary, healer, herbalist]
+    short_description: "Manet, the apothecary"
+    long_description: "Manet tends to his herbs and potions, surrounded by the scent of medicinal plants."
+    equipment:
+      body: apothecary_robes
+    inventory:
+      - healing_potion
+      - herb_pouch
+      - mortar_and_pestle
     description: |
       An elderly apothecary with gentle hands and vast knowledge of herbs
       and remedies. Manet's shop smells of dried plants, tinctures, and

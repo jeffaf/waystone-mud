@@ -8,6 +8,11 @@ from sqlalchemy import select
 from waystone.database.engine import get_session
 from waystone.database.models import Character
 from waystone.game.systems.experience import XP_EXPLORATION_NEW_ROOM, award_xp
+from waystone.game.systems.npc_display import (
+    format_npc_room_presence,
+    get_npc_color,
+    group_npcs_by_template,
+)
 from waystone.game.systems.university import can_access_room, get_university_status, rank_to_display
 from waystone.network import colorize
 
@@ -360,33 +365,21 @@ class LookCommand(Command):
                 npcs = get_npcs_in_room(character.current_room_id)
                 if npcs:
                     await ctx.connection.send_line("")
-                    for npc in npcs:
-                        # Color code by behavior
-                        if npc.behavior == "aggressive":
-                            npc_color = "RED"
-                        elif npc.behavior == "training_dummy":
-                            npc_color = "YELLOW"
-                        else:
-                            npc_color = "GREEN"
+                    # Group NPCs by template for clean display
+                    npc_groups = group_npcs_by_template(npcs)
 
-                        # Show HP status for aggressive/training NPCs
-                        if npc.behavior in ("aggressive", "training_dummy"):
-                            hp_pct = (npc.current_hp / npc.max_hp) * 100
-                            if hp_pct >= 75:
-                                condition = "looks healthy"
-                            elif hp_pct >= 50:
-                                condition = "has some wounds"
-                            elif hp_pct >= 25:
-                                condition = "is badly wounded"
-                            else:
-                                condition = "is near death"
-                            await ctx.connection.send_line(
-                                colorize(f"{npc.name} is here. It {condition}.", npc_color)
-                            )
-                        else:
-                            await ctx.connection.send_line(
-                                colorize(f"{npc.name} is here.", npc_color)
-                            )
+                    for template_id, npc_list in npc_groups.items():
+                        # Use first NPC as representative for the group
+                        representative_npc = npc_list[0]
+                        count = len(npc_list)
+
+                        # Format presence text with count
+                        presence_text = format_npc_room_presence(representative_npc, count)
+
+                        # Color code by behavior
+                        npc_color = get_npc_color(representative_npc)
+
+                        await ctx.connection.send_line(colorize(presence_text, npc_color))
 
                 # Show other players in room
                 other_players = [pid for pid in room.players if pid != ctx.session.character_id]

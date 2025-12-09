@@ -8,6 +8,11 @@ from sqlalchemy.orm import joinedload
 
 from waystone.database.engine import get_session
 from waystone.database.models import Character, ItemInstance, ItemSlot
+from waystone.game.systems.npc_display import (
+    display_npc_equipment,
+    find_npc_by_keywords,
+    get_health_condition,
+)
 from waystone.game.world import Item, calculate_carry_capacity, calculate_total_weight
 from waystone.network import colorize
 
@@ -316,56 +321,47 @@ class ExamineCommand(Command):
                     await ctx.connection.send_line(colorize("Character not found.", "RED"))
                     return
 
-            # First, check for NPCs in the room
+            # First, check for NPCs in the room using new display system
             room_id = character.current_room_id
-            room_npc_ids = ctx.engine.room_npcs.get(room_id, [])
+            npc = find_npc_by_keywords(room_id, target_name)
 
-            for npc_id in room_npc_ids:
-                npc_template = ctx.engine.npc_templates.get(npc_id)
-                if npc_template and target_name in npc_template.name.lower():
-                    # Found an NPC - display NPC details
+            if npc:
+                # Found an NPC - display full examination
+                await ctx.connection.send_line("")
+                await ctx.connection.send_line(colorize(npc.name, "CYAN"))
+                await ctx.connection.send_line(colorize("-" * len(npc.name), "CYAN"))
+                await ctx.connection.send_line(npc.description.strip())
+                await ctx.connection.send_line("")
+
+                # Show health condition
+                health_text = get_health_condition(npc)
+                await ctx.connection.send_line(health_text)
+                await ctx.connection.send_line("")
+
+                # Show equipment if NPC has any
+                if npc.equipment:
+                    await ctx.connection.send_line(colorize("Equipment:", "YELLOW"))
+                    await display_npc_equipment(ctx, npc)
                     await ctx.connection.send_line("")
-                    await ctx.connection.send_line(colorize(npc_template.name.title(), "CYAN"))
-                    await ctx.connection.send_line("-" * len(npc_template.name))
-                    await ctx.connection.send_line(npc_template.description.strip())
-                    await ctx.connection.send_line("")
 
-                    # Show behavior
-                    behavior_colors = {
-                        "aggressive": "RED",
-                        "passive": "GREEN",
-                        "merchant": "YELLOW",
-                        "stationary": "CYAN",
-                        "wander": "BLUE",
-                    }
-                    behavior_color = behavior_colors.get(npc_template.behavior, "WHITE")
+                # Show behavior hint
+                if npc.behavior == "merchant":
                     await ctx.connection.send_line(
-                        f"Behavior: {colorize(npc_template.behavior.capitalize(), behavior_color)}"
+                        colorize("Type 'trade' to see their wares.", "CYAN")
                     )
-
-                    # Show level and health
+                elif npc.behavior == "aggressive":
+                    await ctx.connection.send_line(colorize("Looks dangerous!", "RED"))
+                elif npc.behavior == "training_dummy":
                     await ctx.connection.send_line(
-                        f"Level: {colorize(str(npc_template.level), 'WHITE')} | "
-                        f"Health: {colorize(str(npc_template.max_hp), 'WHITE')} HP"
+                        colorize("This appears to be a training target.", "YELLOW")
                     )
 
-                    # Show dialogue availability
-                    if npc_template.dialogue:
-                        await ctx.connection.send_line("")
-                        await ctx.connection.send_line(
-                            colorize("This NPC appears willing to talk.", "CYAN")
-                        )
-                        if "greeting" in npc_template.dialogue:
-                            await ctx.connection.send_line(
-                                f'  "{npc_template.dialogue["greeting"]}"'
-                            )
-
-                    logger.debug(
-                        "npc_examined",
-                        character_id=ctx.session.character_id,
-                        npc_id=npc_template.id,
-                    )
-                    return
+                logger.debug(
+                    "npc_examined",
+                    character_id=ctx.session.character_id,
+                    npc_id=npc.instance_id,
+                )
+                return
 
             # No NPC found, search for items
             async with get_session() as session:

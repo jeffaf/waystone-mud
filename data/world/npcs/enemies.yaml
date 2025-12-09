@@ -4,6 +4,9 @@
 npcs:
   - id: training_dummy
     name: "a straw training dummy"
+    keywords: [dummy, training, straw, practice]
+    short_description: "a straw training dummy"
+    long_description: "A battered training dummy stands here, ready for practice."
     description: |
       A humanoid figure made of tightly packed straw and burlap, mounted on
       a wooden post. It's been battered and patched many times but still
@@ -26,6 +29,9 @@ npcs:
 
   - id: sewer_rat
     name: "a giant sewer rat"
+    keywords: [rat, sewer, vermin, giant]
+    short_description: "a giant sewer rat"
+    long_description: "A giant sewer rat scurries through the shadows, sniffing for food."
     description: |
       A rat the size of a small dog, with matted grey fur and beady red eyes.
       Years of feeding on who-knows-what in the sewers beneath Imre have
@@ -47,6 +53,15 @@ npcs:
 
   - id: bandit
     name: "a scrappy bandit"
+    keywords: [bandit, scrappy, thief, robber]
+    short_description: "a scrappy bandit"
+    long_description: "A scrappy bandit lurks here, eyeing you suspiciously."
+    equipment:
+      main_hand: rusty_shortsword
+      body: leather_armor
+    inventory:
+      - rusty_shortsword
+      - small_pouch
     description: |
       A rough-looking bandit with weathered features and suspicious eyes.
       Dressed in mismatched leather armor, they carry a rusty shortsword
@@ -68,6 +83,9 @@ npcs:
 
   - id: wolf
     name: "a grey wolf"
+    keywords: [wolf, grey, gray, predator]
+    short_description: "a grey wolf"
+    long_description: "A lean grey wolf watches you with hungry yellow eyes, ready to pounce."
     description: |
       A lean grey wolf with sharp yellow eyes and bared fangs. Its ribs
       show through its mangy coat - hunger has made it bold and dangerous.
@@ -88,6 +106,18 @@ npcs:
 
   - id: highway_robber
     name: "a dangerous highway robber"
+    keywords: [robber, highway, highwayman, criminal]
+    short_description: "a dangerous highway robber"
+    long_description: "A dangerous highway robber blocks the path, hand resting on weapon."
+    equipment:
+      main_hand: steel_longsword
+      body: quality_leather_armor
+      accessory: dark_cloak
+    inventory:
+      - steel_longsword
+      - quality_leather_armor
+      - dark_cloak
+      - coin_purse
     description: |
       An experienced highwayman wearing quality leather armor and a dark
       cloak. Unlike common bandits, this one moves with practiced confidence
@@ -109,6 +139,9 @@ npcs:
 
   - id: rabid_dog
     name: "a rabid dog"
+    keywords: [dog, rabid, sick, mad]
+    short_description: "a rabid dog"
+    long_description: "A rabid dog snaps at the air, foam dripping from its muzzle."
     description: |
       A medium-sized dog with foam dripping from its muzzle and wild,
       unfocused eyes. Its behavior is erratic and unpredictable - it
