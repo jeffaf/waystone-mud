@@ -1,0 +1,80 @@
+# Waystone MUD Skill Definitions
+# Kingkiller Chronicle Universe Skills
+
+combat:
+  swordplay:
+    name: Swordplay
+    description: Proficiency with bladed melee weapons such as swords, rapiers, and daggers
+    attribute: dexterity
+
+  archery:
+    name: Archery
+    description: Skill with ranged weapons including bows, crossbows, and thrown weapons
+    attribute: dexterity
+
+  unarmed:
+    name: Unarmed Combat
+    description: Hand-to-hand fighting techniques, grappling, and martial prowess
+    attribute: strength
+
+magic:
+  sympathy:
+    name: Sympathy
+    description: The art of creating sympathetic links between objects to transfer energy and force
+    attribute: intelligence
+    rare: true
+
+  sygaldry:
+    name: Sygaldry
+    description: Rune-based artificing for creating magical objects and inscriptions
+    attribute: intelligence
+    rare: true
+
+  alchemy:
+    name: Alchemy
+    description: Knowledge of potions, substances, draughts, and chemical transformations
+    attribute: intelligence
+    rare: true
+
+  naming:
+    name: Naming
+    description: The deep magic of speaking the true names of things (extremely rare)
+    attribute: wisdom
+    rare: true
+    restricted: true
+
+practical:
+  medicine:
+    name: Medicine
+    description: Healing arts and herbalism as taught in the Medica
+    attribute: intelligence
+
+  music:
+    name: Music
+    description: Performance and mastery of instruments, worthy of the Eolian
+    attribute: charisma
+
+  rhetoric:
+    name: Rhetoric
+    description: The art of persuasion, debate, and eloquent speech
+    attribute: charisma
+
+  survival:
+    name: Survival
+    description: Wilderness skills including tracking, foraging, and navigation
+    attribute: wisdom
+
+  lore:
+    name: Lore
+    description: Academic knowledge spanning history, literature, and the Archives
+    attribute: intelligence
+
+  lockpicking:
+    name: Lockpicking
+    description: The subtle art of opening locks without keys
+    attribute: dexterity
+
+  stealth:
+    name: Stealth
+    description: Moving unseen and unheard, the art of shadows
+    attribute: dexterity

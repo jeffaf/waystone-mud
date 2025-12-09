@@ -45,6 +45,10 @@ from waystone.game.commands.movement import (
     UpCommand,
     WestCommand,
 )
+from waystone.game.commands.skills import (
+    SkillsCommand,
+    TrainCommand,
+)
 
 __all__ = [
     # Base classes
@@ -86,4 +90,7 @@ __all__ = [
     "WhoCommand",
     "ScoreCommand",
     "TimeCommand",
+    # Skill commands
+    "SkillsCommand",
+    "TrainCommand",
 ]

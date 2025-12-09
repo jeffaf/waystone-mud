@@ -158,6 +158,7 @@ class GameEngine:
         )
         from waystone.game.commands.info import (
             HelpCommand,
+            IncreaseCommand,
             ScoreCommand,
             TimeCommand,
             WhoCommand,
@@ -234,6 +235,7 @@ class GameEngine:
         registry.register(WhoCommand())
         registry.register(ScoreCommand())
         registry.register(TimeCommand())
+        registry.register(IncreaseCommand())
 
         # Inventory and equipment commands
         registry.register(InventoryCommand())

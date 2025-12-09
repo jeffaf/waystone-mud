@@ -108,6 +108,14 @@ class Character(Base, TimestampMixin):
         comment="Social influence attribute",
     )
 
+    attribute_points: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        default=0,
+        server_default="0",
+        comment="Unspent attribute points for character customization",
+    )
+
     # Location and progression
     current_room_id: Mapped[str] = mapped_column(
         String(100),
@@ -148,6 +156,22 @@ class Character(Base, TimestampMixin):
         comment="Maximum hit points",
     )
 
+    current_mp: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        default=10,
+        server_default="10",
+        comment="Current mental energy (Alar) points",
+    )
+
+    max_mp: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        default=10,
+        server_default="10",
+        comment="Maximum mental energy (Alar) points",
+    )
+
     # Equipment - maps slot name to item instance UUID
     # Example: {"main_hand": "uuid-here", "body": "uuid-here"}
     equipped: Mapped[dict[str, Any]] = mapped_column(
@@ -156,6 +180,16 @@ class Character(Base, TimestampMixin):
         default=dict,
         server_default="{}",
         comment="Equipped items mapping slot to item instance UUID",
+    )
+
+    # Skills - maps skill name to dict with rank and xp
+    # Example: {"sympathy": {"rank": 2, "xp": 150}, "swordplay": {"rank": 1, "xp": 50}}
+    skills: Mapped[dict[str, Any]] = mapped_column(
+        JSON,
+        nullable=False,
+        default=dict,
+        server_default="{}",
+        comment="Character skills with ranks and XP",
     )
 
     # Relationships
