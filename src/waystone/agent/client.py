@@ -8,6 +8,7 @@ from datetime import datetime
 from enum import Enum
 
 import structlog
+import telnetlib3
 
 logger = structlog.get_logger(__name__)
 
@@ -131,7 +132,7 @@ class MUDClient:
 
     async def connect(self) -> bool:
         """
-        Connect to the MUD server.
+        Connect to the MUD server using telnetlib3.
 
         Returns:
             True if connection successful, False otherwise
@@ -144,8 +145,9 @@ class MUDClient:
         logger.info("connecting_to_mud", host=self.host, port=self.port)
 
         try:
+            # Use telnetlib3 for proper telnet protocol handling
             self._reader, self._writer = await asyncio.wait_for(
-                asyncio.open_connection(self.host, self.port),
+                telnetlib3.open_connection(self.host, self.port, encoding='utf-8'),
                 timeout=10.0
             )
 
@@ -208,8 +210,8 @@ class MUDClient:
             return
 
         try:
-            # Send with proper line ending
-            self._writer.write(f"{command}\r\n".encode('utf-8'))
+            # telnetlib3 uses strings and handles encoding
+            self._writer.write(f"{command}\r\n")
             await self._writer.drain()
 
             logger.debug("command_sent", command=command)
@@ -269,20 +271,22 @@ class MUDClient:
 
         while self._running and self._reader:
             try:
-                data = await asyncio.wait_for(
+                # telnetlib3 returns strings directly
+                text = await asyncio.wait_for(
                     self._reader.read(4096),
                     timeout=1.0
                 )
 
-                if not data:
+                if not text:
                     # Connection closed
                     logger.info("server_closed_connection")
                     self._state = ConnectionState.DISCONNECTED
                     break
 
-                # Decode and add to buffer
-                text = data.decode('utf-8', errors='replace')
                 buffer += text
+
+                # Debug: log raw data received
+                logger.debug("raw_data_received", length=len(text), preview=text[:100].replace('\n', '\\n'))
 
                 # Process complete lines
                 while '\n' in buffer or '\r' in buffer:
@@ -361,23 +365,16 @@ class MUDClient:
         # Wait for initial prompt/welcome
         await asyncio.sleep(1.0)
 
-        # Send login command
-        await self.send("login")
-        await asyncio.sleep(0.5)
-
-        # Send username
-        await self.send(username)
-        await asyncio.sleep(0.5)
-
-        # Send password
-        await self.send(password)
-        await asyncio.sleep(0.5)
+        # Send login command with username and password
+        # Server expects: login <username> <password>
+        await self.send(f"login {username} {password}")
+        await asyncio.sleep(1.0)
 
         # Check for success
         recent = self._message_history[-10:] if len(self._message_history) >= 10 else self._message_history
         for msg in recent:
             clean = self.strip_ansi(msg.raw).lower()
-            if 'welcome back' in clean or 'logged in' in clean:
+            if 'welcome back' in clean or 'logged in' in clean or 'characters' in clean:
                 self._state = ConnectionState.LOGGED_IN
                 logger.info("login_successful", username=username)
                 return True
@@ -403,23 +400,62 @@ class MUDClient:
             logger.warning("play_while_not_logged_in", state=self._state.value)
             return False
 
-        messages = await self.send_and_wait(f"play {character_name}")
+        # Send play command and wait for room description
+        await self.send(f"play {character_name}")
 
-        for msg in messages:
+        # Give the background reader time to process response
+        # Check multiple times with small delays
+        for _ in range(10):  # Check up to 5 seconds
+            await asyncio.sleep(0.5)
+
+            recent = self._message_history[-30:] if len(self._message_history) >= 30 else self._message_history
+
+            # Check for success early
+            for msg in recent:
+                clean = self.strip_ansi(msg.raw).lower()
+                if 'welcome to the world' in clean or '[exits:' in clean:
+                    logger.debug("play_success_detected", message=clean[:60])
+                    self._state = ConnectionState.PLAYING
+                    logger.info("playing_character", character=character_name)
+                    return True
+
+        # Final check with debug
+        recent = self._message_history[-30:] if len(self._message_history) >= 30 else self._message_history
+
+        # Debug: log what messages we received after play command
+        logger.debug("play_response_messages", count=len(recent),
+                     messages=[self.strip_ansi(m.raw)[:60] for m in recent[-10:]])
+
+        for msg in recent:
             clean = self.strip_ansi(msg.raw).lower()
-            if 'now playing' in clean or 'entering game' in clean:
+            # Success patterns from Waystone
+            if 'welcome to the world' in clean:
                 self._state = ConnectionState.PLAYING
                 logger.info("playing_character", character=character_name)
                 return True
-            if 'not found' in clean or 'invalid' in clean:
+            # Error patterns
+            if "don't have a character named" in clean:
                 logger.warning("character_not_found", character=character_name)
                 return False
+            if 'already being played' in clean:
+                logger.warning("character_in_use", character=character_name)
+                return False
 
-        # Check for room description (usually sent after entering game)
-        for msg in messages:
-            if msg.message_type == "room":
+        # Check for room description (Exits: indicates we're in the game world)
+        for msg in recent:
+            clean = self.strip_ansi(msg.raw).lower()
+            if '[exits:' in clean or 'exits:' in clean:
                 self._state = ConnectionState.PLAYING
+                logger.info("playing_character", character=character_name)
                 return True
+
+        # Check if prompt changed to game prompt (not Character Select)
+        for msg in recent:
+            clean = self.strip_ansi(msg.raw).strip()
+            if clean == '>' or clean.endswith(' >'):
+                if '(character select)' not in clean.lower() and '(login)' not in clean.lower():
+                    self._state = ConnectionState.PLAYING
+                    return True
 
         return False
 

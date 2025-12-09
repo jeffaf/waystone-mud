@@ -104,22 +104,33 @@ class HaikuBackend(LLMBackend):
         except ImportError:
             raise ImportError("anthropic package required: pip install anthropic")
 
+        # Token tracking
+        self.total_input_tokens = 0
+        self.total_output_tokens = 0
+
         logger.info("haiku_backend_initialized")
 
     async def decide_action(self, context: str, available_actions: list[str]) -> str:
         """Use Claude Haiku to decide action."""
-        prompt = f"""You are an AI playing a text-based MUD (Multi-User Dungeon) game.
+        prompt = f"""You are an AI agent playing a text-based MUD. Your goals in priority order:
+
+1. COMBAT: If you see monsters/NPCs you can fight, attack them to gain XP
+2. EXPLORE: Move to new areas you haven't visited. Prefer unexplored directions.
+3. INTERACT: Talk to NPCs, examine interesting objects, read signs
+4. SURVIVE: If low on health, rest or flee from combat
 
 Current game state:
 {context}
 
-Available actions:
-{', '.join(available_actions)}
+Available actions: {', '.join(available_actions)}
 
-Based on the current state, what single action should you take?
-Respond with ONLY the action command, nothing else.
-If exploring, prefer directions you haven't been to.
-If you see something interesting, investigate it.
+IMPORTANT RULES:
+- If you see a hostile creature, use "attack <name>" to fight it
+- Use movement commands (north, south, east, west, up, down) to explore
+- Avoid repeating the same action more than twice in a row
+- If blocked or denied access, try a different direction
+
+Respond with ONLY the single command to execute. No explanation.
 
 Action:"""
 
@@ -135,14 +146,32 @@ Action:"""
                 )
             )
 
+            # Track token usage
+            if hasattr(response, 'usage'):
+                self.total_input_tokens += response.usage.input_tokens
+                self.total_output_tokens += response.usage.output_tokens
+
             action = response.content[0].text.strip().lower()
-            logger.debug("haiku_decision", action=action)
+            logger.debug("haiku_decision", action=action,
+                        input_tokens=response.usage.input_tokens if hasattr(response, 'usage') else 0,
+                        output_tokens=response.usage.output_tokens if hasattr(response, 'usage') else 0)
             return action
 
         except Exception as e:
             logger.error("haiku_error", error=str(e))
             # Fallback to first available action
             return available_actions[0] if available_actions else "look"
+
+    def get_token_usage(self) -> tuple[int, int]:
+        """Get total token usage (input, output)."""
+        return self.total_input_tokens, self.total_output_tokens
+
+    def get_estimated_cost(self) -> float:
+        """Get estimated cost in USD based on Haiku pricing."""
+        # Haiku pricing: $0.80/M input, $4.00/M output
+        input_cost = (self.total_input_tokens / 1_000_000) * 0.80
+        output_cost = (self.total_output_tokens / 1_000_000) * 4.00
+        return input_cost + output_cost
 
 
 class OllamaBackend(LLMBackend):
@@ -297,6 +326,20 @@ class MUDAgent:
         self._action_history: list[str] = []
         self._steps_since_progress = 0
 
+        # Session tracking for report
+        self._session_data: dict = {
+            "rooms_visited": set(),
+            "npcs_seen": set(),
+            "items_found": set(),
+            "combat_encounters": 0,
+            "errors_encountered": [],
+            "access_denied": [],
+            "interesting_messages": [],
+            "repeated_actions": 0,
+            "tokens_input": 0,
+            "tokens_output": 0,
+        }
+
         logger.info(
             "mud_agent_initialized",
             host=config.host,
@@ -355,7 +398,7 @@ class MUDAgent:
         return True
 
     async def stop(self) -> None:
-        """Stop the agent."""
+        """Stop the agent and print session report."""
         self._running = False
 
         # Send quit command
@@ -365,6 +408,67 @@ class MUDAgent:
 
         await self.client.disconnect()
         logger.info("agent_stopped")
+
+        # Print session report
+        self._print_session_report()
+
+    def _print_session_report(self) -> None:
+        """Print a summary report of the session."""
+        print("\n" + "=" * 60)
+        print("📊 AGENT SESSION REPORT")
+        print("=" * 60)
+
+        print(f"\n🎯 STATISTICS:")
+        print(f"   Actions taken: {len(self._action_history)}")
+        print(f"   Rooms visited: {len(self._session_data['rooms_visited'])}")
+        print(f"   NPCs encountered: {len(self._session_data['npcs_seen'])}")
+        print(f"   Items found: {len(self._session_data['items_found'])}")
+        print(f"   Combat encounters: {self._session_data['combat_encounters']}")
+        print(f"   Repeated actions (stuck): {self._session_data['repeated_actions']}")
+
+        # Token usage and cost (if using Haiku)
+        if isinstance(self.backend, HaikuBackend):
+            input_tokens, output_tokens = self.backend.get_token_usage()
+            cost = self.backend.get_estimated_cost()
+            print(f"\n💰 API USAGE:")
+            print(f"   Input tokens: {input_tokens:,}")
+            print(f"   Output tokens: {output_tokens:,}")
+            print(f"   Estimated cost: ${cost:.4f}")
+
+        if self._session_data["rooms_visited"]:
+            print(f"\n🗺️  ROOMS EXPLORED:")
+            for room in sorted(self._session_data["rooms_visited"]):
+                print(f"   - {room}")
+
+        if self._session_data["npcs_seen"]:
+            print(f"\n👥 NPCs SEEN:")
+            for npc in sorted(self._session_data["npcs_seen"]):
+                print(f"   - {npc}")
+
+        if self._session_data["access_denied"]:
+            print(f"\n🚫 ACCESS DENIED (need higher rank):")
+            for msg in self._session_data["access_denied"][:5]:
+                print(f"   - {msg}")
+
+        if self._session_data["errors_encountered"]:
+            print(f"\n⚠️  POTENTIAL ISSUES/BUGS:")
+            for error in self._session_data["errors_encountered"][:10]:
+                print(f"   - {error}")
+
+        # Suggestions
+        print(f"\n💡 OBSERVATIONS:")
+        if self._session_data["repeated_actions"] > 3:
+            print("   - Agent got stuck repeating actions - may need better exploration logic")
+        if self._session_data["combat_encounters"] == 0:
+            print("   - No combat occurred - consider adding hostile NPCs to starting areas")
+        if len(self._session_data["rooms_visited"]) < 3:
+            print("   - Limited exploration - check for movement blockers")
+        if self._session_data["access_denied"]:
+            print("   - Some areas require University rank - agent needs to advance first")
+        if not self._session_data["errors_encountered"] and self._session_data["repeated_actions"] <= 3:
+            print("   - Session ran smoothly with no major issues!")
+
+        print("\n" + "=" * 60 + "\n")
 
     async def run(self, max_steps: int | None = None) -> None:
         """
@@ -412,6 +516,9 @@ class MUDAgent:
         output = self.client.get_recent_output(count=15)
         self.parser.parse(output)
 
+        # Track session data from output
+        self._track_session_data(output)
+
         context = self.parser.to_context_string()
         available = self.parser.get_available_actions()
 
@@ -420,6 +527,10 @@ class MUDAgent:
 
         # Get action from LLM
         action = await self.backend.decide_action(context, available)
+
+        # Check for repeated actions
+        if len(self._action_history) >= 2 and self._action_history[-1] == action and self._action_history[-2] == action:
+            self._session_data["repeated_actions"] += 1
 
         # Record and execute
         self._action_history.append(action)
@@ -433,6 +544,43 @@ class MUDAgent:
 
         # Wait for response
         await asyncio.sleep(0.5)
+
+    def _track_session_data(self, output: str) -> None:
+        """Track interesting data from game output for session report."""
+        output_lower = output.lower()
+
+        # Track room visits
+        if self.parser.state.room.name:
+            self._session_data["rooms_visited"].add(self.parser.state.room.name)
+
+        # Track NPCs seen
+        for npc in self.parser.state.room.npcs:
+            self._session_data["npcs_seen"].add(npc)
+
+        # Track items found
+        for item in self.parser.state.room.items:
+            self._session_data["items_found"].add(item)
+
+        # Track combat
+        if "attack" in output_lower or "damage" in output_lower or "hit" in output_lower:
+            self._session_data["combat_encounters"] += 1
+
+        # Track access denied messages (potential areas to explore later)
+        if "access denied" in output_lower or "requires" in output_lower and "rank" in output_lower:
+            # Extract the message
+            for line in output.split('\n'):
+                if "access denied" in line.lower() or "requires" in line.lower():
+                    if line not in self._session_data["access_denied"]:
+                        self._session_data["access_denied"].append(line.strip())
+
+        # Track error messages (potential bugs)
+        error_indicators = ["error", "invalid", "failed", "unknown command", "can't", "cannot"]
+        for indicator in error_indicators:
+            if indicator in output_lower:
+                for line in output.split('\n'):
+                    if indicator in line.lower() and line.strip():
+                        if line.strip() not in self._session_data["errors_encountered"]:
+                            self._session_data["errors_encountered"].append(line.strip())
 
     async def run_once(self) -> str:
         """
