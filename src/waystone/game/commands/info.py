@@ -168,7 +168,7 @@ class ScoreCommand(Command):
     """Display character stats and information."""
 
     name = "score"
-    aliases = ["stats"]
+    aliases = ["stats", "sc"]
     help_text = "score - Display your character's stats"
     min_args = 0
 

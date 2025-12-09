@@ -71,7 +71,7 @@ class AttackCommand(Command):
     """Initiate combat or attack a target in combat."""
 
     name = "attack"
-    aliases = ["att", "a"]
+    aliases = ["att", "a", "k", "kill"]
     help_text = "attack <target> - Attack a target (initiates combat)"
     min_args = 1
     requires_character = True

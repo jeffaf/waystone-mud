@@ -156,29 +156,68 @@ async def attack_npc(
         # Calculate to-hit: d20 + DEX modifier
         to_hit_roll = random.randint(1, 20)
         dex_mod = (attacker.dexterity - 10) // 2
+        is_critical = to_hit_roll == 20
+        is_fumble = to_hit_roll == 1
 
         # NPC defense
         npc_defense = get_npc_defense(npc)
 
-        # Check hit
+        # Check hit (fumble always misses, critical always hits)
         final_roll = to_hit_roll + dex_mod
 
-        if final_roll < npc_defense:
-            # Miss
-            return False, f"You attack {npc.name} but miss! (Rolled {final_roll} vs Defense {npc_defense})", 0
+        if is_fumble or (final_roll < npc_defense and not is_critical):
+            # Miss - varied messages
+            miss_msgs = [
+                f"You swing at {npc.name} but miss!",
+                f"Your attack goes wide, missing {npc.name}.",
+                f"{npc.name} dodges your attack!",
+                f"You lunge at {npc.name} but strike only air.",
+            ]
+            if is_fumble:
+                miss_msg = colorize(f"FUMBLE! ", "RED") + random.choice(miss_msgs)
+            else:
+                miss_msg = random.choice(miss_msgs)
+            return False, f"{miss_msg} (Roll: {final_roll} vs AC {npc_defense})", 0
 
-        # Hit - calculate damage: 1d6 + STR modifier
+        # Hit - calculate damage: 1d6 + STR modifier (2x for critical)
         str_mod = (attacker.strength - 10) // 2
         damage_roll = random.randint(1, 6)
+        if is_critical:
+            damage_roll += random.randint(1, 6)  # Double dice on crit
         total_damage = max(1, damage_roll + str_mod)
 
         # Apply damage
         npc.current_hp = max(0, npc.current_hp - total_damage)
         npc.last_hit_by = str(attacker_id)
 
+        # Varied hit messages based on damage
+        if is_critical:
+            hit_desc = colorize("CRITICAL HIT! ", "YELLOW") + f"You strike {npc.name} with devastating force"
+        elif total_damage >= 8:
+            hit_desc = f"You land a powerful blow on {npc.name}"
+        elif total_damage >= 5:
+            hit_desc = f"You strike {npc.name} solidly"
+        elif total_damage >= 3:
+            hit_desc = f"You hit {npc.name}"
+        else:
+            hit_desc = f"You land a glancing blow on {npc.name}"
+
+        # NPC condition based on HP percentage
+        hp_pct = (npc.current_hp / npc.max_hp) * 100 if npc.max_hp > 0 else 0
+        if hp_pct >= 75:
+            condition = "looks healthy"
+        elif hp_pct >= 50:
+            condition = "has some wounds"
+        elif hp_pct >= 25:
+            condition = "is badly wounded"
+        elif hp_pct > 0:
+            condition = "is near death"
+        else:
+            condition = "collapses"
+
         hit_msg = (
-            f"You hit {npc.name} for {colorize(str(total_damage), 'RED')} damage! "
-            f"({npc.name}: {npc.current_hp}/{npc.max_hp} HP)"
+            f"{hit_desc} for {colorize(str(total_damage), 'RED')} damage!\n"
+            f"  {npc.name} {condition}. ({npc.current_hp}/{npc.max_hp} HP)"
         )
 
         # Check for death

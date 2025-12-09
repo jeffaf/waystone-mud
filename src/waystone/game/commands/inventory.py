@@ -98,7 +98,7 @@ class GetCommand(Command):
     """Pick up an item from the current room."""
 
     name = "get"
-    aliases = ["take", "pickup"]
+    aliases = ["take", "pickup", "g"]
     help_text = "get <item> - Pick up an item from the room"
     min_args = 1
 
@@ -201,7 +201,7 @@ class DropCommand(Command):
     """Drop an item to the current room."""
 
     name = "drop"
-    aliases = []
+    aliases = ["dr"]
     help_text = "drop <item> - Drop an item to the room"
     min_args = 1
 
@@ -290,7 +290,7 @@ class ExamineCommand(Command):
     """View detailed information about an item."""
 
     name = "examine"
-    aliases = ["ex", "inspect"]
+    aliases = ["ex", "inspect", "x"]
     help_text = "examine <item> - View detailed item information"
     min_args = 1
 
