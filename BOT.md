@@ -1,10 +1,12 @@
-# Waystone MUD AI Agent
+# Waystone MUD Bot (Simulated Player)
 
-An AI-powered player that autonomously explores, fights, and interacts with the MUD.
+An AI-powered bot that plays the game autonomously - useful for testing, populating the world, or just watching an AI explore.
+
+**This is NOT an AI assistant.** It's a simulated player (bot) that connects to the MUD server and plays the game like a human would, making decisions about movement, combat, and exploration.
 
 ## Overview
 
-The agent uses Claude Haiku (or optionally Ollama) to make decisions about what actions to take in the game. It can:
+The bot uses Claude Haiku (or optionally Ollama) to decide what commands to send to the game. It can:
 
 - Explore the world and discover new rooms
 - Fight NPCs and gain experience
@@ -34,7 +36,7 @@ The agent uses Claude Haiku (or optionally Ollama) to make decisions about what 
    # Then: create <character_name>
    ```
 
-## Running the Agent
+## Running the Bot
 
 ### Basic Usage
 
@@ -129,7 +131,7 @@ Imre Main Square
 
 ## Combat Tips
 
-The agent will:
+The bot will:
 - Attack any creature it sees ("is here" in room description)
 - Prioritize combat over exploration when enemies are present
 - Go south from University to find Imre combat areas
@@ -137,7 +139,7 @@ The agent will:
 
 ## Troubleshooting
 
-### Agent gets stuck
+### Bot gets stuck
 - Increase `--steps` to give it more time
 - The agent may hit rank-restricted areas - it will try alternate routes
 
@@ -162,7 +164,7 @@ src/waystone/agent/
 └── parser.py   # Game state parser (rooms, NPCs, exits)
 ```
 
-The agent uses a simple loop:
+The bot uses a simple loop:
 1. Read game output
 2. Parse into structured state
 3. Ask LLM for next action
