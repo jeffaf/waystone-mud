@@ -64,6 +64,7 @@ class CharacterStatus:
     mana: int = 100
     max_mana: int = 100
     level: int = 1
+    experience: int = 0
     gold: int = 0
     inventory: list[str] = field(default_factory=list)
 
@@ -123,6 +124,7 @@ class GameStateParser:
     HP_PATTERN = re.compile(r"(?:HP|Health|Hit Points?):\s*(\d+)/(\d+)", re.IGNORECASE)
     MANA_PATTERN = re.compile(r"(?:MP|Mana|Magic):\s*(\d+)/(\d+)", re.IGNORECASE)
     LEVEL_PATTERN = re.compile(r"Level:\s*(\d+)", re.IGNORECASE)
+    XP_PATTERN = re.compile(r"(?:XP|Experience):\s*(\d+)", re.IGNORECASE)
     GOLD_PATTERN = re.compile(r"(?:Gold|Money|Coins?):\s*(\d+)", re.IGNORECASE)
 
     # Money patterns (Cealdish currency)
@@ -315,6 +317,11 @@ class GameStateParser:
         level_match = self.LEVEL_PATTERN.search(text)
         if level_match:
             self._current_state.character.level = int(level_match.group(1))
+
+        # Experience/XP
+        xp_match = self.XP_PATTERN.search(text)
+        if xp_match:
+            self._current_state.character.experience = int(xp_match.group(1))
 
         # Gold/Money
         gold_match = self.GOLD_PATTERN.search(text)

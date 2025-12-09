@@ -443,6 +443,12 @@ class MUDAgent:
         """Stop the agent and print session report."""
         self._running = False
 
+        # Fetch final stats before quitting
+        if self.client.is_connected:
+            messages = await self.client.send_and_wait("stats", timeout=2.0)
+            for msg in messages:
+                self.parser.parse(msg.raw)
+
         # Send quit command
         if self.client.is_connected:
             await self.client.send("quit")
@@ -476,6 +482,18 @@ class MUDAgent:
             print(f"   Input tokens: {input_tokens:,}")
             print(f"   Output tokens: {output_tokens:,}")
             print(f"   Estimated cost: ${cost:.4f}")
+
+        # Character stats
+        char = self.parser.state.character
+        print("\n🧙 CHARACTER STATS:")
+        print(f"   Name: {char.name or self.config.character_name}")
+        print(f"   Level: {char.level}")
+        print(f"   XP: {char.experience}")
+        print(f"   Health: {char.health}/{char.max_health}")
+        if char.gold > 0:
+            print(f"   Gold: {char.gold}")
+        if char.inventory:
+            print(f"   Inventory: {len(char.inventory)} items")
 
         if self._session_data["rooms_visited"]:
             print("\n🗺️  ROOMS EXPLORED:")
