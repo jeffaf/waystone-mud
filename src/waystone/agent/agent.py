@@ -114,23 +114,36 @@ class HaikuBackend(LLMBackend):
         """Use Claude Haiku to decide action."""
         prompt = f"""You are an AI agent playing a text-based MUD. Your goals in priority order:
 
-1. COMBAT: If you see monsters/NPCs you can fight, attack them to gain XP
-2. EXPLORE: Move to new areas you haven't visited. Prefer unexplored directions.
-3. INTERACT: Talk to NPCs, examine interesting objects, read signs
-4. SURVIVE: If low on health, rest or flee from combat
+1. COMBAT: If you see creatures (rats, bandits, training dummies), attack them to gain XP
+2. FIND COMBAT: Go SOUTH from the University to reach Imre where combat areas exist
+3. EXPLORE: Move to new areas, prefer unexplored directions
+4. SURVIVE: If low on health, rest or flee
+
+WORLD GEOGRAPHY:
+- University (north) = mostly safe zone, requires E'lir rank for many areas
+- Stonebridge (south from University gates) = connects to Imre
+- Imre (south across Stonebridge) = has combat areas:
+  - Training Yard (west from main square) = training dummy
+  - Back Alley (southwest) = sewer rats
+  - North Road (northeast from main square) = bandits
+
+CREATURE INDICATORS (attack these):
+- "is here" = creature present (e.g. "a giant sewer rat is here")
+- "training dummy" = safe combat practice
+- RED colored text = hostile creature
 
 Current game state:
 {context}
 
 Available actions: {', '.join(available_actions)}
 
-IMPORTANT RULES:
-- If you see a hostile creature, use "attack <name>" to fight it
-- Use movement commands (north, south, east, west, up, down) to explore
-- Avoid repeating the same action more than twice in a row
-- If blocked or denied access, try a different direction
+RULES:
+- If you see "is here" with a creature name, use "attack <creature>"
+- GO SOUTH to find combat areas - the University is mostly off-limits
+- If "Access denied" or "requires rank", go a different direction (try SOUTH)
+- Don't repeat the same action more than twice
 
-Respond with ONLY the single command to execute. No explanation.
+Respond with ONLY the command. No explanation.
 
 Action:"""
 

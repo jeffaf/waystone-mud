@@ -108,6 +108,8 @@ class GameStateParser:
     # NPC/Player patterns - these appear in "You see:" sections
     SEE_PATTERN = re.compile(r'You see:\s*(.+?)(?:\n\n|\n[A-Z]|\Z)', re.IGNORECASE | re.DOTALL)
     ALSO_HERE_PATTERN = re.compile(r'Also here:\s*(.+?)(?:\n|$)', re.IGNORECASE)
+    # NPC "is here" pattern used by look command (e.g., "a giant sewer rat is here")
+    IS_HERE_PATTERN = re.compile(r'^(.+?)\s+is here\.', re.IGNORECASE | re.MULTILINE)
 
     # Item patterns
     ITEM_ON_GROUND_PATTERN = re.compile(r'(?:On the ground|Items?):\s*(.+?)(?:\n\n|\n[A-Z]|\Z)', re.IGNORECASE | re.DOTALL)
@@ -219,6 +221,16 @@ class GameStateParser:
                 else:
                     if name not in self._current_state.room.players:
                         self._current_state.room.players.append(name)
+
+        # Parse "X is here" NPCs (used by look command for creatures)
+        is_here_matches = self.IS_HERE_PATTERN.findall(text)
+        for match in is_here_matches:
+            name = match.strip()
+            # Skip if it's a player-like name (capital first letter only, no articles)
+            if name.startswith(('a ', 'an ', 'the ', 'A ', 'An ', 'The ')):
+                # This is likely an NPC/creature
+                if name not in self._current_state.room.npcs:
+                    self._current_state.room.npcs.append(name)
 
         # Parse items
         item_match = self.ITEM_ON_GROUND_PATTERN.search(text)
