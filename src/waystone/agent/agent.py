@@ -171,7 +171,9 @@ Action:"""
                 self.total_output_tokens += response.usage.output_tokens
 
             content_block = response.content[0]
-            action = content_block.text.strip().lower() if hasattr(content_block, "text") else "look"
+            action = (
+                content_block.text.strip().lower() if hasattr(content_block, "text") else "look"
+            )
             logger.debug(
                 "haiku_decision",
                 action=action,

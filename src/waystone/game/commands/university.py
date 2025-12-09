@@ -431,7 +431,9 @@ class WorkCommand(Command):
 
             if RANK_ORDER.index(status.arcanum_rank) < RANK_ORDER.index(job["requires_rank"]):
                 await ctx.connection.send_line(
-                    colorize(f"This job requires {rank_to_display(job['requires_rank'])} rank.", "RED")
+                    colorize(
+                        f"This job requires {rank_to_display(job['requires_rank'])} rank.", "RED"
+                    )
                 )
                 return
 
@@ -439,7 +441,9 @@ class WorkCommand(Command):
             current_room = ctx.engine.world.get(character.current_room_id)
             if not current_room or current_room.id != job["room"]:
                 await ctx.connection.send_line(
-                    colorize(f"You must be in the {job['name'].split()[0]} to work this job.", "YELLOW")
+                    colorize(
+                        f"You must be in the {job['name'].split()[0]} to work this job.", "YELLOW"
+                    )
                 )
                 return
 
