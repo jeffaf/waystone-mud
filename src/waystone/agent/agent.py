@@ -124,6 +124,7 @@ class HaikuBackend(LLMBackend):
 2. FIND COMBAT: Go SOUTH from the University to reach Imre where combat areas exist
 3. EXPLORE: Move to new areas, prefer unexplored directions
 4. SURVIVE: If low on health, rest or flee
+5. CHECK PROGRESS: Periodically use "score" to check XP/level
 
 WORLD GEOGRAPHY:
 - University (north) = mostly safe zone, requires E'lir rank for many areas
@@ -138,6 +139,19 @@ CREATURE INDICATORS (attack these):
 - "training dummy" = safe combat practice
 - RED colored text = hostile creature
 
+AVAILABLE COMMANDS:
+Movement: north/n, south/s, east/e, west/w, up/u, down/d, look/l, exits
+Combat: attack <target>, defend, flee, consider <npc>, combatstatus/cs
+Info: score/stats, who, help, wealth, time
+Items: inventory/i, get <item>, drop <item>, equip <item>, examine <item>
+Communication: say '<msg>, chat <msg>, tell <player> <msg>
+Sympathy Magic: hold <source>, bind <type> <src> <tgt>, heat, push, unbind
+
+XP SYSTEM:
+- Killing enemies gives 10 XP × enemy level
+- Level 2 requires 100 XP total, Level 3 requires 400 XP
+- Use "score" to check your current level and XP progress
+
 Current game state:
 {context}
 
@@ -145,9 +159,11 @@ Available actions: {", ".join(available_actions)}
 
 RULES:
 - If you see "is here" with a creature name, use "attack <creature>"
+- Example: "a giant sewer rat is here" -> respond: attack rat
 - GO SOUTH to find combat areas - the University is mostly off-limits
 - If "Access denied" or "requires rank", go a different direction (try SOUTH)
 - Don't repeat the same action more than twice
+- After combat, use "score" to check XP progress
 
 Respond with ONLY the command. No explanation.
 
