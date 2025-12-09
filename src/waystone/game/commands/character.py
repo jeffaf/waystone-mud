@@ -8,7 +8,7 @@ from sqlalchemy import select
 
 from waystone.config import get_settings
 from waystone.database.engine import get_session
-from waystone.database.models import Character, CharacterBackground, User
+from waystone.database.models import Character, CharacterBackground
 from waystone.network import SessionState, colorize
 
 from .base import Command, CommandContext
@@ -50,33 +50,25 @@ class CharactersCommand(Command):
                         colorize("\nYou don't have any characters yet.", "YELLOW")
                     )
                     await ctx.connection.send_line(
-                        "Create one with: " +
-                        colorize("create <name>", "CYAN")
+                        "Create one with: " + colorize("create <name>", "CYAN")
                     )
                     return
 
-                await ctx.connection.send_line(
-                    colorize("\n╔═══ Your Characters ═══╗", "CYAN")
-                )
+                await ctx.connection.send_line(colorize("\n╔═══ Your Characters ═══╗", "CYAN"))
                 for char in characters:
                     level_str = colorize(f"Level {char.level}", "GREEN")
                     bg_str = colorize(char.background.value, "YELLOW")
                     await ctx.connection.send_line(
                         f"  {colorize(char.name, 'BOLD')} - {level_str} {bg_str}"
                     )
+                await ctx.connection.send_line(colorize("╚═══════════════════════╝", "CYAN"))
                 await ctx.connection.send_line(
-                    colorize("╚═══════════════════════╝", "CYAN")
-                )
-                await ctx.connection.send_line(
-                    "\nTo play a character, type: " +
-                    colorize("play <name>", "CYAN")
+                    "\nTo play a character, type: " + colorize("play <name>", "CYAN")
                 )
 
         except Exception as e:
             logger.error("characters_list_failed", error=str(e), exc_info=True)
-            await ctx.connection.send_line(
-                colorize("Failed to list characters.", "RED")
-            )
+            await ctx.connection.send_line(colorize("Failed to list characters.", "RED"))
 
 
 class CreateCommand(Command):
@@ -97,9 +89,7 @@ class CreateCommand(Command):
             return
 
         if len(ctx.args) < 1:
-            await ctx.connection.send_line(
-                colorize("Usage: create <name>", "YELLOW")
-            )
+            await ctx.connection.send_line(colorize("Usage: create <name>", "YELLOW"))
             return
 
         name = ctx.args[0]
@@ -109,7 +99,7 @@ class CreateCommand(Command):
             await ctx.connection.send_line(
                 colorize(
                     "Invalid character name. Must be 2-30 letters, starting with a capital letter.",
-                    "RED"
+                    "RED",
                 )
             )
             return
@@ -117,9 +107,7 @@ class CreateCommand(Command):
         try:
             async with get_session() as session:
                 # Check if name is taken
-                result = await session.execute(
-                    select(Character).where(Character.name == name)
-                )
+                result = await session.execute(select(Character).where(Character.name == name))
                 if result.scalar_one_or_none():
                     await ctx.connection.send_line(
                         colorize(f"The name '{name}' is already taken.", "RED")
@@ -132,13 +120,9 @@ class CreateCommand(Command):
                 )
 
                 # Choose background
-                await ctx.connection.send_line(
-                    colorize("\nChoose a background:", "YELLOW")
-                )
+                await ctx.connection.send_line(colorize("\nChoose a background:", "YELLOW"))
                 for i, bg in enumerate(CharacterBackground, 1):
-                    await ctx.connection.send_line(
-                        f"  {i}. {colorize(bg.value, 'CYAN')}"
-                    )
+                    await ctx.connection.send_line(f"  {i}. {colorize(bg.value, 'CYAN')}")
 
                 await ctx.connection.send_line(
                     colorize("\nEnter the number of your choice: ", "GREEN")
@@ -164,7 +148,7 @@ class CreateCommand(Command):
                 await ctx.connection.send_line(
                     colorize(
                         f"\n{name} the {background.value} begins with base attributes of 10.",
-                        "CYAN"
+                        "CYAN",
                     )
                 )
                 await ctx.connection.send_line(
@@ -199,23 +183,25 @@ class CreateCommand(Command):
                 points_remaining = 5
                 while points_remaining > 0:
                     await ctx.connection.send_line(
-                        colorize(
-                            f"\nPoints remaining: {points_remaining}",
-                            "GREEN"
-                        )
+                        colorize(f"\nPoints remaining: {points_remaining}", "GREEN")
                     )
                     await ctx.connection.send_line("Attributes (shortcuts in parentheses):")
                     await ctx.connection.send_line(f"  Strength (str/s): {attributes['strength']}")
-                    await ctx.connection.send_line(f"  Dexterity (dex/d): {attributes['dexterity']}")
-                    await ctx.connection.send_line(f"  Constitution (con/c): {attributes['constitution']}")
-                    await ctx.connection.send_line(f"  Intelligence (int/i): {attributes['intelligence']}")
+                    await ctx.connection.send_line(
+                        f"  Dexterity (dex/d): {attributes['dexterity']}"
+                    )
+                    await ctx.connection.send_line(
+                        f"  Constitution (con/c): {attributes['constitution']}"
+                    )
+                    await ctx.connection.send_line(
+                        f"  Intelligence (int/i): {attributes['intelligence']}"
+                    )
                     await ctx.connection.send_line(f"  Wisdom (wis/w): {attributes['wisdom']}")
                     await ctx.connection.send_line(f"  Charisma (cha/ch): {attributes['charisma']}")
 
                     await ctx.connection.send_line(
                         colorize(
-                            "\nEnter attribute to increase (or 'done'/'d' to finish): ",
-                            "YELLOW"
+                            "\nEnter attribute to increase (or 'done'/'d' to finish): ", "YELLOW"
                         )
                     )
                     attr_choice = (await ctx.connection.readline()).lower().strip()
@@ -236,13 +222,14 @@ class CreateCommand(Command):
                     attributes[attr_choice] += 1
                     points_remaining -= 1
                     await ctx.connection.send_line(
-                        colorize(f"  +1 {attr_choice.capitalize()} (now {attributes[attr_choice]})", "GREEN")
+                        colorize(
+                            f"  +1 {attr_choice.capitalize()} (now {attributes[attr_choice]})",
+                            "GREEN",
+                        )
                     )
 
                 # Confirmation
-                await ctx.connection.send_line(
-                    colorize(f"\n╔═══ Character Summary ═══╗", "CYAN")
-                )
+                await ctx.connection.send_line(colorize("\n╔═══ Character Summary ═══╗", "CYAN"))
                 await ctx.connection.send_line(f"Name: {colorize(name, 'BOLD')}")
                 await ctx.connection.send_line(
                     f"Background: {colorize(background.value, 'YELLOW')}"
@@ -250,13 +237,9 @@ class CreateCommand(Command):
                 await ctx.connection.send_line("\nAttributes:")
                 for attr, value in attributes.items():
                     await ctx.connection.send_line(f"  {attr.capitalize()}: {value}")
-                await ctx.connection.send_line(
-                    colorize("╚═════════════════════════╝", "CYAN")
-                )
+                await ctx.connection.send_line(colorize("╚═════════════════════════╝", "CYAN"))
 
-                await ctx.connection.send_line(
-                    colorize("\nConfirm creation? (y/n): ", "GREEN")
-                )
+                await ctx.connection.send_line(colorize("\nConfirm creation? (y/n): ", "GREEN"))
                 confirm = (await ctx.connection.readline()).lower()
 
                 if confirm not in ["yes", "y"]:
@@ -278,14 +261,10 @@ class CreateCommand(Command):
                 await session.commit()
 
                 await ctx.connection.send_line(
-                    colorize(
-                        f"\n✨ {name} has been created! ✨",
-                        "GREEN"
-                    )
+                    colorize(f"\n✨ {name} has been created! ✨", "GREEN")
                 )
                 await ctx.connection.send_line(
-                    "To start playing, type: " +
-                    colorize(f"play {name}", "CYAN")
+                    "To start playing, type: " + colorize(f"play {name}", "CYAN")
                 )
 
                 logger.info(
@@ -314,15 +293,11 @@ class PlayCommand(Command):
     async def execute(self, ctx: CommandContext) -> None:
         """Execute the play command."""
         if not ctx.session.user_id:
-            await ctx.connection.send_line(
-                colorize("You must be logged in to play.", "RED")
-            )
+            await ctx.connection.send_line(colorize("You must be logged in to play.", "RED"))
             return
 
         if len(ctx.args) < 1:
-            await ctx.connection.send_line(
-                colorize("Usage: play <name>", "YELLOW")
-            )
+            await ctx.connection.send_line(colorize("Usage: play <name>", "YELLOW"))
             return
 
         name = ctx.args[0]
@@ -331,10 +306,8 @@ class PlayCommand(Command):
             async with get_session() as session:
                 # Find character by name and user
                 result = await session.execute(
-                    select(Character)
-                    .where(
-                        Character.name == name,
-                        Character.user_id == UUID(ctx.session.user_id)
+                    select(Character).where(
+                        Character.name == name, Character.user_id == UUID(ctx.session.user_id)
                     )
                 )
                 character = result.scalar_one_or_none()
@@ -351,10 +324,7 @@ class PlayCommand(Command):
                     existing_session = ctx.engine.character_to_session[char_id_str]
                     if existing_session.id != ctx.session.id:
                         await ctx.connection.send_line(
-                            colorize(
-                                f"{name} is already being played in another session.",
-                                "RED"
-                            )
+                            colorize(f"{name} is already being played in another session.", "RED")
                         )
                         return
 
@@ -372,7 +342,7 @@ class PlayCommand(Command):
                     ctx.engine.broadcast_to_room(
                         character.current_room_id,
                         colorize(f"{name} has entered the world.", "CYAN"),
-                        exclude=ctx.session.id
+                        exclude=ctx.session.id,
                     )
 
                 await ctx.connection.send_line(
@@ -415,9 +385,7 @@ class DeleteCommand(Command):
             return
 
         if len(ctx.args) < 1:
-            await ctx.connection.send_line(
-                colorize("Usage: delete <name>", "YELLOW")
-            )
+            await ctx.connection.send_line(colorize("Usage: delete <name>", "YELLOW"))
             return
 
         name = ctx.args[0]
@@ -426,10 +394,8 @@ class DeleteCommand(Command):
             async with get_session() as session:
                 # Find character by name and user
                 result = await session.execute(
-                    select(Character)
-                    .where(
-                        Character.name == name,
-                        Character.user_id == UUID(ctx.session.user_id)
+                    select(Character).where(
+                        Character.name == name, Character.user_id == UUID(ctx.session.user_id)
                     )
                 )
                 character = result.scalar_one_or_none()
@@ -442,23 +408,15 @@ class DeleteCommand(Command):
 
                 # Confirmation
                 await ctx.connection.send_line(
-                    colorize(
-                        f"\n⚠️  WARNING: This will permanently delete {name}!",
-                        "RED"
-                    )
+                    colorize(f"\n⚠️  WARNING: This will permanently delete {name}!", "RED")
                 )
                 await ctx.connection.send_line(
-                    colorize(
-                        f"Type '{name}' exactly to confirm deletion: ",
-                        "YELLOW"
-                    )
+                    colorize(f"Type '{name}' exactly to confirm deletion: ", "YELLOW")
                 )
                 confirm = await ctx.connection.readline()
 
                 if confirm != name:
-                    await ctx.connection.send_line(
-                        colorize("Deletion cancelled.", "GREEN")
-                    )
+                    await ctx.connection.send_line(colorize("Deletion cancelled.", "GREEN"))
                     return
 
                 # Delete character
@@ -470,9 +428,7 @@ class DeleteCommand(Command):
                 if char_id_str in ctx.engine.character_to_session:
                     del ctx.engine.character_to_session[char_id_str]
 
-                await ctx.connection.send_line(
-                    colorize(f"\n{name} has been deleted.", "YELLOW")
-                )
+                await ctx.connection.send_line(colorize(f"\n{name} has been deleted.", "YELLOW"))
 
                 logger.info(
                     "character_deleted",

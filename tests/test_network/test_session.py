@@ -1,10 +1,8 @@
 """Tests for session management."""
 
-from datetime import datetime, timedelta, timezone
-from unittest.mock import MagicMock, Mock
+from datetime import UTC, datetime, timedelta
+from unittest.mock import Mock
 from uuid import UUID
-
-import pytest
 
 from waystone.network.connection import Connection
 from waystone.network.session import Session, SessionManager, SessionState
@@ -62,7 +60,7 @@ class TestSession:
         assert not session.is_expired(60)
 
         # Manually set last_activity to past
-        session.last_activity = datetime.now(timezone.utc) - timedelta(minutes=61)
+        session.last_activity = datetime.now(UTC) - timedelta(minutes=61)
 
         # Session should now be expired
         assert session.is_expired(60)
@@ -260,7 +258,7 @@ class TestSessionManager:
         mock_connection2.id = UUID("12345678-1234-5678-1234-567812345672")
         mock_connection2.ip_address = "127.0.0.2"
         expired_session = manager.create_session(mock_connection2)
-        expired_session.last_activity = datetime.now(timezone.utc) - timedelta(minutes=61)
+        expired_session.last_activity = datetime.now(UTC) - timedelta(minutes=61)
 
         # Verify both sessions exist
         assert manager.get_session_count() == 2

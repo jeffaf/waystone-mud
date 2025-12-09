@@ -2,14 +2,15 @@
 
 import enum
 import uuid
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
-from sqlalchemy import Enum, ForeignKey, Integer, String, Uuid
+from sqlalchemy import JSON, Enum, ForeignKey, Integer, String, Uuid
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base, TimestampMixin
 
 if TYPE_CHECKING:
+    from .item import ItemInstance
     from .user import User
 
 
@@ -130,10 +131,44 @@ class Character(Base, TimestampMixin):
         comment="Experience points",
     )
 
-    # Relationship to user
+    # Combat stats
+    current_hp: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        default=20,
+        server_default="20",
+        comment="Current hit points",
+    )
+
+    max_hp: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        default=20,
+        server_default="20",
+        comment="Maximum hit points",
+    )
+
+    # Equipment - maps slot name to item instance UUID
+    # Example: {"main_hand": "uuid-here", "body": "uuid-here"}
+    equipped: Mapped[dict[str, Any]] = mapped_column(
+        JSON,
+        nullable=False,
+        default=dict,
+        server_default="{}",
+        comment="Equipped items mapping slot to item instance UUID",
+    )
+
+    # Relationships
     user: Mapped["User"] = relationship(
         "User",
         back_populates="characters",
+    )
+
+    items: Mapped[list["ItemInstance"]] = relationship(
+        "ItemInstance",
+        back_populates="owner",
+        foreign_keys="ItemInstance.owner_id",
+        cascade="all, delete-orphan",
     )
 
     def __repr__(self) -> str:

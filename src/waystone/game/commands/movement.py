@@ -50,9 +50,7 @@ class MoveCommand(Command):
                 character = result.scalar_one_or_none()
 
                 if not character:
-                    await ctx.connection.send_line(
-                        colorize("Character not found.", "RED")
-                    )
+                    await ctx.connection.send_line(colorize("Character not found.", "RED"))
                     return
 
                 # Get current room
@@ -79,9 +77,7 @@ class MoveCommand(Command):
                 # Get destination room
                 destination_room = ctx.engine.world.get(destination_id)
                 if not destination_room:
-                    await ctx.connection.send_line(
-                        colorize("That exit leads nowhere!", "RED")
-                    )
+                    await ctx.connection.send_line(colorize("That exit leads nowhere!", "RED"))
                     logger.error(
                         "exit_to_nonexistent_room",
                         from_room=character.current_room_id,
@@ -97,7 +93,7 @@ class MoveCommand(Command):
                 ctx.engine.broadcast_to_room(
                     character.current_room_id,
                     colorize(f"{character.name} leaves {self.direction}.", "CYAN"),
-                    exclude=ctx.session.id
+                    exclude=ctx.session.id,
                 )
 
                 # Update character location
@@ -111,7 +107,7 @@ class MoveCommand(Command):
                 ctx.engine.broadcast_to_room(
                     destination_id,
                     colorize(f"{character.name} arrives.", "CYAN"),
-                    exclude=ctx.session.id
+                    exclude=ctx.session.id,
                 )
 
                 # Show new room to player
@@ -131,13 +127,12 @@ class MoveCommand(Command):
 
         except Exception as e:
             logger.error("movement_failed", error=str(e), exc_info=True)
-            await ctx.connection.send_line(
-                colorize("Movement failed. Please try again.", "RED")
-            )
+            await ctx.connection.send_line(colorize("Movement failed. Please try again.", "RED"))
 
 
 class NorthCommand(MoveCommand):
     """Move north."""
+
     name = "north"
     aliases = ["n"]
     help_text = "north (n) - Move north"
@@ -146,6 +141,7 @@ class NorthCommand(MoveCommand):
 
 class SouthCommand(MoveCommand):
     """Move south."""
+
     name = "south"
     aliases = ["s"]
     help_text = "south (s) - Move south"
@@ -154,6 +150,7 @@ class SouthCommand(MoveCommand):
 
 class EastCommand(MoveCommand):
     """Move east."""
+
     name = "east"
     aliases = ["e"]
     help_text = "east (e) - Move east"
@@ -162,6 +159,7 @@ class EastCommand(MoveCommand):
 
 class WestCommand(MoveCommand):
     """Move west."""
+
     name = "west"
     aliases = ["w"]
     help_text = "west (w) - Move west"
@@ -170,6 +168,7 @@ class WestCommand(MoveCommand):
 
 class UpCommand(MoveCommand):
     """Move up."""
+
     name = "up"
     aliases = ["u"]
     help_text = "up (u) - Move up"
@@ -178,6 +177,7 @@ class UpCommand(MoveCommand):
 
 class DownCommand(MoveCommand):
     """Move down."""
+
     name = "down"
     aliases = ["d"]
     help_text = "down (d) - Move down"
@@ -186,6 +186,7 @@ class DownCommand(MoveCommand):
 
 class NortheastCommand(MoveCommand):
     """Move northeast."""
+
     name = "northeast"
     aliases = ["ne"]
     help_text = "northeast (ne) - Move northeast"
@@ -194,6 +195,7 @@ class NortheastCommand(MoveCommand):
 
 class NorthwestCommand(MoveCommand):
     """Move northwest."""
+
     name = "northwest"
     aliases = ["nw"]
     help_text = "northwest (nw) - Move northwest"
@@ -202,6 +204,7 @@ class NorthwestCommand(MoveCommand):
 
 class SoutheastCommand(MoveCommand):
     """Move southeast."""
+
     name = "southeast"
     aliases = ["se"]
     help_text = "southeast (se) - Move southeast"
@@ -210,6 +213,7 @@ class SoutheastCommand(MoveCommand):
 
 class SouthwestCommand(MoveCommand):
     """Move southwest."""
+
     name = "southwest"
     aliases = ["sw"]
     help_text = "southwest (sw) - Move southwest"
@@ -227,9 +231,7 @@ class GoCommand(Command):
     async def execute(self, ctx: CommandContext) -> None:
         """Execute the go command."""
         if len(ctx.args) < 1:
-            await ctx.connection.send_line(
-                colorize("Usage: go <direction>", "YELLOW")
-            )
+            await ctx.connection.send_line(colorize("Usage: go <direction>", "YELLOW"))
             return
 
         # Normalize direction
@@ -252,9 +254,7 @@ class GoCommand(Command):
 
         move_cmd = move_commands.get(direction)
         if not move_cmd:
-            await ctx.connection.send_line(
-                colorize(f"Unknown direction: {direction}", "RED")
-            )
+            await ctx.connection.send_line(colorize(f"Unknown direction: {direction}", "RED"))
             return
 
         await move_cmd.execute(ctx)
@@ -285,9 +285,7 @@ class LookCommand(Command):
                 character = result.scalar_one_or_none()
 
                 if not character:
-                    await ctx.connection.send_line(
-                        colorize("Character not found.", "RED")
-                    )
+                    await ctx.connection.send_line(colorize("Character not found.", "RED"))
                     return
 
                 # Get current room
@@ -302,10 +300,7 @@ class LookCommand(Command):
                 await ctx.connection.send_line(room.format_description())
 
                 # Show other players in room
-                other_players = [
-                    pid for pid in room.players
-                    if pid != ctx.session.character_id
-                ]
+                other_players = [pid for pid in room.players if pid != ctx.session.character_id]
 
                 if other_players:
                     await ctx.connection.send_line("")
@@ -318,9 +313,7 @@ class LookCommand(Command):
                     characters = result.scalars().all()
 
                     for char in characters:
-                        await ctx.connection.send_line(
-                            colorize(f"{char.name} is here.", "CYAN")
-                        )
+                        await ctx.connection.send_line(colorize(f"{char.name} is here.", "CYAN"))
 
         except Exception as e:
             logger.error("look_command_failed", error=str(e), exc_info=True)
@@ -354,9 +347,7 @@ class ExitsCommand(Command):
                 character = result.scalar_one_or_none()
 
                 if not character:
-                    await ctx.connection.send_line(
-                        colorize("Character not found.", "RED")
-                    )
+                    await ctx.connection.send_line(colorize("Character not found.", "RED"))
                     return
 
                 # Get current room
@@ -374,15 +365,12 @@ class ExitsCommand(Command):
                     )
                     return
 
-                await ctx.connection.send_line(
-                    colorize("\nObvious exits:", "CYAN")
-                )
+                await ctx.connection.send_line(colorize("\nObvious exits:", "CYAN"))
                 for direction, dest_id in sorted(room.exits.items()):
                     dest_room = ctx.engine.world.get(dest_id)
                     if dest_room:
                         await ctx.connection.send_line(
-                            f"  {colorize(direction.capitalize(), 'GREEN')} - "
-                            f"{dest_room.name}"
+                            f"  {colorize(direction.capitalize(), 'GREEN')} - {dest_room.name}"
                         )
                     else:
                         await ctx.connection.send_line(

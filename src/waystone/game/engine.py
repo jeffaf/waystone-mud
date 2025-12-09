@@ -1,7 +1,6 @@
 """Main game engine for Waystone MUD."""
 
 import asyncio
-from pathlib import Path
 from uuid import UUID
 
 import structlog
@@ -145,6 +144,12 @@ class GameEngine:
             DeleteCommand,
             PlayCommand,
         )
+        from waystone.game.commands.combat import (
+            AttackCommand,
+            CombatStatusCommand,
+            DefendCommand,
+            FleeCommand,
+        )
         from waystone.game.commands.communication import (
             ChatCommand,
             EmoteCommand,
@@ -156,6 +161,16 @@ class GameEngine:
             ScoreCommand,
             TimeCommand,
             WhoCommand,
+        )
+        from waystone.game.commands.inventory import (
+            DropCommand,
+            EquipCommand,
+            EquipmentCommand,
+            ExamineCommand,
+            GetCommand,
+            GiveCommand,
+            InventoryCommand,
+            UnequipCommand,
         )
         from waystone.game.commands.movement import (
             DownCommand,
@@ -208,11 +223,27 @@ class GameEngine:
         registry.register(ChatCommand())
         registry.register(TellCommand())
 
+        # Combat commands
+        registry.register(AttackCommand())
+        registry.register(DefendCommand())
+        registry.register(FleeCommand())
+        registry.register(CombatStatusCommand())
+
         # Info commands
         registry.register(HelpCommand())
         registry.register(WhoCommand())
         registry.register(ScoreCommand())
         registry.register(TimeCommand())
+
+        # Inventory and equipment commands
+        registry.register(InventoryCommand())
+        registry.register(GetCommand())
+        registry.register(DropCommand())
+        registry.register(ExamineCommand())
+        registry.register(GiveCommand())
+        registry.register(EquipCommand())
+        registry.register(UnequipCommand())
+        registry.register(EquipmentCommand())
 
         logger.info(
             "commands_registered",
@@ -239,18 +270,15 @@ class GameEngine:
         try:
             # Show welcome banner
             await connection.send_line(WELCOME_BANNER)
-            await connection.send_line(
-                colorize(
-                    "Type 'help' for a list of commands.\n",
-                    "DIM"
-                )
-            )
+            await connection.send_line(colorize("Type 'help' for a list of commands.\n", "DIM"))
             await connection.send_line(
                 "To get started:\n"
-                "  " + colorize("register <username> <password> <email>", "YELLOW") +
-                " - Create a new account\n"
-                "  " + colorize("login <username> <password>", "YELLOW") +
-                " - Log into existing account\n"
+                "  "
+                + colorize("register <username> <password> <email>", "YELLOW")
+                + " - Create a new account\n"
+                "  "
+                + colorize("login <username> <password>", "YELLOW")
+                + " - Log into existing account\n"
             )
 
             # Main command loop
@@ -365,9 +393,7 @@ class GameEngine:
         command = registry.get(command_name)
 
         if not command:
-            await session.connection.send_line(
-                colorize(f"Unknown command: {command_name}", "RED")
-            )
+            await session.connection.send_line(colorize(f"Unknown command: {command_name}", "RED"))
             await session.connection.send_line(
                 "Type " + colorize("help", "YELLOW") + " for a list of commands."
             )
@@ -376,10 +402,7 @@ class GameEngine:
         # Check if command requires a character
         if command.requires_character and not session.character_id:
             await session.connection.send_line(
-                colorize(
-                    "You must be playing a character to use this command.",
-                    "RED"
-                )
+                colorize("You must be playing a character to use this command.", "RED")
             )
             return
 
@@ -417,18 +440,10 @@ class GameEngine:
                 exc_info=True,
             )
             await session.connection.send_line(
-                colorize(
-                    "An error occurred while executing the command.",
-                    "RED"
-                )
+                colorize("An error occurred while executing the command.", "RED")
             )
 
-    def broadcast_to_room(
-        self,
-        room_id: str,
-        message: str,
-        exclude: UUID | None = None
-    ) -> None:
+    def broadcast_to_room(self, room_id: str, message: str, exclude: UUID | None = None) -> None:
         """
         Send a message to all players in a room.
 
@@ -447,9 +462,7 @@ class GameEngine:
 
             if session and session.id != exclude:
                 try:
-                    asyncio.create_task(
-                        session.connection.send_line(message)
-                    )
+                    asyncio.create_task(session.connection.send_line(message))
                 except Exception as e:
                     logger.error(
                         "broadcast_failed",

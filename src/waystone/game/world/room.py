@@ -4,7 +4,6 @@ Room module for Waystone MUD.
 Defines the Room class representing a location in the game world.
 """
 
-from typing import Dict, Set, Optional
 from pydantic import BaseModel, Field
 
 
@@ -26,27 +25,23 @@ class Room(BaseModel):
     name: str = Field(..., description="Display name of the room")
     area: str = Field(..., description="Area/zone this room belongs to")
     description: str = Field(..., description="Full room description")
-    exits: Dict[str, str] = Field(
-        default_factory=dict,
-        description="Maps direction (e.g., 'north') to room_id"
+    exits: dict[str, str] = Field(
+        default_factory=dict, description="Maps direction (e.g., 'north') to room_id"
     )
-    properties: Dict[str, bool] = Field(
-        default_factory=dict,
-        description="Boolean properties (outdoor, lit, safe_zone, etc.)"
+    properties: dict[str, bool] = Field(
+        default_factory=dict, description="Boolean properties (outdoor, lit, safe_zone, etc.)"
     )
-    players: Set[str] = Field(
-        default_factory=set,
-        description="Character IDs of players currently in this room"
+    players: set[str] = Field(
+        default_factory=set, description="Character IDs of players currently in this room"
     )
 
     class Config:
         """Pydantic configuration."""
-        # Allow sets to be serialized properly
-        json_encoders = {
-            set: list
-        }
 
-    def get_exit(self, direction: str) -> Optional[str]:
+        # Allow sets to be serialized properly
+        json_encoders = {set: list}
+
+    def get_exit(self, direction: str) -> str | None:
         """
         Get the room_id for a given direction.
 

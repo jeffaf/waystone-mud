@@ -36,7 +36,7 @@ def main():
     print("Sample Room Display")
     print("=" * 70)
 
-    test_room = rooms['university_main_gates']
+    test_room = rooms["university_main_gates"]
     print(test_room.format_description())
 
     # Test navigation
@@ -44,26 +44,26 @@ def main():
     print("Navigation Test: University → Imre")
     print("=" * 70)
 
-    current_room = rooms['university_main_gates']
+    current_room = rooms["university_main_gates"]
     print(f"\n📍 Current location: {current_room.name}")
     print(f"   Exits: {', '.join(current_room.get_available_exits())}")
 
     # Go south to Stonebridge
-    next_room_id = current_room.get_exit('south')
+    next_room_id = current_room.get_exit("south")
     if next_room_id:
         current_room = rooms[next_room_id]
         print(f"\n📍 Moved south to: {current_room.name}")
         print(f"   Exits: {', '.join(current_room.get_available_exits())}")
 
         # Go south to Imre Main Square
-        next_room_id = current_room.get_exit('south')
+        next_room_id = current_room.get_exit("south")
         if next_room_id:
             current_room = rooms[next_room_id]
             print(f"\n📍 Moved south to: {current_room.name}")
             print(f"   Exits: {', '.join(current_room.get_available_exits())}")
 
             # Show all connected rooms
-            print(f"\n   From here you can access:")
+            print("\n   From here you can access:")
             for direction, dest_id in sorted(current_room.exits.items()):
                 dest = rooms[dest_id]
                 print(f"     {direction:10} → {dest.name}")
@@ -74,10 +74,10 @@ def main():
     print("=" * 70)
 
     test_rooms = [
-        'university_main_gates',
-        'university_underthing_entrance',
-        'imre_eolian',
-        'imre_devi_shop'
+        "university_main_gates",
+        "university_underthing_entrance",
+        "imre_eolian",
+        "imre_devi_shop",
     ]
 
     for room_id in test_rooms:
@@ -95,7 +95,7 @@ def main():
     print("=" * 70)
 
     # Simulate players moving between rooms
-    room = rooms['imre_eolian']
+    room = rooms["imre_eolian"]
     print(f"\n{room.name}")
     print(f"   Players in room: {room.get_player_count()}")
 

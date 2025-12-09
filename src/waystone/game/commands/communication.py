@@ -31,9 +31,7 @@ class SayCommand(Command):
             return
 
         if len(ctx.args) < 1:
-            await ctx.connection.send_line(
-                colorize("Say what?", "YELLOW")
-            )
+            await ctx.connection.send_line(colorize("Say what?", "YELLOW"))
             return
 
         message = " ".join(ctx.args)
@@ -47,21 +45,17 @@ class SayCommand(Command):
                 character = result.scalar_one_or_none()
 
                 if not character:
-                    await ctx.connection.send_line(
-                        colorize("Character not found.", "RED")
-                    )
+                    await ctx.connection.send_line(colorize("Character not found.", "RED"))
                     return
 
                 # Send to self
-                await ctx.connection.send_line(
-                    colorize(f'You say, "{message}"', "YELLOW")
-                )
+                await ctx.connection.send_line(colorize(f'You say, "{message}"', "YELLOW"))
 
                 # Broadcast to room
                 ctx.engine.broadcast_to_room(
                     character.current_room_id,
                     colorize(f'{character.name} says, "{message}"', "YELLOW"),
-                    exclude=ctx.session.id
+                    exclude=ctx.session.id,
                 )
 
                 logger.debug(
@@ -73,9 +67,7 @@ class SayCommand(Command):
 
         except Exception as e:
             logger.error("say_command_failed", error=str(e), exc_info=True)
-            await ctx.connection.send_line(
-                colorize("Failed to speak. Please try again.", "RED")
-            )
+            await ctx.connection.send_line(colorize("Failed to speak. Please try again.", "RED"))
 
 
 class EmoteCommand(Command):
@@ -95,9 +87,7 @@ class EmoteCommand(Command):
             return
 
         if len(ctx.args) < 1:
-            await ctx.connection.send_line(
-                colorize("Emote what?", "YELLOW")
-            )
+            await ctx.connection.send_line(colorize("Emote what?", "YELLOW"))
             return
 
         action = " ".join(ctx.args)
@@ -111,9 +101,7 @@ class EmoteCommand(Command):
                 character = result.scalar_one_or_none()
 
                 if not character:
-                    await ctx.connection.send_line(
-                        colorize("Character not found.", "RED")
-                    )
+                    await ctx.connection.send_line(colorize("Character not found.", "RED"))
                     return
 
                 # Format emote message
@@ -124,9 +112,7 @@ class EmoteCommand(Command):
 
                 # Broadcast to room
                 ctx.engine.broadcast_to_room(
-                    character.current_room_id,
-                    emote_msg,
-                    exclude=ctx.session.id
+                    character.current_room_id, emote_msg, exclude=ctx.session.id
                 )
 
                 logger.debug(
@@ -138,9 +124,7 @@ class EmoteCommand(Command):
 
         except Exception as e:
             logger.error("emote_command_failed", error=str(e), exc_info=True)
-            await ctx.connection.send_line(
-                colorize("Failed to emote. Please try again.", "RED")
-            )
+            await ctx.connection.send_line(colorize("Failed to emote. Please try again.", "RED"))
 
 
 class ChatCommand(Command):
@@ -155,9 +139,7 @@ class ChatCommand(Command):
     async def execute(self, ctx: CommandContext) -> None:
         """Execute the chat command."""
         if len(ctx.args) < 1:
-            await ctx.connection.send_line(
-                colorize("Chat what?", "YELLOW")
-            )
+            await ctx.connection.send_line(colorize("Chat what?", "YELLOW"))
             return
 
         message = " ".join(ctx.args)
@@ -168,9 +150,7 @@ class ChatCommand(Command):
             try:
                 async with get_session() as session:
                     result = await session.execute(
-                        select(Character).where(
-                            Character.id == UUID(ctx.session.character_id)
-                        )
+                        select(Character).where(Character.id == UUID(ctx.session.character_id))
                     )
                     character = result.scalar_one_or_none()
                     if character:
@@ -181,6 +161,7 @@ class ChatCommand(Command):
             try:
                 async with get_session() as session:
                     from waystone.database.models import User
+
                     result = await session.execute(
                         select(User).where(User.id == UUID(ctx.session.user_id))
                     )
@@ -192,24 +173,24 @@ class ChatCommand(Command):
 
         # Format message
         chat_msg = (
-            colorize("[CHAT] ", "CYAN") +
-            colorize(sender_name, "BOLD") +
-            colorize(": ", "CYAN") +
-            message
+            colorize("[CHAT] ", "CYAN")
+            + colorize(sender_name, "BOLD")
+            + colorize(": ", "CYAN")
+            + message
         )
 
         # Send to self
         await ctx.connection.send_line(chat_msg)
 
         # Broadcast to all sessions
-        for session in ctx.engine.session_manager.get_all_sessions():
-            if session.id != ctx.session.id and session.connection:
+        for player_session in ctx.engine.session_manager.get_all_sessions():
+            if player_session.id != ctx.session.id and player_session.connection:
                 try:
-                    await session.connection.send_line(chat_msg)
+                    await player_session.connection.send_line(chat_msg)
                 except Exception as e:
                     logger.error(
                         "chat_broadcast_failed",
-                        target_session=str(session.id),
+                        target_session=str(player_session.id),
                         error=str(e),
                     )
 
@@ -231,9 +212,7 @@ class TellCommand(Command):
     async def execute(self, ctx: CommandContext) -> None:
         """Execute the tell command."""
         if len(ctx.args) < 2:
-            await ctx.connection.send_line(
-                colorize("Usage: tell <player> <message>", "YELLOW")
-            )
+            await ctx.connection.send_line(colorize("Usage: tell <player> <message>", "YELLOW"))
             return
 
         target_name = ctx.args[0]
@@ -245,9 +224,7 @@ class TellCommand(Command):
             try:
                 async with get_session() as session:
                     result = await session.execute(
-                        select(Character).where(
-                            Character.id == UUID(ctx.session.character_id)
-                        )
+                        select(Character).where(Character.id == UUID(ctx.session.character_id))
                     )
                     character = result.scalar_one_or_none()
                     if character:
@@ -270,9 +247,7 @@ class TellCommand(Command):
                     return
 
                 # Find target session
-                target_session = ctx.engine.character_to_session.get(
-                    str(target_char.id)
-                )
+                target_session = ctx.engine.character_to_session.get(str(target_char.id))
 
                 if not target_session:
                     await ctx.connection.send_line(
@@ -282,14 +257,14 @@ class TellCommand(Command):
 
                 # Send to target
                 await target_session.connection.send_line(
-                    colorize(f"{sender_name} tells you, ", "MAGENTA") +
-                    colorize(f'"{message}"', "WHITE")
+                    colorize(f"{sender_name} tells you, ", "MAGENTA")
+                    + colorize(f'"{message}"', "WHITE")
                 )
 
                 # Confirm to sender
                 await ctx.connection.send_line(
-                    colorize(f"You tell {target_name}, ", "MAGENTA") +
-                    colorize(f'"{message}"', "WHITE")
+                    colorize(f"You tell {target_name}, ", "MAGENTA")
+                    + colorize(f'"{message}"', "WHITE")
                 )
 
                 logger.debug(

@@ -4,24 +4,27 @@ World loader module for Waystone MUD.
 Handles loading and validating room data from YAML files.
 """
 
-import yaml
 from pathlib import Path
-from typing import Dict, List, Set, Any
+from typing import Any
+
+import yaml
 
 from .room import Room
 
 
 class WorldLoadError(Exception):
     """Raised when there's an error loading world data."""
+
     pass
 
 
 class RoomValidationError(Exception):
     """Raised when room validation fails."""
+
     pass
 
 
-def load_yaml_file(file_path: Path) -> List[Dict[str, Any]]:
+def load_yaml_file(file_path: Path) -> list[dict[str, Any]]:
     """
     Load a YAML file containing room definitions.
 
@@ -35,16 +38,16 @@ def load_yaml_file(file_path: Path) -> List[Dict[str, Any]]:
         WorldLoadError: If the file cannot be loaded or parsed
     """
     try:
-        with open(file_path, 'r', encoding='utf-8') as f:
+        with open(file_path, encoding="utf-8") as f:
             data = yaml.safe_load(f)
 
         if not data:
             raise WorldLoadError(f"Empty YAML file: {file_path}")
 
-        if 'rooms' not in data:
+        if "rooms" not in data:
             raise WorldLoadError(f"Missing 'rooms' key in {file_path}")
 
-        rooms = data['rooms']
+        rooms = data["rooms"]
         if not isinstance(rooms, list):
             raise WorldLoadError(f"'rooms' must be a list in {file_path}")
 
@@ -58,7 +61,7 @@ def load_yaml_file(file_path: Path) -> List[Dict[str, Any]]:
         raise WorldLoadError(f"Error loading {file_path}: {e}")
 
 
-def validate_room_data(room_data: Dict[str, Any], file_path: Path) -> None:
+def validate_room_data(room_data: dict[str, Any], file_path: Path) -> None:
     """
     Validate that a room dictionary has all required fields.
 
@@ -69,29 +72,29 @@ def validate_room_data(room_data: Dict[str, Any], file_path: Path) -> None:
     Raises:
         RoomValidationError: If required fields are missing
     """
-    required_fields = ['id', 'name', 'area', 'description']
+    required_fields = ["id", "name", "area", "description"]
 
     for field in required_fields:
         if field not in room_data:
-            room_id = room_data.get('id', 'unknown')
+            room_id = room_data.get("id", "unknown")
             raise RoomValidationError(
                 f"Room '{room_id}' in {file_path} missing required field: {field}"
             )
 
     # Validate exits is a dictionary if present
-    if 'exits' in room_data and not isinstance(room_data['exits'], dict):
+    if "exits" in room_data and not isinstance(room_data["exits"], dict):
         raise RoomValidationError(
             f"Room '{room_data['id']}' in {file_path} has invalid exits (must be a dict)"
         )
 
     # Validate properties is a dictionary if present
-    if 'properties' in room_data and not isinstance(room_data['properties'], dict):
+    if "properties" in room_data and not isinstance(room_data["properties"], dict):
         raise RoomValidationError(
             f"Room '{room_data['id']}' in {file_path} has invalid properties (must be a dict)"
         )
 
 
-def create_room_from_data(room_data: Dict[str, Any]) -> Room:
+def create_room_from_data(room_data: dict[str, Any]) -> Room:
     """
     Create a Room instance from dictionary data.
 
@@ -110,7 +113,7 @@ def create_room_from_data(room_data: Dict[str, Any]) -> Room:
         raise RoomValidationError(f"Failed to create room '{room_data.get('id', 'unknown')}': {e}")
 
 
-def load_rooms_from_directory(directory: Path) -> Dict[str, Room]:
+def load_rooms_from_directory(directory: Path) -> dict[str, Room]:
     """
     Load all room YAML files from a directory.
 
@@ -130,7 +133,7 @@ def load_rooms_from_directory(directory: Path) -> Dict[str, Room]:
     if not directory.is_dir():
         raise WorldLoadError(f"Not a directory: {directory}")
 
-    rooms: Dict[str, Room] = {}
+    rooms: dict[str, Room] = {}
     yaml_files = list(directory.glob("*.yaml")) + list(directory.glob("*.yml"))
 
     if not yaml_files:
@@ -145,16 +148,14 @@ def load_rooms_from_directory(directory: Path) -> Dict[str, Room]:
 
             # Check for duplicate room IDs
             if room.id in rooms:
-                raise RoomValidationError(
-                    f"Duplicate room ID '{room.id}' found in {yaml_file}"
-                )
+                raise RoomValidationError(f"Duplicate room ID '{room.id}' found in {yaml_file}")
 
             rooms[room.id] = room
 
     return rooms
 
 
-def validate_exits(rooms: Dict[str, Room]) -> List[str]:
+def validate_exits(rooms: dict[str, Room]) -> list[str]:
     """
     Validate that all room exits are bidirectional and point to existing rooms.
 
@@ -167,7 +168,7 @@ def validate_exits(rooms: Dict[str, Room]) -> List[str]:
     Raises:
         RoomValidationError: If critical exit validation fails
     """
-    warnings: List[str] = []
+    warnings: list[str] = []
     all_room_ids = set(rooms.keys())
 
     for room_id, room in rooms.items():
@@ -207,23 +208,23 @@ def get_reverse_direction(direction: str) -> str | None:
         The reverse direction (e.g., "south"), or None if not found
     """
     reverse_map = {
-        'north': 'south',
-        'south': 'north',
-        'east': 'west',
-        'west': 'east',
-        'northeast': 'southwest',
-        'northwest': 'southeast',
-        'southeast': 'northwest',
-        'southwest': 'northeast',
-        'up': 'down',
-        'down': 'up',
-        'in': 'out',
-        'out': 'in',
+        "north": "south",
+        "south": "north",
+        "east": "west",
+        "west": "east",
+        "northeast": "southwest",
+        "northwest": "southeast",
+        "southeast": "northwest",
+        "southwest": "northeast",
+        "up": "down",
+        "down": "up",
+        "in": "out",
+        "out": "in",
     }
     return reverse_map.get(direction.lower())
 
 
-def load_all_rooms(data_dir: Path | None = None) -> Dict[str, Room]:
+def load_all_rooms(data_dir: Path | None = None) -> dict[str, Room]:
     """
     Load all rooms from the data directory and validate them.
 
@@ -259,7 +260,7 @@ def load_all_rooms(data_dir: Path | None = None) -> Dict[str, Room]:
     return rooms
 
 
-def get_room_by_id(rooms: Dict[str, Room], room_id: str) -> Room | None:
+def get_room_by_id(rooms: dict[str, Room], room_id: str) -> Room | None:
     """
     Get a room by its ID.
 
@@ -273,7 +274,7 @@ def get_room_by_id(rooms: Dict[str, Room], room_id: str) -> Room | None:
     return rooms.get(room_id)
 
 
-def get_rooms_by_area(rooms: Dict[str, Room], area: str) -> List[Room]:
+def get_rooms_by_area(rooms: dict[str, Room], area: str) -> list[Room]:
     """
     Get all rooms in a specific area.
 

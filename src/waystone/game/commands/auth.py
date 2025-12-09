@@ -45,7 +45,7 @@ class RegisterCommand(Command):
                 colorize(
                     "Invalid username. Must be 3-20 characters, start with a letter, "
                     "and contain only letters, numbers, and underscores.",
-                    "RED"
+                    "RED",
                 )
             )
             return
@@ -59,18 +59,14 @@ class RegisterCommand(Command):
 
         # Validate email
         if not EMAIL_PATTERN.match(email):
-            await ctx.connection.send_line(
-                colorize("Invalid email address.", "RED")
-            )
+            await ctx.connection.send_line(colorize("Invalid email address.", "RED"))
             return
 
         # Create user in database
         try:
             async with get_session() as session:
                 # Check if username exists
-                result = await session.execute(
-                    select(User).where(User.username == username)
-                )
+                result = await session.execute(select(User).where(User.username == username))
                 if result.scalar_one_or_none():
                     await ctx.connection.send_line(
                         colorize(f"Username '{username}' is already taken.", "RED")
@@ -78,9 +74,7 @@ class RegisterCommand(Command):
                     return
 
                 # Check if email exists
-                result = await session.execute(
-                    select(User).where(User.email == email)
-                )
+                result = await session.execute(select(User).where(User.email == email))
                 if result.scalar_one_or_none():
                     await ctx.connection.send_line(
                         colorize("Email address is already registered.", "RED")
@@ -97,14 +91,11 @@ class RegisterCommand(Command):
                 await session.commit()
 
                 await ctx.connection.send_line(
-                    colorize(
-                        f"\nAccount created successfully! Welcome, {username}!",
-                        "GREEN"
-                    )
+                    colorize(f"\nAccount created successfully! Welcome, {username}!", "GREEN")
                 )
                 await ctx.connection.send_line(
-                    colorize("You can now log in with: ", "CYAN") +
-                    colorize(f"login {username} <password>", "YELLOW")
+                    colorize("You can now log in with: ", "CYAN")
+                    + colorize(f"login {username} <password>", "YELLOW")
                 )
 
                 logger.info(
@@ -133,9 +124,7 @@ class LoginCommand(Command):
     async def execute(self, ctx: CommandContext) -> None:
         """Execute the login command."""
         if len(ctx.args) < 2:
-            await ctx.connection.send_line(
-                colorize("Usage: login <username> <password>", "YELLOW")
-            )
+            await ctx.connection.send_line(colorize("Usage: login <username> <password>", "YELLOW"))
             return
 
         username = ctx.args[0]
@@ -144,37 +133,30 @@ class LoginCommand(Command):
         try:
             async with get_session() as session:
                 # Find user by username
-                result = await session.execute(
-                    select(User).where(User.username == username)
-                )
+                result = await session.execute(select(User).where(User.username == username))
                 user = result.scalar_one_or_none()
 
                 if not user:
-                    await ctx.connection.send_line(
-                        colorize("Invalid username or password.", "RED")
-                    )
+                    await ctx.connection.send_line(colorize("Invalid username or password.", "RED"))
                     return
 
                 # Verify password
                 if not user.verify_password(password):
-                    await ctx.connection.send_line(
-                        colorize("Invalid username or password.", "RED")
-                    )
+                    await ctx.connection.send_line(colorize("Invalid username or password.", "RED"))
                     return
 
                 # Set user in session
                 ctx.session.set_user(str(user.id))
                 ctx.session.set_state(SessionState.AUTHENTICATING)
 
-                await ctx.connection.send_line(
-                    colorize(f"\nWelcome back, {username}!", "GREEN")
-                )
+                await ctx.connection.send_line(colorize(f"\nWelcome back, {username}!", "GREEN"))
                 await ctx.connection.send_line("")
                 await ctx.connection.send_line(
-                    "Type " + colorize("characters", "YELLOW") +
-                    " to list your characters, or " +
-                    colorize("create <name>", "YELLOW") +
-                    " to create a new one."
+                    "Type "
+                    + colorize("characters", "YELLOW")
+                    + " to list your characters, or "
+                    + colorize("create <name>", "YELLOW")
+                    + " to create a new one."
                 )
 
                 logger.info(
@@ -186,9 +168,7 @@ class LoginCommand(Command):
 
         except Exception as e:
             logger.error("login_failed", error=str(e), exc_info=True)
-            await ctx.connection.send_line(
-                colorize("Login failed. Please try again.", "RED")
-            )
+            await ctx.connection.send_line(colorize("Login failed. Please try again.", "RED"))
 
 
 class LogoutCommand(Command):
@@ -224,12 +204,9 @@ class LogoutCommand(Command):
         ctx.session.character_id = None
         ctx.session.set_state(SessionState.CONNECTED)
 
+        await ctx.connection.send_line(colorize(f"\nGoodbye, {username}!", "CYAN"))
         await ctx.connection.send_line(
-            colorize(f"\nGoodbye, {username}!", "CYAN")
-        )
-        await ctx.connection.send_line(
-            "Type " + colorize("login <username> <password>", "YELLOW") +
-            " to log back in."
+            "Type " + colorize("login <username> <password>", "YELLOW") + " to log back in."
         )
 
         logger.info(
@@ -258,6 +235,7 @@ class QuitCommand(Command):
                 try:
                     async with get_session() as session:
                         from waystone.database.models import Character
+
                         result = await session.execute(
                             select(Character).where(Character.id == char_id)
                         )

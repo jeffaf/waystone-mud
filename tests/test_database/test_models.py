@@ -29,9 +29,7 @@ async def db_session():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
-    async_session = sessionmaker(
-        engine, class_=AsyncSession, expire_on_commit=False
-    )
+    async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
     async with async_session() as session:
         yield session
@@ -344,9 +342,7 @@ class TestCharacterModel:
         await db_session.commit()
 
         # Character should be deleted too
-        result = await db_session.execute(
-            select(Character).where(Character.user_id == user_id)
-        )
+        result = await db_session.execute(select(Character).where(Character.user_id == user_id))
         characters = result.scalars().all()
         assert len(characters) == 0
 

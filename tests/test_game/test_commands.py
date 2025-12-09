@@ -2,7 +2,7 @@
 
 import asyncio
 import uuid
-from typing import AsyncGenerator
+from collections.abc import AsyncGenerator
 from unittest.mock import AsyncMock, Mock
 
 import pytest
@@ -11,8 +11,8 @@ from sqlalchemy import select
 from waystone.database.engine import get_session, init_db
 from waystone.database.models import Character, CharacterBackground, User
 from waystone.game.commands.auth import LoginCommand, RegisterCommand
-from waystone.game.commands.base import CommandContext, CommandRegistry, get_registry
-from waystone.game.commands.character import CharactersCommand, CreateCommand
+from waystone.game.commands.base import CommandContext, CommandRegistry
+from waystone.game.commands.character import CharactersCommand
 from waystone.game.commands.movement import LookCommand, NorthCommand
 from waystone.game.engine import GameEngine
 from waystone.game.world import Room
@@ -26,6 +26,7 @@ async def test_engine() -> AsyncGenerator[GameEngine, None]:
 
     # Reset global registry before each test
     import waystone.game.commands.base as base_module
+
     base_module._registry = None
 
     engine = GameEngine()
@@ -120,9 +121,7 @@ async def test_register_command(
 
     # Verify user was created
     async with get_session() as session:
-        result = await session.execute(
-            select(User).where(User.username == "testuser")
-        )
+        result = await session.execute(select(User).where(User.username == "testuser"))
         user = result.scalar_one_or_none()
 
         assert user is not None
@@ -304,9 +303,7 @@ async def test_movement_command(
 
     # Verify character moved to new room
     async with get_session() as session:
-        result = await session.execute(
-            select(Character).where(Character.id == uuid.UUID(char_id))
-        )
+        result = await session.execute(select(Character).where(Character.id == uuid.UUID(char_id)))
         character = result.scalar_one_or_none()
 
         assert character is not None

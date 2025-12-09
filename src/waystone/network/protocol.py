@@ -23,21 +23,21 @@ ANSI_ESCAPE_PATTERN: Final[re.Pattern[str]] = re.compile(r"\x1b\[[0-9;]*m")
 
 # Welcome banner - using ASCII art for maximum compatibility
 WELCOME_BANNER: Final[str] = f"""
-{ANSI_COLORS['CYAN']}{ANSI_COLORS['BOLD']}
+{ANSI_COLORS["CYAN"]}{ANSI_COLORS["BOLD"]}
  __        __             _
  \\ \\      / /_ _ _   _ __| |_ ___  _ __   ___
   \\ \\ /\\ / / _` | | | / __| __/ _ \\| '_ \\ / _ \\
    \\ V  V / (_| | |_| \\__ \\ || (_) | | | |  __/
     \\_/\\_/ \\__,_|\\__, |___/\\__\\___/|_| |_|\\___|
                  |___/
-{ANSI_COLORS['RESET']}
-{ANSI_COLORS['GREEN']}  A Multi-User Dungeon set in the Kingkiller Chronicle universe{ANSI_COLORS['RESET']}
-{ANSI_COLORS['DIM']}  ================================================================{ANSI_COLORS['RESET']}
+{ANSI_COLORS["RESET"]}
+{ANSI_COLORS["GREEN"]}  A Multi-User Dungeon set in the Kingkiller Chronicle universe{ANSI_COLORS["RESET"]}
+{ANSI_COLORS["DIM"]}  ================================================================{ANSI_COLORS["RESET"]}
 
-  Type {ANSI_COLORS['YELLOW']}login <username> <password>{ANSI_COLORS['RESET']} to log in
-  Type {ANSI_COLORS['YELLOW']}register <username> <password> <email>{ANSI_COLORS['RESET']} to create an account
-  Type {ANSI_COLORS['YELLOW']}help{ANSI_COLORS['RESET']} for a list of commands
-  Type {ANSI_COLORS['YELLOW']}quit{ANSI_COLORS['RESET']} to disconnect
+  Type {ANSI_COLORS["YELLOW"]}login <username> <password>{ANSI_COLORS["RESET"]} to log in
+  Type {ANSI_COLORS["YELLOW"]}register <username> <password> <email>{ANSI_COLORS["RESET"]} to create an account
+  Type {ANSI_COLORS["YELLOW"]}help{ANSI_COLORS["RESET"]} for a list of commands
+  Type {ANSI_COLORS["YELLOW"]}quit{ANSI_COLORS["RESET"]} to disconnect
 
 """
 

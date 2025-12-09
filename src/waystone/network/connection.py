@@ -135,21 +135,21 @@ class Connection:
                     raise ConnectionError("Connection closed by client")
 
                 # Handle special characters
-                if char in ('\r', '\n'):
+                if char in ("\r", "\n"):
                     # End of line - send newline and return
                     if echo and self._echo_enabled:
-                        self.writer.write('\r\n')
+                        self.writer.write("\r\n")
                         await self.writer.drain()
                     break
-                elif char == '\x7f' or char == '\b':
+                elif char == "\x7f" or char == "\b":
                     # Backspace - remove last character if any
                     if line_buffer:
                         line_buffer.pop()
                         if echo and self._echo_enabled:
                             # Move cursor back, overwrite with space, move back again
-                            self.writer.write('\b \b')
+                            self.writer.write("\b \b")
                             await self.writer.drain()
-                elif char == '\x03':
+                elif char == "\x03":
                     # Ctrl+C - cancel current input
                     raise ConnectionError("Input cancelled")
                 elif ord(char) >= 32:  # Printable characters
@@ -158,7 +158,7 @@ class Connection:
                         self.writer.write(char)
                         await self.writer.drain()
 
-            return ''.join(line_buffer).strip()
+            return "".join(line_buffer).strip()
         except TimeoutError:
             logger.warning(
                 "readline_timeout",

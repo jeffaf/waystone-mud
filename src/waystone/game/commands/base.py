@@ -3,7 +3,6 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
-from uuid import UUID
 
 import structlog
 
@@ -108,8 +107,7 @@ class CommandRegistry:
         for alias in command.aliases:
             if alias in self._aliases:
                 raise ValueError(
-                    f"Alias '{alias}' already registered for command "
-                    f"'{self._aliases[alias]}'"
+                    f"Alias '{alias}' already registered for command '{self._aliases[alias]}'"
                 )
             self._aliases[alias] = command.name
 
@@ -166,8 +164,7 @@ class CommandRegistry:
             return self.get_all_commands()
 
         return [
-            cmd for cmd in self._commands.values()
-            if cmd.requires_character == requires_character
+            cmd for cmd in self._commands.values() if cmd.requires_character == requires_character
         ]
 
 

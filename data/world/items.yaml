@@ -1,0 +1,387 @@
+---
+# Item templates for Waystone MUD
+# Based on Patrick Rothfuss's Kingkiller Chronicle universe
+# Each item follows the ItemTemplate model schema
+
+items:
+  # ============================================================================
+  # WEAPONS
+  # ============================================================================
+
+  - id: iron_sword
+    name: "Iron Sword"
+    description: "A well-crafted iron blade with a leather-wrapped hilt. The pommel bears the mark of a skilled blacksmith from Imre. The blade has been properly tempered and shows a keen edge, making it a reliable weapon for those who know how to use it."
+    type: weapon
+    slot: main_hand
+    weight: 3.5
+    value: 75
+    stackable: false
+    unique: false
+    quest_item: false
+    properties:
+      damage: "1d8"
+      damage_type: "slashing"
+
+  - id: staff
+    name: "Wooden Staff"
+    description: "A quarterstaff carved from seasoned rowan wood. The grain is straight and true, suggesting it was carefully selected. Many arcanists favor such staves both for walking and as a focus for sympathetic binding. The wood is smooth from years of handling."
+    type: weapon
+    slot: main_hand
+    weight: 4.0
+    value: 30
+    stackable: false
+    unique: false
+    quest_item: false
+    properties:
+      damage: "1d6"
+      damage_type: "bludgeoning"
+
+  - id: dagger
+    name: "Steel Dagger"
+    description: "A well-balanced steel dagger with a sharp point and keen edges. The crossguard is simple but functional, and the grip is wrapped in worn leather. Small enough to conceal, quick enough to save your life in a tight spot."
+    type: weapon
+    slot: off_hand
+    weight: 1.0
+    value: 35
+    stackable: false
+    unique: false
+    quest_item: false
+    properties:
+      damage: "1d4"
+      damage_type: "piercing"
+      versatile: true  # Can be used in main_hand or off_hand
+
+  - id: bow
+    name: "Hunting Bow"
+    description: "A well-maintained hunting bow made of laminated yew wood. The bowstring is waxed hemp, properly tensioned. This weapon requires arrows and some skill to use effectively, but in practiced hands it can bring down game from a considerable distance."
+    type: weapon
+    slot: main_hand
+    weight: 2.5
+    value: 60
+    stackable: false
+    unique: false
+    quest_item: false
+    properties:
+      damage: "1d8"
+      damage_type: "piercing"
+      range: 80
+      requires_ammo: true
+      ammo_type: "arrows"
+
+  # ============================================================================
+  # ARMOR
+  # ============================================================================
+
+  - id: leather_armor
+    name: "Leather Armor"
+    description: "A sturdy suit of boiled leather armor, consisting of a cuirass, pauldrons, and reinforced sections. The leather has been properly treated and hardened, offering decent protection while remaining flexible enough for movement. Common among mercenaries and town guards."
+    type: armor
+    slot: body
+    weight: 10.0
+    value: 50
+    stackable: false
+    unique: false
+    quest_item: false
+    properties:
+      armor: 2
+      armor_type: "light"
+
+  - id: iron_helm
+    name: "Iron Helmet"
+    description: "A simple but effective iron helmet with a nasal guard. The interior is padded with wool felt to cushion blows. It bears a few dents from past conflicts, each one testament to its protective value."
+    type: armor
+    slot: head
+    weight: 4.0
+    value: 45
+    stackable: false
+    unique: false
+    quest_item: false
+    properties:
+      armor: 1
+      armor_type: "medium"
+
+  - id: leather_gloves
+    name: "Leather Gloves"
+    description: "Reinforced leather gloves with extra padding across the knuckles and backs of the hands. The palms are slightly worn but still grip well. Practical for both combat and craftwork."
+    type: armor
+    slot: hands
+    weight: 0.8
+    value: 20
+    stackable: false
+    unique: false
+    quest_item: false
+    properties:
+      armor: 1
+      armor_type: "light"
+
+  - id: iron_boots
+    name: "Iron-Shod Boots"
+    description: "Heavy leather boots reinforced with iron plates at toe, heel, and shin. The iron reinforcement makes them excellent for kicking down doors or kicking in teeth, though they're a bit noisy for sneaking."
+    type: armor
+    slot: feet
+    weight: 3.5
+    value: 40
+    stackable: false
+    unique: false
+    quest_item: false
+    properties:
+      armor: 1
+      armor_type: "medium"
+
+  # ============================================================================
+  # CONSUMABLES
+  # ============================================================================
+
+  - id: health_potion
+    name: "Healing Draught"
+    description: "A small glass vial containing a thick red liquid that smells faintly of iron and willow bark. Crafted in the Medica by skilled alchemists, this potion accelerates the body's natural healing when consumed. The University's healers guard their recipes jealously."
+    type: consumable
+    slot: none
+    weight: 0.5
+    value: 25
+    stackable: true
+    unique: false
+    quest_item: false
+    properties:
+      effect: "heal:20"
+      effect_type: "instant"
+      use_message: "You drink the healing draught, feeling warmth spread through your body as wounds begin to close."
+
+  - id: bread
+    name: "Loaf of Bread"
+    description: "A crusty loaf of brown bread, still relatively fresh. The kind of simple fare you might find at any baker in Imre or the University commons. Nothing fancy, but it fills the belly and keeps you going."
+    type: consumable
+    slot: none
+    weight: 0.8
+    value: 3
+    stackable: true
+    unique: false
+    quest_item: false
+    properties:
+      effect: "heal:5"
+      effect_type: "instant"
+      use_message: "You tear off pieces of bread and eat them. It's simple but satisfying."
+
+  - id: water_flask
+    name: "Water Flask"
+    description: "A leather-wrapped glass flask filled with clean water. The cork stopper is sealed with wax to prevent spills. Once emptied, it would need to be refilled at a well or stream."
+    type: consumable
+    slot: none
+    weight: 2.0
+    value: 5
+    stackable: false
+    unique: false
+    quest_item: false
+    properties:
+      effect: "restore:10"
+      effect_type: "instant"
+      uses: 3
+      use_message: "You take a long drink from the flask. The water is cool and refreshing."
+
+  # ============================================================================
+  # MISCELLANEOUS & QUEST ITEMS
+  # ============================================================================
+
+  - id: gold_coin
+    name: "Gold Talent"
+    description: "A gold coin bearing the profile of the current king on one side and the royal seal on the other. Talents are the standard currency among the wealthy and for large transactions. Worth considerably more than common iron pennies."
+    type: misc
+    slot: none
+    weight: 0.01
+    value: 10
+    stackable: true
+    unique: false
+    quest_item: false
+    properties:
+      currency: true
+      denomination: "talent"
+
+  - id: old_map
+    name: "Ancient Map"
+    description: "A yellowed parchment map showing locations throughout the Commonwealth. Some of the place names are archaic, suggesting the map is quite old. Certain areas are marked with symbols whose meaning has been lost to time. This appears to be unique - you've never seen another like it."
+    type: quest
+    slot: none
+    weight: 0.3
+    value: 100
+    stackable: false
+    unique: true
+    quest_item: true
+    properties:
+      quest_id: "ancient_locations"
+      readable: true
+
+  - id: torch
+    name: "Torch"
+    description: "A sturdy wooden brand wrapped with oil-soaked cloth at one end. When lit, it provides a reliable source of light for exploring dark places. The University's underthing would be nearly impossible to navigate without such illumination."
+    type: misc
+    slot: off_hand
+    weight: 1.0
+    value: 2
+    stackable: true
+    unique: false
+    quest_item: false
+    properties:
+      light_radius: 15
+      burn_time: 60
+      requires_lighting: true
+
+  # ============================================================================
+  # ADDITIONAL WEAPONS (for variety)
+  # ============================================================================
+
+  - id: rapier
+    name: "Rapier"
+    description: "An elegant dueling sword with a thin, flexible blade and elaborate basket hilt. The kind of weapon favored by nobles and those who've studied Aturan fencing. Requires more finesse than strength, making it popular among University students who can afford it."
+    type: weapon
+    slot: main_hand
+    weight: 2.0
+    value: 120
+    stackable: false
+    unique: false
+    quest_item: false
+    properties:
+      damage: "1d8"
+      damage_type: "piercing"
+      finesse: true
+
+  - id: arrows
+    name: "Arrows"
+    description: "A bundle of straight arrows fletched with goose feathers. The iron heads are sharp and properly balanced. Essential ammunition for any bow."
+    type: misc
+    slot: none
+    weight: 0.1
+    value: 1
+    stackable: true
+    unique: false
+    quest_item: false
+    properties:
+      ammo_type: "arrows"
+      bundle_size: 20
+
+  # ============================================================================
+  # ADDITIONAL ARMOR
+  # ============================================================================
+
+  - id: cloak
+    name: "Traveler's Cloak"
+    description: "A heavy wool cloak dyed a deep forest green. The fabric is tightly woven to shed rain and the hood provides protection from the elements. A bronze clasp shaped like an oak leaf fastens it at the throat."
+    type: armor
+    slot: body
+    weight: 2.5
+    value: 15
+    stackable: false
+    unique: false
+    quest_item: false
+    properties:
+      armor: 0
+      armor_type: "clothing"
+      weather_protection: true
+
+  # ============================================================================
+  # UNIVERSITY-SPECIFIC ITEMS
+  # ============================================================================
+
+  - id: student_lute
+    name: "Student's Lute"
+    description: "A seven-string lute of moderate quality. The soundboard is made of spruce and the back from maple. Not a masterwork instrument, but serviceable for a student learning music. The strings are in reasonable condition and it holds its tuning well enough."
+    type: misc
+    slot: none
+    weight: 4.0
+    value: 80
+    stackable: false
+    unique: false
+    quest_item: false
+    properties:
+      instrument: true
+      skill_required: "music"
+
+  - id: sympathy_lamp
+    name: "Sympathy Lamp"
+    description: "A marvel of artificing - a small glass lamp that glows with a steady light requiring no oil or flame. The light is powered by a heat differential maintained through sygaldry inscribed on the brass base. A faint warmth emanates from the runes. Such items fetch high prices from those who can afford them."
+    type: misc
+    slot: none
+    weight: 1.5
+    value: 250
+    stackable: false
+    unique: false
+    quest_item: false
+    properties:
+      light_radius: 20
+      permanent_light: true
+      crafted: true
+
+  - id: guilder
+    name: "University Guilder"
+    description: "A University-specific coin used for paying tuition and fees. These round iron coins bear the seal of the University on one side and Teccam's profile on the other. They're not accepted as currency outside the University grounds."
+    type: misc
+    slot: none
+    weight: 0.02
+    value: 5
+    stackable: true
+    unique: false
+    quest_item: false
+    properties:
+      currency: true
+      denomination: "guilder"
+      restricted_use: "university"
+
+  - id: admissions_tile
+    name: "Admissions Tile"
+    description: "A small clay tile that serves as proof of enrollment at the University. One side bears your name and the current term, the other shows your rank within the Arcanum. Without this, you'd be unable to attend classes or access University facilities."
+    type: quest
+    slot: none
+    weight: 0.2
+    value: 0
+    stackable: false
+    unique: true
+    quest_item: true
+    properties:
+      quest_id: "university_enrollment"
+      shows_rank: true
+
+  # ============================================================================
+  # ALCHEMY & CRAFTING MATERIALS
+  # ============================================================================
+
+  - id: sulfur
+    name: "Sulfur Powder"
+    description: "A small pouch of yellow sulfur powder. It has a distinctive acrid smell. Useful in alchemy and certain chemical processes, though it must be handled with care."
+    type: misc
+    slot: none
+    weight: 0.5
+    value: 12
+    stackable: true
+    unique: false
+    quest_item: false
+    properties:
+      crafting_material: true
+      category: "alchemy"
+
+  - id: iron_ingot
+    name: "Iron Ingot"
+    description: "A bar of smelted iron, roughly rectangular and stamped with the mark of an Imre foundry. Raw material for blacksmithing and metalworking."
+    type: misc
+    slot: none
+    weight: 5.0
+    value: 20
+    stackable: true
+    unique: false
+    quest_item: false
+    properties:
+      crafting_material: true
+      category: "smithing"
+
+  - id: nahlrout
+    name: "Nahlrout"
+    description: "A small amount of nahlrout, a rare substance used in alchemy and artificing. The powder has an odd, slippery texture and seems to catch the light strangely. Dangerous if mishandled - it's one of the materials restricted to advanced students at the University."
+    type: misc
+    slot: none
+    weight: 0.1
+    value: 150
+    stackable: true
+    unique: false
+    quest_item: false
+    properties:
+      crafting_material: true
+      category: "rare_alchemy"
+      dangerous: true

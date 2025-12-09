@@ -6,7 +6,7 @@ from user registration through character creation, gameplay, and logout.
 
 import asyncio
 import uuid
-from typing import AsyncGenerator
+from collections.abc import AsyncGenerator
 from unittest.mock import AsyncMock, Mock
 
 import pytest
@@ -15,7 +15,7 @@ from sqlalchemy import select
 from waystone.database.engine import get_session, init_db
 from waystone.database.models import Character, CharacterBackground, User
 from waystone.game.commands.auth import LoginCommand, LogoutCommand, RegisterCommand
-from waystone.game.commands.base import CommandContext, get_registry
+from waystone.game.commands.base import CommandContext
 from waystone.game.commands.character import CharactersCommand, PlayCommand
 from waystone.game.commands.communication import ChatCommand, EmoteCommand, SayCommand
 from waystone.game.commands.info import HelpCommand, ScoreCommand, WhoCommand
@@ -236,9 +236,7 @@ class TestFullGameplayFlow:
 
         # Step 4: List characters
         chars_cmd = CharactersCommand()
-        ctx = create_command_context(
-            session, connection, integration_engine, [], "characters"
-        )
+        ctx = create_command_context(session, connection, integration_engine, [], "characters")
         await chars_cmd.execute(ctx)
         assert_message_contains(connection, char_name)
         connection.send_line.reset_mock()
@@ -258,9 +256,7 @@ class TestFullGameplayFlow:
 
         # Step 6: Look at current room
         look_cmd = LookCommand()
-        ctx = create_command_context(
-            session, connection, integration_engine, [], "look"
-        )
+        ctx = create_command_context(session, connection, integration_engine, [], "look")
         await look_cmd.execute(ctx)
         assert_message_contains(connection, "Waystone Inn")
         assert_message_contains(connection, "fire")
@@ -268,9 +264,7 @@ class TestFullGameplayFlow:
 
         # Step 7: Check exits
         exits_cmd = ExitsCommand()
-        ctx = create_command_context(
-            session, connection, integration_engine, [], "exits"
-        )
+        ctx = create_command_context(session, connection, integration_engine, [], "exits")
         await exits_cmd.execute(ctx)
         assert_message_contains(connection, "north")
         assert_message_contains(connection, "east")
@@ -278,9 +272,7 @@ class TestFullGameplayFlow:
 
         # Step 8: Move north to kitchen
         north_cmd = NorthCommand()
-        ctx = create_command_context(
-            session, connection, integration_engine, [], "north"
-        )
+        ctx = create_command_context(session, connection, integration_engine, [], "north")
         await north_cmd.execute(ctx)
         assert_message_contains(connection, "Kitchen")
         assert char_id not in integration_engine.world["waystone_inn"].players
@@ -289,9 +281,7 @@ class TestFullGameplayFlow:
 
         # Step 9: Move back south
         south_cmd = SouthCommand()
-        ctx = create_command_context(
-            session, connection, integration_engine, [], "south"
-        )
+        ctx = create_command_context(session, connection, integration_engine, [], "south")
         await south_cmd.execute(ctx)
         assert_message_contains(connection, "Waystone Inn")
         connection.send_line.reset_mock()
@@ -324,9 +314,7 @@ class TestFullGameplayFlow:
 
         # Step 12: Check score
         score_cmd = ScoreCommand()
-        ctx = create_command_context(
-            session, connection, integration_engine, [], "score"
-        )
+        ctx = create_command_context(session, connection, integration_engine, [], "score")
         await score_cmd.execute(ctx)
         assert_message_contains(connection, char_name)
         assert_message_contains(connection, "Scholar")
@@ -334,18 +322,14 @@ class TestFullGameplayFlow:
 
         # Step 13: Check who's online
         who_cmd = WhoCommand()
-        ctx = create_command_context(
-            session, connection, integration_engine, [], "who"
-        )
+        ctx = create_command_context(session, connection, integration_engine, [], "who")
         await who_cmd.execute(ctx)
         assert_message_contains(connection, char_name)
         connection.send_line.reset_mock()
 
         # Step 14: Logout
         logout_cmd = LogoutCommand()
-        ctx = create_command_context(
-            session, connection, integration_engine, [], "logout"
-        )
+        ctx = create_command_context(session, connection, integration_engine, [], "logout")
         await logout_cmd.execute(ctx)
 
         assert session.user_id is None
@@ -449,9 +433,7 @@ class TestFullGameplayFlow:
 
         # Player 2 moves away
         north_cmd = NorthCommand()
-        ctx = create_command_context(
-            session2, conn2, integration_engine, [], "north"
-        )
+        ctx = create_command_context(session2, conn2, integration_engine, [], "north")
         await north_cmd.execute(ctx)
 
         # Wait for broadcast
@@ -531,9 +513,7 @@ class TestFullGameplayFlow:
         for direction, expected_room, expected_text in movements:
             connection.send_line.reset_mock()
             cmd = direction_cmds[direction]
-            ctx = create_command_context(
-                session, connection, integration_engine, [], direction
-            )
+            ctx = create_command_context(session, connection, integration_engine, [], direction)
             await cmd.execute(ctx)
 
             # Verify we're in the right room
@@ -547,9 +527,7 @@ class TestFullGameplayFlow:
         session = create_mock_session(connection)
 
         help_cmd = HelpCommand()
-        ctx = create_command_context(
-            session, connection, integration_engine, [], "help"
-        )
+        ctx = create_command_context(session, connection, integration_engine, [], "help")
         await help_cmd.execute(ctx)
 
         # Verify help shows key commands
@@ -744,9 +722,7 @@ class TestErrorHandling:
 
         # Try to go north (no exit)
         north_cmd = NorthCommand()
-        ctx = create_command_context(
-            session, connection, integration_engine, [], "north"
-        )
+        ctx = create_command_context(session, connection, integration_engine, [], "north")
         await north_cmd.execute(ctx)
 
         # Character should still be in kitchen
@@ -760,9 +736,7 @@ class TestErrorHandling:
 
         # Not logged in - try to list characters
         chars_cmd = CharactersCommand()
-        ctx = create_command_context(
-            session, connection, integration_engine, [], "characters"
-        )
+        ctx = create_command_context(session, connection, integration_engine, [], "characters")
         await chars_cmd.execute(ctx)
 
         # Should get error message

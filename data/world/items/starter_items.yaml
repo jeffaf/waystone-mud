@@ -1,0 +1,213 @@
+---
+# Starter items for Waystone MUD
+# These items are available for testing the inventory and equipment system
+
+items:
+  # Weapons
+  - id: iron_sword
+    name: "Iron Sword"
+    description: "A simple iron sword, well-balanced for combat. The blade shows signs of regular use but is still sharp and reliable. Perfect for a beginning warrior."
+    type: weapon
+    slot: main_hand
+    weight: 3.0
+    value: 50
+    stackable: false
+    unique: false
+    quest_item: false
+    properties:
+      damage: "1d8"
+
+  - id: wooden_staff
+    name: "Wooden Staff"
+    description: "A sturdy oak staff, useful for both walking and defending oneself. The wood is smooth and worn from handling."
+    type: weapon
+    slot: main_hand
+    weight: 4.0
+    value: 25
+    stackable: false
+    unique: false
+    quest_item: false
+    properties:
+      damage: "1d6"
+
+  - id: steel_dagger
+    name: "Steel Dagger"
+    description: "A sharp steel dagger with a leather-wrapped handle. Light and quick, ideal for close combat."
+    type: weapon
+    slot: main_hand
+    weight: 1.0
+    value: 30
+    stackable: false
+    unique: false
+    quest_item: false
+    properties:
+      damage: "1d4"
+
+  # Armor
+  - id: leather_armor
+    name: "Leather Armor"
+    description: "Basic leather armor offering modest protection. The leather is supple and well-crafted, allowing for easy movement while providing defense against light attacks."
+    type: armor
+    slot: body
+    weight: 8.0
+    value: 25
+    stackable: false
+    unique: false
+    quest_item: false
+    properties:
+      armor: 2
+
+  - id: iron_helmet
+    name: "Iron Helmet"
+    description: "A simple iron helmet that protects the head. Slightly dented but still functional."
+    type: armor
+    slot: head
+    weight: 5.0
+    value: 40
+    stackable: false
+    unique: false
+    quest_item: false
+    properties:
+      armor: 1
+
+  - id: leather_boots
+    name: "Leather Boots"
+    description: "Sturdy leather boots suitable for travel. They've seen better days but still keep your feet protected."
+    type: armor
+    slot: feet
+    weight: 2.0
+    value: 15
+    stackable: false
+    unique: false
+    quest_item: false
+    properties:
+      armor: 1
+
+  - id: cloth_gloves
+    name: "Cloth Gloves"
+    description: "Simple cloth gloves that provide minimal protection but keep your hands warm."
+    type: armor
+    slot: hands
+    weight: 0.5
+    value: 5
+    stackable: false
+    unique: false
+    quest_item: false
+    properties:
+      armor: 0
+
+  - id: leather_pants
+    name: "Leather Pants"
+    description: "Reinforced leather pants offering protection to your legs. Comfortable and durable."
+    type: armor
+    slot: legs
+    weight: 3.0
+    value: 20
+    stackable: false
+    unique: false
+    quest_item: false
+    properties:
+      armor: 1
+
+  # Consumables
+  - id: health_potion
+    name: "Health Potion"
+    description: "A red potion that restores health when consumed. The liquid glows faintly with restorative magic."
+    type: consumable
+    slot: none
+    weight: 0.5
+    value: 10
+    stackable: true
+    unique: false
+    quest_item: false
+    properties:
+      effect: "heal:20"
+
+  - id: mana_potion
+    name: "Mana Potion"
+    description: "A blue potion that restores magical energy. It shimmers with arcane power."
+    type: consumable
+    slot: none
+    weight: 0.5
+    value: 15
+    stackable: true
+    unique: false
+    quest_item: false
+    properties:
+      effect: "restore_mana:30"
+
+  - id: bread
+    name: "Loaf of Bread"
+    description: "A fresh loaf of bread, still warm from the oven. Simple but filling."
+    type: consumable
+    slot: none
+    weight: 0.3
+    value: 2
+    stackable: true
+    unique: false
+    quest_item: false
+    properties:
+      effect: "heal:5"
+
+  # Quest Items
+  - id: mysterious_key
+    name: "Mysterious Key"
+    description: "An old brass key with strange symbols etched into its surface. It seems important, though you're not sure what it unlocks."
+    type: quest
+    slot: none
+    weight: 0.1
+    value: 0
+    stackable: false
+    unique: true
+    quest_item: true
+    properties: {}
+
+  - id: university_letter
+    name: "Letter from the University"
+    description: "A sealed letter bearing the crest of the University. The seal is unbroken, and the paper is of high quality."
+    type: quest
+    slot: none
+    weight: 0.1
+    value: 0
+    stackable: false
+    unique: true
+    quest_item: true
+    properties: {}
+
+  # Miscellaneous
+  - id: torch
+    name: "Torch"
+    description: "A wooden torch wrapped in oil-soaked cloth. It provides light in dark places."
+    type: misc
+    slot: off_hand
+    weight: 1.0
+    value: 3
+    stackable: true
+    unique: false
+    quest_item: false
+    properties:
+      light_radius: 10
+
+  - id: rope
+    name: "Coil of Rope"
+    description: "Fifty feet of sturdy hemp rope. Always useful for adventurers."
+    type: misc
+    slot: none
+    weight: 5.0
+    value: 5
+    stackable: true
+    unique: false
+    quest_item: false
+    properties: {}
+
+  - id: silver_ring
+    name: "Silver Ring"
+    description: "A simple silver ring with no markings. It catches the light beautifully."
+    type: misc
+    slot: accessory
+    weight: 0.1
+    value: 25
+    stackable: false
+    unique: false
+    quest_item: false
+    properties: {}
