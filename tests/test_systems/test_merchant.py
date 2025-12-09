@@ -189,7 +189,7 @@ class TestBuyingItems:
         )
 
         assert success is False
-        assert "don't have enough gold" in message.lower()
+        assert "don't have enough money" in message.lower()
 
         # Gold should be unchanged
         await db_session.refresh(sample_character)
@@ -403,7 +403,7 @@ class TestSellingItems:
         )
 
         assert success is False
-        assert "doesn't have enough gold" in message.lower()
+        assert "doesn't have enough money" in message.lower()
 
         # Restore merchant gold
         merchant_inventory.gold = original_gold

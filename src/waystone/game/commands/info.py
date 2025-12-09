@@ -8,6 +8,7 @@ from sqlalchemy import select
 
 from waystone.database.engine import get_session
 from waystone.database.models import Character
+from waystone.game.systems.economy import format_money
 from waystone.game.systems.experience import xp_progress
 from waystone.network import SessionState, colorize
 
@@ -256,6 +257,52 @@ class ScoreCommand(Command):
             await ctx.connection.send_line(colorize("Failed to display character stats.", "RED"))
 
 
+class WealthCommand(Command):
+    """Display character's current wealth."""
+
+    name = "wealth"
+    aliases = ["worth", "money", "gold"]
+    help_text = "wealth - Display your current money"
+    min_args = 0
+
+    async def execute(self, ctx: CommandContext) -> None:
+        """Execute the wealth command."""
+        if not ctx.session.character_id:
+            await ctx.connection.send_line(
+                colorize("You must be playing a character.", "RED")
+            )
+            return
+
+        try:
+            async with get_session() as session:
+                result = await session.execute(
+                    select(Character).where(Character.id == UUID(ctx.session.character_id))
+                )
+                character = result.scalar_one_or_none()
+
+                if not character:
+                    await ctx.connection.send_line(colorize("Character not found.", "RED"))
+                    return
+
+                await ctx.connection.send_line("")
+                await ctx.connection.send_line(colorize("═══ Your Wealth ═══", "YELLOW"))
+                await ctx.connection.send_line("")
+
+                # Format money with proper currency breakdown
+                money_str = format_money(character.money)
+                await ctx.connection.send_line(f"  You have {colorize(money_str, 'GREEN')}.")
+                await ctx.connection.send_line("")
+
+                # Show compact format too
+                compact_str = format_money(character.money, compact=True)
+                await ctx.connection.send_line(f"  ({colorize(compact_str, 'DIM')})")
+                await ctx.connection.send_line("")
+
+        except Exception as e:
+            logger.error("wealth_command_failed", error=str(e), exc_info=True)
+            await ctx.connection.send_line(colorize("Failed to display wealth.", "RED"))
+
+
 class TimeCommand(Command):
     """Display current server time and game time."""
 
@@ -482,3 +529,188 @@ class SaveCommand(Command):
             await ctx.connection.send_line(
                 colorize("Failed to save character. Please try again.", "RED")
             )
+
+
+class GuideCommand(Command):
+    """Display the player guide."""
+
+    name = "guide"
+    aliases = ["manual", "tutorial"]
+    help_text = "guide [topic] - View the player guide"
+    min_args = 0
+    requires_character = False
+
+    # Guide sections for in-game display
+    GUIDE_SECTIONS = {
+        "start": """
+╔═══ Getting Started ═══╗
+
+1. Register: register <username> <password> <email>
+2. Login: login <username> <password>
+3. Create character: create <name>
+4. Choose background (Soldier, Scholar, Merchant, etc.)
+5. Enter world: play <name>
+
+Type 'guide movement' to learn about navigation.
+""",
+        "movement": """
+╔═══ Movement ═══╗
+
+Basic Directions:
+  north (n), south (s), east (e), west (w)
+  up (u), down (d)
+  northeast (ne), northwest (nw)
+  southeast (se), southwest (sw)
+
+Commands:
+  look (l)     - View your surroundings
+  exits        - Show available exits
+  go <dir>     - Move in any direction
+
+Type 'guide combat' for combat help.
+""",
+        "combat": """
+╔═══ Combat ═══╗
+
+Commands:
+  attack <target>  - Attack an enemy
+  defend           - Take defensive stance
+  flee             - Attempt to escape
+  cs               - View combat status
+  consider <npc>   - Check enemy difficulty
+
+Tips:
+  - Always 'consider' enemies before fighting
+  - Equip weapons with 'equip <item>'
+  - Use 'defend' when low on health
+
+Type 'guide sympathy' for magic help.
+""",
+        "sympathy": """
+╔═══ Sympathy Magic ═══╗
+
+Sympathy creates links between objects to transfer energy.
+
+Setup:
+  1. hold <heat source>  - Candle, torch, or brazier
+  2. bind <type> <source> <target>
+
+Binding Types:
+  heat    - Transfer heat
+  kinetic - Transfer force
+  damage  - Combat damage
+
+Using Bindings:
+  heat [amount]         - Transfer heat
+  push [force]          - Kinetic push
+  cast damage <target>  - Attack
+
+WARNING: Using body heat (hold body) is DANGEROUS!
+
+Type 'guide inventory' for item help.
+""",
+        "inventory": """
+╔═══ Inventory & Equipment ═══╗
+
+Commands:
+  inventory (i)      - View your items
+  equipment (eq)     - View equipped gear
+  get <item>         - Pick up an item
+  drop <item>        - Drop an item
+  examine <item>     - Look at item details
+  equip <item>       - Equip weapon/armor
+  unequip <slot>     - Remove equipment
+
+Equipment Slots:
+  weapon, off_hand, head, body
+  hands, feet, ring, neck
+
+Type 'guide communication' for chat help.
+""",
+        "communication": """
+╔═══ Communication ═══╗
+
+Room Chat:
+  say <message>   - Speak to the room
+  '<message>      - Shortcut for say
+  emote <action>  - Perform an action
+  :<action>       - Shortcut for emote
+
+Global/Private:
+  chat <message>            - Global channel
+  tell <player> <message>   - Private message
+
+Type 'guide tips' for helpful tips.
+""",
+        "tips": """
+╔═══ Tips for New Players ═══╗
+
+1. Save often - Use 'save' command regularly
+2. Check difficulty - Always 'consider' before combat
+3. Explore - Use 'look' and 'exits' to navigate
+4. Read descriptions - Hints are in room text
+5. Start small - Fight easy enemies first
+6. Learn sympathy - Magic is powerful but risky
+
+Useful Shortcuts:
+  ' = say, : = emote, l = look
+  i = inventory, eq = equipment
+  cs = combatstatus
+
+Type 'guide topics' to see all guide topics.
+""",
+        "topics": """
+╔═══ Guide Topics ═══╗
+
+Available topics:
+  guide start        - Getting started
+  guide movement     - Navigation
+  guide combat       - Fighting
+  guide sympathy     - Magic system
+  guide inventory    - Items & equipment
+  guide communication - Chat commands
+  guide tips         - Helpful advice
+
+Just type 'guide' for a quick overview.
+""",
+    }
+
+    async def execute(self, ctx: CommandContext) -> None:
+        """Execute the guide command."""
+        if ctx.args:
+            topic = ctx.args[0].lower()
+            content = self.GUIDE_SECTIONS.get(topic)
+            if content:
+                await ctx.connection.send_line(colorize(content, "CYAN"))
+            else:
+                await ctx.connection.send_line(
+                    colorize(f"Unknown topic: {topic}", "YELLOW")
+                )
+                await ctx.connection.send_line("Type 'guide topics' for available topics.")
+        else:
+            # Show overview
+            overview = """
+╔════════════════════════════════════╗
+║     WAYSTONE MUD - Player Guide    ║
+╚════════════════════════════════════╝
+
+Welcome to the Four Corners!
+
+Quick Commands:
+  Movement:  n/s/e/w/u/d, look, exits
+  Combat:    attack, defend, flee
+  Info:      score, who, help
+  Magic:     bind, sympathy, cast
+
+Guide Topics:
+  guide start      - Getting started
+  guide movement   - Navigation
+  guide combat     - Fighting
+  guide sympathy   - Magic system
+  guide inventory  - Items & equipment
+  guide tips       - Helpful advice
+
+Type 'guide <topic>' for detailed help.
+Type 'help <command>' for command help.
+"""
+            await ctx.connection.send_line(colorize(overview, "CYAN"))

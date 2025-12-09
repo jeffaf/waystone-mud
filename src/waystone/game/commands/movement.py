@@ -8,6 +8,7 @@ from sqlalchemy import select
 from waystone.database.engine import get_session
 from waystone.database.models import Character
 from waystone.game.systems.experience import XP_EXPLORATION_NEW_ROOM, award_xp
+from waystone.game.systems.university import can_access_room, get_university_status, rank_to_display
 from waystone.network import colorize
 
 from .base import Command, CommandContext
@@ -86,6 +87,24 @@ class MoveCommand(Command):
                         direction=self.direction,
                     )
                     return
+
+                # Check for rank-restricted access
+                requires_rank = destination_room.properties.get("requires_rank")
+                if requires_rank:
+                    status = get_university_status(character.id)
+                    if not can_access_room(status.arcanum_rank, requires_rank):
+                        from waystone.game.systems.university import rank_from_string
+                        required = rank_from_string(requires_rank)
+                        await ctx.connection.send_line(
+                            colorize(
+                                f"Access denied. This area requires {rank_to_display(required)} rank.",
+                                "RED"
+                            )
+                        )
+                        await ctx.connection.send_line(
+                            "Only members of the Arcanum with sufficient rank may enter."
+                        )
+                        return
 
                 # Remove from old room
                 current_room.remove_player(ctx.session.character_id)

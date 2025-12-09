@@ -175,11 +175,13 @@ class GameEngine:
             TellCommand,
         )
         from waystone.game.commands.info import (
+            GuideCommand,
             HelpCommand,
             IncreaseCommand,
             SaveCommand,
             ScoreCommand,
             TimeCommand,
+            WealthCommand,
             WhoCommand,
         )
         from waystone.game.commands.inventory import (
@@ -208,6 +210,29 @@ class GameEngine:
             WestCommand,
         )
         from waystone.game.commands.npc import ConsiderCommand
+        from waystone.game.commands.sympathy import (
+            BindCommand,
+            BindingsCommand,
+            CastCommand,
+            HeatCommand,
+            HoldCommand,
+            PushCommand,
+            ReleaseCommand,
+            SympathyCommand,
+        )
+        from waystone.game.commands.university import (
+            AdmitCommand,
+            RankCommand,
+            TuitionCommand,
+            WorkCommand,
+        )
+        from waystone.game.commands.trading import (
+            CancelTradeCommand,
+            OfferCommand,
+            RemoveOfferCommand,
+            TradeAcceptCommand,
+            TradeCommand,
+        )
 
         registry = get_registry()
 
@@ -257,6 +282,8 @@ class GameEngine:
         registry.register(TimeCommand())
         registry.register(IncreaseCommand())
         registry.register(SaveCommand())
+        registry.register(GuideCommand())
+        registry.register(WealthCommand())
 
         # Inventory and equipment commands
         registry.register(InventoryCommand())
@@ -270,6 +297,29 @@ class GameEngine:
 
         # NPC commands
         registry.register(ConsiderCommand())
+
+        # Sympathy magic commands
+        registry.register(BindCommand())
+        registry.register(ReleaseCommand())
+        registry.register(BindingsCommand())
+        registry.register(SympathyCommand())
+        registry.register(HoldCommand())
+        registry.register(PushCommand())
+        registry.register(HeatCommand())
+        registry.register(CastCommand())
+
+        # University commands
+        registry.register(AdmitCommand())
+        registry.register(TuitionCommand())
+        registry.register(RankCommand())
+        registry.register(WorkCommand())
+
+        # Trading commands
+        registry.register(TradeCommand())
+        registry.register(TradeAcceptCommand())
+        registry.register(OfferCommand())
+        registry.register(RemoveOfferCommand())
+        registry.register(CancelTradeCommand())
 
         logger.info(
             "commands_registered",
@@ -508,11 +558,16 @@ class GameEngine:
         # Define NPC spawn locations
         # Format: {room_id: [npc_template_ids]}
         spawn_locations = {
-            # University NPCs
+            # University NPCs - The Nine Masters
             "university_archives": ["scriv", "master_lorren"],
             "university_courtyard": ["student"],
             "university_artificery": ["master_kilvin"],
             "university_medica": ["master_arwyl"],
+            "university_rookery": ["elodin"],
+            "university_lecture_hall": ["master_hemme", "master_elxa_dal"],
+            "university_alchemy_lab": ["master_mandrag"],
+            "university_rhetoric_hall": ["master_brandeur"],
+            "university_mains": ["master_herma"],
             # Imre merchants (when Imre rooms are added)
             # Enemies will spawn dynamically or in specific danger zones
         }

@@ -28,8 +28,9 @@ class Room(BaseModel):
     exits: dict[str, str] = Field(
         default_factory=dict, description="Maps direction (e.g., 'north') to room_id"
     )
-    properties: dict[str, bool] = Field(
-        default_factory=dict, description="Boolean properties (outdoor, lit, safe_zone, etc.)"
+    properties: dict[str, bool | str] = Field(
+        default_factory=dict,
+        description="Room properties (outdoor, lit, safe_zone, requires_rank, etc.)",
     )
     players: set[str] = Field(
         default_factory=set, description="Character IDs of players currently in this room"
@@ -73,15 +74,20 @@ class Room(BaseModel):
 
     def is_outdoor(self) -> bool:
         """Check if this room is outdoors."""
-        return self.properties.get("outdoor", False)
+        return bool(self.properties.get("outdoor", False))
 
     def is_lit(self) -> bool:
         """Check if this room is lit."""
-        return self.properties.get("lit", True)
+        return bool(self.properties.get("lit", True))
 
     def is_safe_zone(self) -> bool:
         """Check if this room is a safe zone (no combat)."""
-        return self.properties.get("safe_zone", False)
+        return bool(self.properties.get("safe_zone", False))
+
+    def get_required_rank(self) -> str | None:
+        """Get the University rank required to enter this room, if any."""
+        rank = self.properties.get("requires_rank")
+        return str(rank) if rank else None
 
     def get_player_count(self) -> int:
         """Get the number of players currently in this room."""

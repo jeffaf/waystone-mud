@@ -9,6 +9,7 @@ from sqlalchemy.orm import joinedload
 from waystone.database.engine import get_session
 from waystone.database.models import Character, ItemInstance, ItemTemplate
 from waystone.game.systems import merchant as merchant_system
+from waystone.game.systems.economy import format_money
 from waystone.network import colorize
 
 from .base import Command, CommandContext
@@ -92,14 +93,14 @@ class ListCommand(Command):
 
                     await ctx.connection.send_line(
                         f"  {colorize(template.name, 'WHITE'):40} "
-                        f"{colorize(f'{price:4} gold', 'YELLOW'):15} "
+                        f"{colorize(format_money(price, compact=True), 'YELLOW'):15} "
                         f"{colorize(f'({stock_str})', 'DIM')}"
                     )
 
-                # Show player's gold
+                # Show player's money in Cealdish currency
                 await ctx.connection.send_line("")
                 await ctx.connection.send_line(
-                    f"You have {colorize(f'{character.gold} gold', 'GREEN')}"
+                    f"You have {colorize(format_money(character.money), 'GREEN')}"
                 )
 
                 logger.debug(
@@ -428,10 +429,10 @@ class AppraiseCommand(Command):
                                 )
                                 await ctx.connection.send_line("")
                                 await ctx.connection.send_line(
-                                    f"Buy from merchant: {colorize(f'{buy_price} gold', 'YELLOW')}"
+                                    f"Buy from merchant: {colorize(format_money(buy_price), 'YELLOW')}"
                                 )
                                 await ctx.connection.send_line(
-                                    f"Sell to merchant:  {colorize(f'{sell_price} gold', 'GREEN')}"
+                                    f"Sell to merchant:  {colorize(format_money(sell_price), 'GREEN')}"
                                 )
                                 return
 
@@ -454,10 +455,10 @@ class AppraiseCommand(Command):
                 await ctx.connection.send_line(colorize(f"=== {item_template.name} ===", "CYAN"))
                 await ctx.connection.send_line("")
                 await ctx.connection.send_line(
-                    f"Buy from merchant: {colorize(f'{buy_price} gold', 'YELLOW')}"
+                    f"Buy from merchant: {colorize(format_money(buy_price), 'YELLOW')}"
                 )
                 await ctx.connection.send_line(
-                    f"Sell to merchant:  {colorize(f'{sell_price} gold', 'GREEN')}"
+                    f"Sell to merchant:  {colorize(format_money(sell_price), 'GREEN')}"
                 )
 
                 if item_template.quest_item:

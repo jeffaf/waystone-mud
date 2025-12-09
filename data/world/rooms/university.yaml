@@ -27,13 +27,14 @@ rooms:
       east, the Medica to the west, and the Masters' Hall to the north. A
       fountain depicting Teccam the Sage occupies the center, its waters
       catching the sunlight. Students gather in small groups, debating theories
-      and trading gossip.
+      and trading gossip. The Mains and Quad lie to the northwest.
     exits:
       south: university_main_gates
       north: university_masters_hall
       east: university_archives
       west: university_medica
       northeast: university_mews
+      northwest: university_quad
     properties:
       outdoor: true
       lit: true
@@ -65,9 +66,10 @@ rooms:
       over centuries. The entrance is flanked by stone pillars carved with
       ancient runes. A stern scriv sits at the admission desk, enforcing the
       strict rules of silence and decorum. Beyond the desk, endless rows of
-      shelves disappear into shadow.
+      shelves disappear into shadow. The main stacks lie to the east.
     exits:
       west: university_courtyard
+      east: university_archives_stacks
     properties:
       outdoor: false
       lit: true
@@ -84,7 +86,7 @@ rooms:
       its heat making the room uncomfortably warm even from this distance.
     exits:
       south: university_fishery
-      east: university_masters_hall
+      west: university_masters_hall
     properties:
       outdoor: false
       lit: true
@@ -99,9 +101,11 @@ rooms:
       accidents or illness. Shelves hold countless jars of remedies, tinctures,
       and poultices. Master Arwyl and his students move quietly between
       patients, their green robes marking them as healers. A small garden of
-      medicinal plants is visible through the eastern windows.
+      medicinal plants is visible through the eastern windows. The alchemy
+      laboratory lies to the south.
     exits:
       east: university_courtyard
+      south: university_alchemy_lab
     properties:
       outdoor: false
       lit: true
@@ -133,10 +137,12 @@ rooms:
       that illuminates portraits of past masters. The admissions chamber lies
       beyond the heavy oak doors - it is here that students face the terror of
       Advanced Sympathy examinations and tuition hearings. Few students linger
-      here without good reason.
+      here without good reason. The Hollows and Rookery connect to the west and north.
     exits:
       south: university_courtyard
-      west: university_artificery
+      west: university_hollows
+      north: university_rookery
+      east: university_artificery
     properties:
       outdoor: false
       lit: true
@@ -174,3 +180,159 @@ rooms:
       outdoor: false
       lit: false
       safe_zone: false
+
+  - id: university_hollows
+    name: "The Hollows"
+    area: university
+    description: |
+      The Hollows serves as the University's administrative heart. Here students
+      register for classes, pay tuition, and face the dreaded admissions board.
+      Clerks sit behind worn wooden desks, shuffling papers and stamping forms.
+      The walls display portraits of past Chancellors and notices about upcoming
+      examinations. A sense of bureaucratic dread permeates the air.
+    exits:
+      east: university_masters_hall
+    properties:
+      outdoor: false
+      lit: true
+      safe_zone: true
+
+  - id: university_mains
+    name: "The Mains"
+    area: university
+    description: |
+      The Mains is a sprawling complex of lecture halls and classrooms where
+      most University instruction takes place. Stone corridors connect dozens
+      of rooms of varying sizes, from intimate seminar spaces to grand halls
+      that can seat hundreds. The walls are thick with slate boards covered in
+      half-erased formulas and diagrams. Students hurry between classes,
+      clutching notes and textbooks.
+    exits:
+      south: university_courtyard
+      east: university_lecture_hall
+      west: university_rhetoric_hall
+    properties:
+      outdoor: false
+      lit: true
+      safe_zone: true
+
+  - id: university_lecture_hall
+    name: "The Great Lecture Hall"
+    area: university
+    description: |
+      The largest classroom in the University, with tiered wooden benches
+      rising in semicircular rows toward the back. A raised dais at the front
+      holds the lecturer's podium and demonstration table. Gas lamps line the
+      walls, their light reflected by polished brass fixtures. This hall hosts
+      major lectures and public examinations. The wooden benches are worn
+      smooth by generations of students.
+    exits:
+      west: university_mains
+    properties:
+      outdoor: false
+      lit: true
+      safe_zone: true
+
+  - id: university_rhetoric_hall
+    name: "The Hall of Rhetoric"
+    area: university
+    description: |
+      Master Brandeur's domain - a formal hall designed for debate and oratory.
+      Rows of benches face a central speaking platform. The acoustics are
+      perfect; even a whisper carries clearly. Tapestries depicting famous
+      debates and orators line the walls. Students practice their arguments here,
+      preparing for the verbal duels that academic life requires.
+    exits:
+      east: university_mains
+    properties:
+      outdoor: false
+      lit: true
+      safe_zone: true
+
+  - id: university_archives_stacks
+    name: "The Archives Stacks"
+    area: university
+    description: |
+      Endless rows of shelves stretch into darkness, holding thousands upon
+      thousands of books. The silence is absolute - the scrivs enforce it with
+      iron discipline. Sympathy lamps provide soft illumination without the fire
+      risk of candles. The air is dry to preserve the ancient texts. Ladders on
+      rails allow access to upper shelves that reach toward the vaulted ceiling.
+    exits:
+      west: university_archives
+      down: university_archives_restricted
+    properties:
+      outdoor: false
+      lit: true
+      safe_zone: true
+      requires_rank: e_lir
+
+  - id: university_archives_restricted
+    name: "The Restricted Archives"
+    area: university
+    description: |
+      The deepest level of the Archives, accessible only to those Master Lorren
+      deems worthy. Here lie the most dangerous texts - books on forbidden
+      knowledge, sealed grimoires, and documents too sensitive for general
+      access. Iron gates bar entry, and a scriv stands eternal watch. The very
+      air feels heavy with secrets. Few students ever see this place.
+    exits:
+      up: university_archives_stacks
+    properties:
+      outdoor: false
+      lit: true
+      safe_zone: true
+      requires_rank: re_lar
+
+  - id: university_rookery
+    name: "The Rookery"
+    area: university
+    description: |
+      The private offices and quarters of the Nine Masters occupy this ancient
+      stone tower. Each Master has their own chamber, though the doors are
+      usually closed to students without appointments. A narrow spiral staircase
+      winds upward, past doors marked with brass nameplates. The tower's name
+      comes from the ravens that nest in its upper reaches - birds as old as
+      the University itself, some say.
+    exits:
+      south: university_masters_hall
+    properties:
+      outdoor: false
+      lit: true
+      safe_zone: true
+
+  - id: university_alchemy_lab
+    name: "The Alchemy Laboratory"
+    area: university
+    description: |
+      Master Mandrag's laboratory fills the air with strange smells - sulfur,
+      quicksilver, and compounds less identifiable. Rows of workbenches hold
+      glassware in every shape: retorts, alembics, flasks, and tubes. Small
+      flames burn beneath simmering mixtures. Cabinets along the walls hold
+      reagents in labeled jars. Students work carefully here, knowing that one
+      mistake could be explosive.
+    exits:
+      north: university_medica
+    properties:
+      outdoor: false
+      lit: true
+      safe_zone: true
+
+  - id: university_quad
+    name: "The University Quad"
+    area: university
+    description: |
+      A grassy quadrangle provides a rare open space amid the University's
+      stone buildings. Ancient oak trees shade wooden benches where students
+      study in good weather. A cobblestone path crosses diagonally, worn smooth
+      by countless feet. In spring, the quad fills with students enjoying the
+      sunshine between classes. Even now, a few students sit reading or engaged
+      in quiet conversation.
+    exits:
+      north: university_mews
+      south: university_courtyard
+      east: university_mains
+    properties:
+      outdoor: true
+      lit: true
+      safe_zone: true

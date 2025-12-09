@@ -116,14 +116,24 @@ class Character(Base, TimestampMixin):
         comment="Unspent attribute points for character customization",
     )
 
-    # Currency
+    # Currency (stored in drabs - smallest Cealdish currency unit)
     gold: Mapped[int] = mapped_column(
         Integer,
         nullable=False,
         default=100,
         server_default="100",
-        comment="Character's gold currency",
+        comment="Character's money in drabs (smallest unit)",
     )
+
+    @property
+    def money(self) -> int:
+        """Alias for gold - returns money in drabs."""
+        return self.gold
+
+    @money.setter
+    def money(self, value: int) -> None:
+        """Set money in drabs."""
+        self.gold = value
 
     # Location and progression
     current_room_id: Mapped[str] = mapped_column(

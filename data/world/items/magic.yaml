@@ -1,0 +1,213 @@
+---
+# Magic items for Waystone MUD
+# Heat sources and sympathy-related items
+
+items:
+  # Heat Sources for Sympathy
+  - id: sympathy_candle
+    name: "Sympathy Candle"
+    description: "A specially prepared candle for sympathetic work. The wax contains trace amounts of metals that help conduct heat energy efficiently. Essential for any sympathist."
+    type: misc
+    slot: off_hand
+    weight: 0.3
+    value: 5
+    stackable: true
+    unique: false
+    quest_item: false
+    properties:
+      heat_source: true
+      heat_type: "candle"
+      energy_per_turn: 50
+      max_duration: 20
+
+  - id: sympathy_torch
+    name: "Sympathy Torch"
+    description: "A well-crafted torch designed for extended sympathetic bindings. The flame burns hot and steady, providing reliable energy for sympathetic transfers."
+    type: misc
+    slot: off_hand
+    weight: 1.0
+    value: 15
+    stackable: true
+    unique: false
+    quest_item: false
+    properties:
+      heat_source: true
+      heat_type: "torch"
+      energy_per_turn: 150
+      max_duration: 30
+      light_radius: 15
+
+  - id: portable_brazier
+    name: "Portable Brazier"
+    description: "A small bronze brazier designed for use in sympathetic practice. The coals burn steadily, providing substantial energy for complex bindings. Heavy but reliable."
+    type: misc
+    slot: none
+    weight: 8.0
+    value: 75
+    stackable: false
+    unique: false
+    quest_item: false
+    properties:
+      heat_source: true
+      heat_type: "brazier"
+      energy_per_turn: 500
+      max_duration: 50
+
+  # Sympathy Links and Materials
+  - id: copper_wire
+    name: "Copper Wire"
+    description: "A coil of pure copper wire, excellent for sympathetic links due to its high conductivity. Standard equipment for any University student."
+    type: misc
+    slot: none
+    weight: 0.5
+    value: 10
+    stackable: true
+    unique: false
+    quest_item: false
+    properties:
+      material: "copper"
+      for_sympathy: true
+
+  - id: iron_drab
+    name: "Iron Drab"
+    description: "A small iron coin, the lowest denomination of Cealdish currency. The iron content makes it useful for sympathetic bindings with other iron objects."
+    type: misc
+    slot: none
+    weight: 0.1
+    value: 1
+    stackable: true
+    unique: false
+    quest_item: false
+    properties:
+      material: "iron"
+      for_sympathy: true
+      currency_type: "drab"
+
+  - id: silver_jot
+    name: "Silver Jot"
+    description: "A silver coin worth roughly ten iron drabs. The pure silver is valued both for currency and for its sympathetic properties with other silver objects."
+    type: misc
+    slot: none
+    weight: 0.1
+    value: 10
+    stackable: true
+    unique: false
+    quest_item: false
+    properties:
+      material: "silver"
+      for_sympathy: true
+      currency_type: "jot"
+
+  - id: blood_vial
+    name: "Vial of Blood"
+    description: "A small sealed vial containing preserved blood. DANGEROUS - blood creates powerful consanguineous links with its original owner. Handle with extreme care."
+    type: misc
+    slot: none
+    weight: 0.2
+    value: 0
+    stackable: false
+    unique: false
+    quest_item: true
+    properties:
+      material: "human"
+      for_sympathy: true
+      consanguinity_link: true
+      dangerous: true
+
+  - id: hair_lock
+    name: "Lock of Hair"
+    description: "A small bundle of hair tied with string. Hair maintains a consanguineous link with its original owner, making it powerful for sympathetic bindings."
+    type: misc
+    slot: none
+    weight: 0.1
+    value: 0
+    stackable: false
+    unique: false
+    quest_item: true
+    properties:
+      material: "human"
+      for_sympathy: true
+      consanguinity_link: true
+
+  # Sygaldry Items (future phase)
+  - id: bone_tar_candle
+    name: "Bone-tar Candle"
+    description: "A special candle made with bone-tar additives, producing an unusual blue flame. Used in advanced sympathetic work and certain sygaldric preparations."
+    type: misc
+    slot: off_hand
+    weight: 0.4
+    value: 25
+    stackable: true
+    unique: false
+    quest_item: false
+    properties:
+      heat_source: true
+      heat_type: "candle"
+      energy_per_turn: 75
+      max_duration: 15
+      special: "blue_flame"
+
+  - id: cold_iron_rod
+    name: "Cold Iron Rod"
+    description: "A rod of iron that was never heated during its forging, worked cold from meteoric iron. Prized by sympathists for its unusual properties in bindings."
+    type: misc
+    slot: none
+    weight: 2.0
+    value: 150
+    stackable: false
+    unique: false
+    quest_item: false
+    properties:
+      material: "iron"
+      for_sympathy: true
+      special: "cold_iron"
+      binding_bonus: 0.1
+
+  # Mommet (sympathetic figurine)
+  - id: wax_mommet_blank
+    name: "Blank Wax Mommet"
+    description: "A featureless human figurine made of wax. With the proper materials bound into it, a mommet can create a powerful link to a specific person. Used carefully by sympathists, or dangerously by maleficants."
+    type: misc
+    slot: none
+    weight: 0.3
+    value: 20
+    stackable: false
+    unique: false
+    quest_item: false
+    properties:
+      material: "wax"
+      for_sympathy: true
+      mommet: true
+      requires_binding: true
+
+  # Learning Items
+  - id: sympathy_primer
+    name: "Principles of Sympathy"
+    description: "A well-worn textbook explaining the fundamental principles of sympathetic magic. Written by Teccam, it covers the laws of conservation, similarity, and consanguinity."
+    type: misc
+    slot: none
+    weight: 1.5
+    value: 35
+    stackable: false
+    unique: false
+    quest_item: false
+    properties:
+      readable: true
+      skill_book: "sympathy"
+      xp_bonus: 10
+
+  - id: alar_exercises
+    name: "Mental Exercises for the Alar"
+    description: "A collection of mental exercises designed to strengthen the Alar - the rider's will, the mind's control over belief. Daily practice improves one's capacity for maintaining bindings."
+    type: misc
+    slot: none
+    weight: 0.5
+    value: 50
+    stackable: false
+    unique: false
+    quest_item: false
+    properties:
+      readable: true
+      skill_book: "sympathy"
+      alar_training: true
+      xp_bonus: 25

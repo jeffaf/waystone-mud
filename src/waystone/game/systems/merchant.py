@@ -12,8 +12,40 @@ from sqlalchemy.orm import joinedload
 
 from waystone.database.engine import get_session
 from waystone.database.models import Character, ItemInstance, ItemTemplate
+from waystone.game.systems.economy import format_money
 
 logger = structlog.get_logger(__name__)
+
+
+def get_charisma_modifier(charisma: int) -> float:
+    """
+    Calculate price modifier based on charisma.
+
+    High charisma gives better prices:
+    - CHA 8-9: 10% worse prices
+    - CHA 10-11: No modifier
+    - CHA 12-13: 5% better prices
+    - CHA 14-15: 10% better prices
+    - CHA 16-17: 15% better prices
+    - CHA 18+: 20% better prices
+
+    Returns:
+        Modifier for buy prices (lower is better for buying)
+    """
+    if charisma <= 7:
+        return 1.15  # 15% more expensive
+    elif charisma <= 9:
+        return 1.10  # 10% more expensive
+    elif charisma <= 11:
+        return 1.0  # No modifier
+    elif charisma <= 13:
+        return 0.95  # 5% discount
+    elif charisma <= 15:
+        return 0.90  # 10% discount
+    elif charisma <= 17:
+        return 0.85  # 15% discount
+    else:
+        return 0.80  # 20% discount
 
 
 @dataclass
@@ -82,34 +114,44 @@ async def get_merchant_inventory(npc_id: str) -> MerchantInventory | None:
 
 def calculate_buy_price(base_value: int, character: Character) -> int:
     """
-    Calculate the price the player pays to buy an item.
+    Calculate the price the player pays to buy an item (in drabs).
+
+    Price is modified by charisma - high charisma gives discounts.
 
     Args:
-        base_value: Base value of the item
+        base_value: Base value of the item in drabs
         character: Character buying the item
 
     Returns:
-        Final price the player pays
+        Final price the player pays in drabs
     """
-    # Base price is the item's value
-    # TODO: Could add charisma modifier for better prices
-    return base_value
+    modifier = get_charisma_modifier(character.charisma)
+    return max(1, int(base_value * modifier))
 
 
 def calculate_sell_price(base_value: int, character: Character) -> int:
     """
-    Calculate the price the player receives when selling an item.
+    Calculate the price the player receives when selling an item (in drabs).
+
+    Base is 50% of value, modified by charisma.
+    High charisma characters get better sell prices.
 
     Args:
-        base_value: Base value of the item
+        base_value: Base value of the item in drabs
         character: Character selling the item
 
     Returns:
-        Final price the player receives (50% of base value)
+        Final price the player receives in drabs
     """
-    # Players get 50% of base value when selling
-    # TODO: Could add charisma modifier for better prices
-    return base_value // 2
+    # Base sell price is 50% of value
+    base_sell = base_value // 2
+
+    # Apply inverse charisma modifier (high CHA = better sell prices)
+    modifier = get_charisma_modifier(character.charisma)
+    # Invert the modifier for selling (0.8 becomes 1.2, etc.)
+    sell_modifier = 2.0 - modifier
+
+    return max(1, int(base_sell * sell_modifier))
 
 
 async def buy_item(
@@ -160,11 +202,11 @@ async def buy_item(
         unit_price = calculate_buy_price(item_template.value, character)
         total_price = unit_price * quantity
 
-        # Check if character has enough gold
-        if character.gold < total_price:
+        # Check if character has enough money
+        if character.money < total_price:
             return (
                 False,
-                f"You don't have enough gold. You need {total_price} gold but only have {character.gold}.",
+                f"You don't have enough money. You need {format_money(total_price)} but only have {format_money(character.money)}.",
             )
 
         # Process transaction
@@ -208,7 +250,7 @@ async def buy_item(
         )
 
         qty_str = f"{quantity} " if quantity > 1 else ""
-        return True, f"You bought {qty_str}{item_template.name} for {total_price} gold."
+        return True, f"You bought {qty_str}{item_template.name} for {format_money(total_price)}."
 
     # Use provided session or create a new one
     if session is not None:
@@ -285,9 +327,9 @@ async def sell_item(
         unit_price = calculate_sell_price(item_instance.template.value, character)
         total_price = unit_price * quantity
 
-        # Check if merchant has enough gold
+        # Check if merchant has enough money
         if merchant_inventory.gold < total_price:
-            return False, "The merchant doesn't have enough gold to buy that."
+            return False, "The merchant doesn't have enough money to buy that."
 
         # Process transaction
         character.gold += total_price
@@ -323,7 +365,7 @@ async def sell_item(
         )
 
         qty_str = f"{quantity} " if quantity > 1 else ""
-        return True, f"You sold {qty_str}{item_instance.template.name} for {total_price} gold."
+        return True, f"You sold {qty_str}{item_instance.template.name} for {format_money(total_price)}."
 
     # Use provided session or create a new one
     if session is not None:

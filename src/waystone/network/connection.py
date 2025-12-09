@@ -47,6 +47,11 @@ class Connection:
         self._closed = False
         self._echo_enabled = True  # Server-side echo for visibility
 
+        # Command history (like bash/readline)
+        self._command_history: list[str] = []
+        self._history_index: int = 0
+        self._max_history: int = 100
+
         # Enable server-side echo via telnet negotiation
         # This tells the client that we will handle echo
         try:
@@ -105,12 +110,18 @@ class Connection:
         """
         await self.send(f"{message}\r\n")
 
-    async def readline(self, echo: bool = True) -> str:
+    async def readline(self, echo: bool = True, save_history: bool = True) -> str:
         """
-        Read a line of input from the client with optional echo.
+        Read a line of input from the client with optional echo and history.
+
+        Supports:
+        - Up/Down arrow keys for command history navigation
+        - Backspace for character deletion
+        - Ctrl+C to cancel input
 
         Args:
             echo: Whether to echo characters back to client (default True)
+            save_history: Whether to save command to history (default True)
 
         Returns:
             The line read from the client (stripped of whitespace)
@@ -122,8 +133,12 @@ class Connection:
             raise ConnectionError("Connection is closed")
 
         try:
-            # Read character by character with echo for better UX
             line_buffer: list[str] = []
+            cursor_pos: int = 0
+            # Reset history index to end (most recent)
+            self._history_index = len(self._command_history)
+            temp_current: str = ""  # Store current input when navigating history
+
             while True:
                 char = await asyncio.wait_for(
                     self.reader.read(1),
@@ -131,34 +146,99 @@ class Connection:
                 )
 
                 if not char:
-                    # Connection closed
                     raise ConnectionError("Connection closed by client")
+
+                # Handle escape sequences (arrow keys, etc.)
+                if char == "\x1b":
+                    # Start of escape sequence - read next chars
+                    seq1 = await asyncio.wait_for(self.reader.read(1), timeout=0.1)
+                    if seq1 == "[":
+                        seq2 = await asyncio.wait_for(self.reader.read(1), timeout=0.1)
+
+                        if seq2 == "A":  # Up arrow
+                            if self._command_history and self._history_index > 0:
+                                # Save current input if at end of history
+                                if self._history_index == len(self._command_history):
+                                    temp_current = "".join(line_buffer)
+
+                                self._history_index -= 1
+                                new_line = self._command_history[self._history_index]
+
+                                # Clear current line and display history entry
+                                if echo and self._echo_enabled:
+                                    await self._replace_line(line_buffer, new_line)
+                                line_buffer = list(new_line)
+                                cursor_pos = len(line_buffer)
+                            continue
+
+                        elif seq2 == "B":  # Down arrow
+                            if self._history_index < len(self._command_history):
+                                self._history_index += 1
+
+                                if self._history_index == len(self._command_history):
+                                    # Restore the original input
+                                    new_line = temp_current
+                                else:
+                                    new_line = self._command_history[self._history_index]
+
+                                if echo and self._echo_enabled:
+                                    await self._replace_line(line_buffer, new_line)
+                                line_buffer = list(new_line)
+                                cursor_pos = len(line_buffer)
+                            continue
+
+                        elif seq2 == "C":  # Right arrow - ignore for now
+                            continue
+                        elif seq2 == "D":  # Left arrow - ignore for now
+                            continue
+                    continue  # Ignore unknown escape sequences
 
                 # Handle special characters
                 if char in ("\r", "\n"):
-                    # End of line - send newline and return
                     if echo and self._echo_enabled:
                         self.writer.write("\r\n")
                         await self.writer.drain()
                     break
+
                 elif char == "\x7f" or char == "\b":
-                    # Backspace - remove last character if any
+                    # Backspace
                     if line_buffer:
                         line_buffer.pop()
+                        cursor_pos = max(0, cursor_pos - 1)
                         if echo and self._echo_enabled:
-                            # Move cursor back, overwrite with space, move back again
                             self.writer.write("\b \b")
                             await self.writer.drain()
+
                 elif char == "\x03":
-                    # Ctrl+C - cancel current input
+                    # Ctrl+C
                     raise ConnectionError("Input cancelled")
-                elif ord(char) >= 32:  # Printable characters
+
+                elif char == "\x15":
+                    # Ctrl+U - clear line
+                    if echo and self._echo_enabled:
+                        await self._clear_line(line_buffer)
+                    line_buffer = []
+                    cursor_pos = 0
+
+                elif ord(char) >= 32:
+                    # Printable characters
                     line_buffer.append(char)
+                    cursor_pos += 1
                     if echo and self._echo_enabled:
                         self.writer.write(char)
                         await self.writer.drain()
 
-            return "".join(line_buffer).strip()
+            result = "".join(line_buffer).strip()
+
+            # Save to history if non-empty and different from last command
+            if save_history and result:
+                if not self._command_history or self._command_history[-1] != result:
+                    self._command_history.append(result)
+                    if len(self._command_history) > self._max_history:
+                        self._command_history.pop(0)
+
+            return result
+
         except TimeoutError:
             logger.warning(
                 "readline_timeout",
@@ -183,6 +263,28 @@ class Connection:
             self._closed = True
             raise ConnectionError(f"Read error: {e}") from e
 
+    async def _replace_line(self, old_buffer: list[str], new_text: str) -> None:
+        """Replace current line with new text (for history navigation)."""
+        # Move to start of line and clear it
+        if old_buffer:
+            # Move cursor back to start
+            self.writer.write("\b" * len(old_buffer))
+            # Overwrite with spaces
+            self.writer.write(" " * len(old_buffer))
+            # Move back again
+            self.writer.write("\b" * len(old_buffer))
+        # Write new text
+        self.writer.write(new_text)
+        await self.writer.drain()
+
+    async def _clear_line(self, buffer: list[str]) -> None:
+        """Clear the current input line."""
+        if buffer:
+            self.writer.write("\b" * len(buffer))
+            self.writer.write(" " * len(buffer))
+            self.writer.write("\b" * len(buffer))
+            await self.writer.drain()
+
     async def read_password(self) -> str:
         """
         Read a password from the client without echo.
@@ -190,7 +292,7 @@ class Connection:
         Returns:
             The password entered by the user
         """
-        return await self.readline(echo=False)
+        return await self.readline(echo=False, save_history=False)
 
     def close(self) -> None:
         """Close the connection gracefully."""

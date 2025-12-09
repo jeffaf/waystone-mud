@@ -177,3 +177,154 @@ npcs:
         teach: "I teach those who are ready to learn. The question is: are you ready?"
         wind: "The wind knows your name. Do you know its name? No? Then you have much to learn."
     respawn_time: 0
+
+  - id: master_hemme
+    name: "Master Hemme, the Rhetorician"
+    description: |
+      Master Hemme is a portly man with a perpetually smug expression.
+      He wears his master's robes like a badge of superiority, looking
+      down his nose at students who dare to speak cleverly. His lectures
+      on sympathy theory are dry and punishing. He delights in humiliating
+      students who show too much confidence or wit. Many whisper that he
+      resents anyone who reminds him of his own limitations.
+    level: 8
+    max_hp: 70
+    attributes:
+      strength: 9
+      dexterity: 8
+      constitution: 10
+      intelligence: 16
+      wisdom: 12
+      charisma: 11
+    behavior: stationary
+    loot_table_id: null
+    dialogue:
+      greeting: "Hmm. Another student seeking attention. What do you want?"
+      keywords:
+        sympathy: "Sympathy requires discipline. Something many students lack."
+        theory: "Theory before practice. Always. Those who rush ahead break things."
+        hemme: "I am Master Hemme. I teach the foundational principles of sympathy."
+        clever: "Being clever is not the same as being wise. Remember that."
+        tuition: "Tuition reflects your worth to the University. Impress me and it goes down."
+    respawn_time: 0
+
+  - id: master_mandrag
+    name: "Master Mandrag, the Alchemist"
+    description: |
+      Master Mandrag is a gruff, no-nonsense man with stained fingers
+      and the perpetual smell of chemicals. His skin is weathered from
+      years of exposure to fumes and reagents. He speaks bluntly and
+      has no patience for foolishness - alchemy is dangerous work that
+      demands precision. Despite his gruff manner, he is fair and
+      respects students who show genuine skill and caution.
+    level: 9
+    max_hp: 85
+    attributes:
+      strength: 12
+      dexterity: 14
+      constitution: 14
+      intelligence: 18
+      wisdom: 15
+      charisma: 9
+    behavior: stationary
+    loot_table_id: null
+    dialogue:
+      greeting: "Mind where you step. And don't touch anything without asking first."
+      keywords:
+        alchemy: "Alchemy is transformation. Understanding how things change and why."
+        potions: "Every potion has a purpose. And every mistake has consequences."
+        mandrag: "I am Master Mandrag. I teach alchemy and tolerate no carelessness."
+        reagents: "Handle reagents with respect. Some will burn you. Some will kill you."
+        lab: "My laboratory has rules. Follow them or leave. Your choice."
+    respawn_time: 0
+
+  - id: master_elxa_dal
+    name: "Master Elxa Dal, the Sympathist"
+    description: |
+      Master Elxa Dal is a distinguished man with greying temples and
+      warm, encouraging eyes. He wears his master's robes with quiet
+      dignity. Unlike Hemme, he takes genuine pleasure in teaching and
+      watching students grow. His lectures on sympathy are engaging and
+      practical. He believes that encouragement produces better results
+      than humiliation, though he demands excellence nonetheless.
+    level: 10
+    max_hp: 80
+    attributes:
+      strength: 10
+      dexterity: 12
+      constitution: 11
+      intelligence: 19
+      wisdom: 17
+      charisma: 16
+    behavior: stationary
+    loot_table_id: null
+    dialogue:
+      greeting: "Welcome, welcome. Always pleased to see students seeking to learn."
+      keywords:
+        sympathy: "Sympathy is about connections. Understanding how all things relate."
+        alar: "The Alar is your foundation. A strong mind makes strong magic."
+        elxa_dal: "I am Master Elxa Dal. I teach advanced sympathy to those ready for it."
+        bindings: "Bindings are art and science combined. Practice until they feel natural."
+        teach: "Teaching is a privilege. Watching students master sympathy brings me joy."
+    respawn_time: 0
+
+  - id: master_brandeur
+    name: "Master Brandeur, the Rhetorician"
+    description: |
+      Master Brandeur is a tall, formal man who speaks with precise
+      diction and perfect grammar. His posture is ramrod straight, and
+      he expects the same formality from his students. He teaches
+      rhetoric and debate, believing that the ability to argue
+      persuasively is essential for any educated person. His standards
+      are exacting, but his instruction is excellent.
+    level: 7
+    max_hp: 60
+    attributes:
+      strength: 8
+      dexterity: 10
+      constitution: 9
+      intelligence: 17
+      wisdom: 16
+      charisma: 18
+    behavior: stationary
+    loot_table_id: null
+    dialogue:
+      greeting: "State your purpose clearly and concisely. Time is precious."
+      keywords:
+        rhetoric: "Rhetoric is the art of persuasion. Words can be more powerful than swords."
+        debate: "In debate, clarity and logic are your weapons. Emotion clouds judgment."
+        brandeur: "I am Master Brandeur. I teach rhetoric and proper discourse."
+        speech: "How you speak reveals who you are. Speak well or not at all."
+        argument: "A well-constructed argument can move mountains. A poor one wastes breath."
+    respawn_time: 0
+
+  - id: master_herma
+    name: "Master Herma, the Historian"
+    description: |
+      Master Herma is an elderly woman with sharp eyes behind thin
+      spectacles. She has devoted her life to preserving and teaching
+      history, believing that understanding the past is essential to
+      navigating the present. Her memory is legendary - she can recall
+      obscure dates and details with ease. She is patient with students
+      who show genuine curiosity but dismissive of those who see history
+      as mere memorization.
+    level: 7
+    max_hp: 55
+    attributes:
+      strength: 7
+      dexterity: 8
+      constitution: 8
+      intelligence: 19
+      wisdom: 18
+      charisma: 13
+    behavior: stationary
+    loot_table_id: null
+    dialogue:
+      greeting: "History has much to teach, if you have the patience to listen."
+      keywords:
+        history: "History is not just dates and names. It's understanding why things happened."
+        past: "The past shapes the present. Ignore it at your peril."
+        herma: "I am Master Herma. I teach history and the wisdom it contains."
+        chronicles: "The chronicles hold the truth of ages. Read them carefully."
+        memory: "Memory is a historian's greatest tool. And the past's greatest enemy is forgetting."
+    respawn_time: 0
