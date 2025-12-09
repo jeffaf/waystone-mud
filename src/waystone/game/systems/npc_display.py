@@ -159,9 +159,7 @@ async def display_npc_equipment(ctx: "CommandContext", npc: NPCInstance) -> None
             item_name = get_item_display_name(item_id)
 
             # Format: <slot label> padded to 20 chars, then item name
-            await ctx.connection.send_line(
-                f"  <{slot_label:.<18}> {colorize(item_name, 'YELLOW')}"
-            )
+            await ctx.connection.send_line(f"  <{slot_label:.<18}> {colorize(item_name, 'YELLOW')}")
         else:
             # Show "nothing" for key slots (weapon, body armor)
             if slot in ("main_hand", "off_hand", "body"):
@@ -188,12 +186,12 @@ def get_item_display_name(item_id: str) -> str:
     # For now, use simple conversion
 
     # Remove underscores, convert to words
-    words = item_id.replace('_', ' ')
+    words = item_id.replace("_", " ")
 
     # Add article if not present
-    if not words.startswith(('a ', 'an ', 'the ')):
+    if not words.startswith(("a ", "an ", "the ")):
         # Simple article logic (can be enhanced)
-        if words[0].lower() in 'aeiou':
+        if words[0].lower() in "aeiou":
             words = f"an {words}"
         else:
             words = f"a {words}"
@@ -285,20 +283,20 @@ def _pluralize_npc_name(name: str) -> str:
     """Simple pluralization for NPC names."""
     # Remove article (a, an, the) before pluralizing
     words = name.split()
-    if words and words[0].lower() in ('a', 'an', 'the'):
+    if words and words[0].lower() in ("a", "an", "the"):
         words = words[1:]  # Remove article
 
-    name_without_article = ' '.join(words)
+    name_without_article = " ".join(words)
 
     # Basic rules (can be enhanced)
-    if name_without_article.endswith('s'):
+    if name_without_article.endswith("s"):
         return name_without_article
-    elif name_without_article.endswith('y'):
-        return name_without_article[:-1] + 'ies'
-    elif name_without_article.endswith(('sh', 'ch')):
-        return name_without_article + 'es'
+    elif name_without_article.endswith("y"):
+        return name_without_article[:-1] + "ies"
+    elif name_without_article.endswith(("sh", "ch")):
+        return name_without_article + "es"
     else:
-        return name_without_article + 's'
+        return name_without_article + "s"
 
 
 def _number_to_word(num: int) -> str:
@@ -311,6 +309,6 @@ def _number_to_word(num: int) -> str:
         7: "seven",
         8: "eight",
         9: "nine",
-        10: "ten"
+        10: "ten",
     }
     return number_words.get(num, str(num))

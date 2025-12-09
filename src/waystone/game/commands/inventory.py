@@ -330,7 +330,11 @@ class ExamineCommand(Command):
                 await ctx.connection.send_line("")
                 await ctx.connection.send_line(colorize(npc.name, "CYAN"))
                 await ctx.connection.send_line(colorize("-" * len(npc.name), "CYAN"))
-                await ctx.connection.send_line(npc.description.strip())
+
+                # Get full description from template
+                template = ctx.engine.npc_templates.get(npc.template_id)
+                description = template.description if template else npc.long_description
+                await ctx.connection.send_line(description.strip())
                 await ctx.connection.send_line("")
 
                 # Show health condition
