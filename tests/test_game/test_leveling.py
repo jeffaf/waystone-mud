@@ -13,7 +13,7 @@ class TestLevelUpMechanics:
     async def test_handle_level_up_basic(self, db_session: AsyncSession, test_character):
         """Test basic level-up functionality."""
         initial_level = test_character.level
-        initial_max_hp = test_character.max_hp
+        _initial_max_hp = test_character.max_hp  # noqa: F841
 
         # Manually trigger level-up
         result = await handle_level_up(test_character, db_session)
@@ -119,7 +119,7 @@ class TestLevelUpMechanics:
         await db_session.commit()
 
         # Level up to 2
-        result = await handle_level_up(test_character, db_session)
+        await handle_level_up(test_character, db_session)
 
         # 20 + (2-1) * 3 = 23
         assert test_character.max_hp == 23
@@ -136,7 +136,7 @@ class TestLevelUpMechanics:
         test_character.max_hp = 20
         await db_session.commit()
 
-        result = await handle_level_up(test_character, db_session)
+        await handle_level_up(test_character, db_session)
 
         # Level 2: 20 + (2-1) * 2 = 22
         # But our implementation uses max(1, ...), which guarantees 1 HP minimum

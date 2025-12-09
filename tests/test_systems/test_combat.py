@@ -286,7 +286,7 @@ async def test_perform_attack_success(
     async with get_session() as session:
         result = await session.execute(select(Character).where(Character.id == char2.id))
         target_before = result.scalar_one()
-        hp_before = target_before.current_hp
+        _hp_before = target_before.current_hp  # noqa: F841
 
     # Ensure it's char1's turn
     current = combat.get_current_participant()
@@ -370,7 +370,7 @@ async def test_attempt_flee_success(
     await combat.add_participant(str(char2.id))
     combat.start_combat()
 
-    initial_count = len(combat.participants)
+    _initial_count = len(combat.participants)  # noqa: F841
 
     # Get current participant
     current = combat.get_current_participant()
@@ -407,7 +407,7 @@ async def test_character_death(
     await combat.add_participant(str(char2.id))
     combat.start_combat()
 
-    initial_count = len(combat.participants)
+    _initial_count = len(combat.participants)  # noqa: F841
 
     # Ensure char1 is attacking
     current = combat.get_current_participant()

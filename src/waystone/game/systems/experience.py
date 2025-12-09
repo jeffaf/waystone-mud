@@ -192,7 +192,7 @@ async def award_xp(
         if not character:
             raise ValueError(f"Character with ID {character_id} not found")
 
-        old_level = character.level
+        _old_level = character.level  # noqa: F841 - kept for potential logging
         old_xp = character.experience
 
         # Award XP

@@ -194,7 +194,7 @@ class TrainCommand(Command):
                 # Calculate training cost (10 * target_rank talents)
                 # For rank 0->1, cost is 10. For rank 5->6, cost is 60
                 target_rank = current_rank + 1
-                training_cost = 10 * target_rank
+                _training_cost = 10 * target_rank  # noqa: F841 - TODO: use when currency implemented
 
                 # TODO: Implement currency system and deduct cost
                 # For now, we'll just grant XP without cost

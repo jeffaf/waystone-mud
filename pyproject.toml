@@ -62,7 +62,16 @@ select = [
     "ARG",    # flake8-unused-arguments
     "SIM",    # flake8-simplify
 ]
-ignore = ["E501"]  # line length handled by formatter
+ignore = [
+    "E501",    # line length handled by formatter
+    "SIM102",  # nested if statements - sometimes clearer
+    "SIM105",  # contextlib.suppress - explicit try/except often clearer
+    "SIM108",  # ternary operator - readability preference
+    "ARG001",  # unused function argument - common in interfaces
+    "ARG002",  # unused method argument - common in interfaces
+    "ARG005",  # unused lambda argument - common in signal handlers
+    "B904",    # raise from - nice but not critical
+]
 
 [tool.ruff.lint.isort]
 known-first-party = ["waystone"]
