@@ -6,6 +6,7 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
+from typing import Any
 
 import structlog
 import telnetlib3
@@ -69,12 +70,13 @@ class MUDClient:
         self.port = port
         self.on_message = on_message
 
-        self._reader: asyncio.StreamReader | None = None
-        self._writer: asyncio.StreamWriter | None = None
+        # telnetlib3 returns TelnetReader/TelnetWriter which work with strings
+        self._reader: Any | None = None
+        self._writer: Any | None = None
         self._state = ConnectionState.DISCONNECTED
         self._buffer: list[str] = []
         self._running = False
-        self._read_task: asyncio.Task | None = None
+        self._read_task: asyncio.Task[None] | None = None
 
         # Message history for context
         self._message_history: list[GameMessage] = []
@@ -504,6 +506,6 @@ class MUDClient:
         await self.connect()
         return self
 
-    async def __aexit__(self, *args) -> None:
+    async def __aexit__(self, *args: object) -> None:
         """Async context manager exit."""
         await self.disconnect()

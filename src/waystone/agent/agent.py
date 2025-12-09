@@ -9,6 +9,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
+from typing import Any
 
 import structlog
 
@@ -169,7 +170,8 @@ Action:"""
                 self.total_input_tokens += response.usage.input_tokens
                 self.total_output_tokens += response.usage.output_tokens
 
-            action = response.content[0].text.strip().lower()
+            content_block = response.content[0]
+            action = content_block.text.strip().lower() if hasattr(content_block, "text") else "look"
             logger.debug(
                 "haiku_decision",
                 action=action,
@@ -365,7 +367,7 @@ class MUDAgent:
         self._steps_since_progress = 0
 
         # Session tracking for report
-        self._session_data: dict = {
+        self._session_data: dict[str, Any] = {
             "rooms_visited": set(),
             "npcs_seen": set(),
             "items_found": set(),
@@ -644,7 +646,7 @@ class MUDAgent:
         await asyncio.sleep(0.5)
         return self._action_history[-1] if self._action_history else ""
 
-    def get_status(self) -> dict:
+    def get_status(self) -> dict[str, Any]:
         """Get current agent status."""
         return {
             "connected": self.client.is_connected,
@@ -656,7 +658,7 @@ class MUDAgent:
         }
 
 
-async def run_agent_cli():
+async def run_agent_cli() -> None:
     """Simple CLI to run the agent."""
     import argparse
 

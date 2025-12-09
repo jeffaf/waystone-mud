@@ -90,7 +90,7 @@ class MoveCommand(Command):
 
                 # Check for rank-restricted access
                 requires_rank = destination_room.properties.get("requires_rank")
-                if requires_rank:
+                if requires_rank and isinstance(requires_rank, str):
                     status = get_university_status(character.id)
                     if not can_access_room(status.arcanum_rank, requires_rank):
                         from waystone.game.systems.university import rank_from_string

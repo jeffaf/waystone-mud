@@ -11,7 +11,7 @@ Handles combat between players and NPCs, including:
 import random
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 from uuid import UUID, uuid4
 
 import structlog
@@ -245,7 +245,7 @@ async def handle_npc_death(
     npc: NPCInstance,
     killer: Character,
     engine: "GameEngine",
-    session,
+    session: Any,
 ) -> None:
     """
     Handle NPC death.

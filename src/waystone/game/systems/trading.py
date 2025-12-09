@@ -3,6 +3,7 @@
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
+from typing import Any
 from uuid import UUID
 
 import structlog
@@ -394,7 +395,7 @@ def cancel_trade(character: Character) -> tuple[bool, str]:
     return True, "Trade cancelled."
 
 
-async def complete_trade(session: TradeSession, db_session) -> tuple[bool, str]:
+async def complete_trade(session: TradeSession, db_session: Any) -> tuple[bool, str]:
     """
     Complete the trade, transferring items and money.
 

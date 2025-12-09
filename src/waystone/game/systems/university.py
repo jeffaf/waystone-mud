@@ -10,7 +10,7 @@ Handles:
 
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 from uuid import UUID
 
 import structlog
@@ -185,11 +185,11 @@ ADMISSION_QUESTIONS = {
 }
 
 
-def get_random_questions(count: int = 5) -> list[dict]:
+def get_random_questions(count: int = 5) -> list[dict[str, Any]]:
     """Get random admission questions from different categories."""
     import random
 
-    all_questions = []
+    all_questions: list[dict[str, Any]] = []
     for category, questions in ADMISSION_QUESTIONS.items():
         for q in questions:
             all_questions.append({**q, "category": category})
@@ -198,7 +198,7 @@ def get_random_questions(count: int = 5) -> list[dict]:
     return all_questions[:count]
 
 
-def score_answer(question: dict, answer: str) -> tuple[str, int]:
+def score_answer(question: dict[str, Any], answer: str) -> tuple[str, int]:
     """
     Score an answer to an admission question.
 
