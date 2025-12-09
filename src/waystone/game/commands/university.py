@@ -75,8 +75,8 @@ class AdmitCommand(Command):
         )
         await ctx.connection.send_line("")
 
-        # Get 5 random questions
-        questions = get_random_questions(5)
+        # Get 2 random questions (simplified admission for new players)
+        questions = get_random_questions(2)
         total_score = 0
 
         for i, q in enumerate(questions, 1):
@@ -124,7 +124,7 @@ class AdmitCommand(Command):
             await ctx.connection.send_line("")
 
         # Calculate admission score (0-100)
-        admission_score = total_score // 5
+        admission_score = total_score // 2
         status.admission_score = admission_score
 
         # Determine result
@@ -133,7 +133,7 @@ class AdmitCommand(Command):
         await ctx.connection.send_line(colorize("═" * 50, "YELLOW"))
         await ctx.connection.send_line("")
 
-        if admission_score >= 30:
+        if admission_score >= 20:
             # Admitted
             if status.arcanum_rank == ArcanumRank.NONE:
                 status.arcanum_rank = ArcanumRank.E_LIR

@@ -85,6 +85,12 @@ class GameEngine:
         # Spawn NPCs in their designated rooms
         self._spawn_initial_npcs()
 
+        # Initialize NPC combat instances
+        from waystone.game.systems.npc_combat import initialize_room_npcs
+
+        npc_count = initialize_room_npcs(self)
+        logger.info("npc_instances_created", total=npc_count)
+
         # Register all commands
         self._register_commands()
 
@@ -568,8 +574,12 @@ class GameEngine:
             "university_alchemy_lab": ["master_mandrag"],
             "university_rhetoric_hall": ["master_brandeur"],
             "university_mains": ["master_herma"],
-            # Imre merchants (when Imre rooms are added)
-            # Enemies will spawn dynamically or in specific danger zones
+            # Imre combat areas
+            "imre_training_yard": ["training_dummy"],
+            "imre_sewers_entrance": ["sewer_rat"],
+            "imre_sewers_main": ["sewer_rat", "sewer_rat", "sewer_rat"],
+            "imre_north_road": ["bandit"],
+            "imre_back_alley": ["sewer_rat"],
         }
 
         total_spawned = 0

@@ -31,10 +31,15 @@ rooms:
       crowds while pickpockets work the distracted audience. The famous Eolian
       music house stands to the east, while various shops and taverns branch
       off in all directions.
+
+      A dusty training yard lies to the west. A dark alley runs behind the
+      shops to the southwest. The north road leads out of town.
     exits:
       north: stonebridge
+      northeast: imre_north_road
       east: imre_eolian
-      west: imre_devi_shop
+      west: imre_training_yard
+      southwest: imre_back_alley
       south: imre_inn_waystone
     properties:
       outdoor: true
@@ -94,3 +99,97 @@ rooms:
       outdoor: false
       lit: true
       safe_zone: true
+
+  - id: imre_training_yard
+    name: "Training Yard"
+    area: imre
+    description: |
+      A dusty practice yard behind the main square, surrounded by a low wooden
+      fence. Several training dummies stand in various states of repair, and
+      weapon racks line the walls with practice swords and staffs. A few
+      students spar with each other while others practice forms alone. A
+      weathered sign reads: "Practice here. Fight for real elsewhere."
+
+      This is a good place for new adventurers to practice combat without
+      risking their lives.
+    exits:
+      east: imre_main_square
+    properties:
+      outdoor: true
+      lit: true
+      safe_zone: false
+
+  - id: imre_back_alley
+    name: "Dark Back Alley"
+    area: imre
+    description: |
+      A narrow, shadowy alley behind the main square's shops. The buildings
+      loom overhead, blocking most of the light. Refuse and broken crates
+      litter the ground, and the smell is... unpleasant. A rusty grate in the
+      ground leads down into the sewers. This is the kind of place where
+      unsavory deals happen and where rats grow fat on garbage.
+
+      The main square is visible to the north.
+    exits:
+      north: imre_main_square
+      down: imre_sewers_entrance
+    properties:
+      outdoor: false
+      lit: false
+      safe_zone: false
+
+  - id: imre_sewers_entrance
+    name: "Sewer Entrance"
+    area: imre
+    description: |
+      The air here is thick with the smell of stagnant water and decay. A
+      narrow brick tunnel stretches into darkness, with murky water running
+      along a channel in the center. The occasional squeak and splash from
+      deeper in the sewers hints at what lives down here. Most sensible
+      people avoid the sewers, but the rats here are known to carry small
+      valuables they've scavenged from above.
+
+      A ladder leads back up to the alley.
+    exits:
+      up: imre_back_alley
+      south: imre_sewers_main
+    properties:
+      outdoor: false
+      lit: false
+      safe_zone: false
+
+  - id: imre_sewers_main
+    name: "Sewer Junction"
+    area: imre
+    description: |
+      A wider chamber where several sewer tunnels converge. The water here
+      is deeper and the smell is worse. Rats scurry along the edges, their
+      eyes glinting in the darkness. Old bones and debris have collected
+      against the walls. This is definitely not a place for the faint of
+      heart, but adventurers seeking to prove themselves often come here to
+      hunt the giant rats that infest these tunnels.
+    exits:
+      north: imre_sewers_entrance
+    properties:
+      outdoor: false
+      lit: false
+      safe_zone: false
+
+  - id: imre_north_road
+    name: "North Road"
+    area: imre
+    description: |
+      The road leading north from Imre toward distant towns. The cobblestones
+      give way to packed dirt as civilization fades behind you. Travelers
+      occasionally pass by, but this stretch of road is known to attract
+      bandits who prey on unwary merchants and students. The fields on either
+      side offer little cover, making it easy to see trouble coming - if
+      you're paying attention.
+
+      Imre's main square lies to the south.
+    exits:
+      south: imre_main_square
+    properties:
+      outdoor: true
+      lit: true
+      safe_zone: false

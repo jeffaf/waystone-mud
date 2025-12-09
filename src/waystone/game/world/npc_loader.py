@@ -148,7 +148,7 @@ def validate_npc_data(npc_data: dict[str, Any], file_path: Path) -> None:
         )
 
     # Validate behavior is recognized
-    valid_behaviors = ["aggressive", "passive", "merchant", "stationary", "wander"]
+    valid_behaviors = ["aggressive", "passive", "merchant", "stationary", "wander", "training_dummy"]
     if "behavior" in npc_data and npc_data["behavior"] not in valid_behaviors:
         raise NPCValidationError(
             f"NPC '{npc_data['id']}' in {file_path} has invalid behavior "

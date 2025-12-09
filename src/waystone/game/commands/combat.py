@@ -8,6 +8,7 @@ from sqlalchemy import select
 from waystone.database.engine import get_session
 from waystone.database.models import Character
 from waystone.game.systems.combat import Combat, CombatState
+from waystone.game.systems.npc_combat import attack_npc, find_npc_by_name, get_npcs_in_room
 from waystone.network import colorize
 
 from .base import Command, CommandContext
@@ -116,7 +117,27 @@ class AttackCommand(Command):
                     )
                     return
 
-                # Find target in room
+                # First, check for NPC targets
+                npc_target = find_npc_by_name(attacker.current_room_id, target_name)
+
+                if npc_target:
+                    # NPC combat - simpler, no turn-based system
+                    hit, message, damage = await attack_npc(
+                        attacker.id,
+                        npc_target,
+                        ctx.engine,
+                    )
+
+                    # Broadcast the attack result to room
+                    ctx.engine.broadcast_to_room(
+                        attacker.current_room_id,
+                        colorize(f"\n{attacker.name} attacks {npc_target.name}!", "YELLOW"),
+                    )
+
+                    await ctx.connection.send_line(message)
+                    return
+
+                # Find player target in room
                 target = None
                 for character_id in room.players:
                     if character_id == ctx.session.character_id:
@@ -132,9 +153,20 @@ class AttackCommand(Command):
                         break
 
                 if not target:
-                    await ctx.connection.send_line(
-                        colorize(f"You don't see '{target_name}' here.", "RED")
-                    )
+                    # Show available targets
+                    npcs = get_npcs_in_room(attacker.current_room_id)
+                    if npcs:
+                        npc_names = ", ".join(npc.name for npc in npcs)
+                        await ctx.connection.send_line(
+                            colorize(f"You don't see '{target_name}' here.", "RED")
+                        )
+                        await ctx.connection.send_line(
+                            colorize(f"NPCs here: {npc_names}", "YELLOW")
+                        )
+                    else:
+                        await ctx.connection.send_line(
+                            colorize(f"You don't see '{target_name}' here.", "RED")
+                        )
                     return
 
                 # Check if target is dead

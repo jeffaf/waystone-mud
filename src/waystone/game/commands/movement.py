@@ -353,17 +353,38 @@ class LookCommand(Command):
                 # Show room description
                 await ctx.connection.send_line(room.format_description())
 
-                # Show NPCs in room
-                room_npc_ids = ctx.engine.room_npcs.get(character.current_room_id, [])
-                if room_npc_ids:
+                # Show NPCs in room (using NPC instances for HP tracking)
+                from waystone.game.systems.npc_combat import get_npcs_in_room
+
+                npcs = get_npcs_in_room(character.current_room_id)
+                if npcs:
                     await ctx.connection.send_line("")
-                    for npc_id in room_npc_ids:
-                        npc_template = ctx.engine.npc_templates.get(npc_id)
-                        if npc_template:
-                            # Color code by behavior
-                            npc_color = "RED" if npc_template.behavior == "aggressive" else "GREEN"
+                    for npc in npcs:
+                        # Color code by behavior
+                        if npc.behavior == "aggressive":
+                            npc_color = "RED"
+                        elif npc.behavior == "training_dummy":
+                            npc_color = "YELLOW"
+                        else:
+                            npc_color = "GREEN"
+
+                        # Show HP status for aggressive/training NPCs
+                        if npc.behavior in ("aggressive", "training_dummy"):
+                            hp_pct = (npc.current_hp / npc.max_hp) * 100
+                            if hp_pct >= 75:
+                                condition = "looks healthy"
+                            elif hp_pct >= 50:
+                                condition = "has some wounds"
+                            elif hp_pct >= 25:
+                                condition = "is badly wounded"
+                            else:
+                                condition = "is near death"
                             await ctx.connection.send_line(
-                                colorize(f"{npc_template.name} is here.", npc_color)
+                                colorize(f"{npc.name} is here. It {condition}.", npc_color)
+                            )
+                        else:
+                            await ctx.connection.send_line(
+                                colorize(f"{npc.name} is here.", npc_color)
                             )
 
                 # Show other players in room
