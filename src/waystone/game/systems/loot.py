@@ -91,7 +91,7 @@ def load_loot_tables(config_path: Path | None = None) -> dict[str, LootTable]:
 
     if config_path is None:
         settings = get_settings()
-        config_path = settings.config_dir / "loot_tables.yaml"
+        config_path = settings.data_dir / "config" / "loot_tables.yaml"
 
     if not config_path.exists():
         logger.warning(

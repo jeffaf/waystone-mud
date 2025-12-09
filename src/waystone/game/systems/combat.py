@@ -14,6 +14,8 @@ from waystone.database.models import Character
 from waystone.network import colorize
 
 if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
+
     from waystone.game.engine import GameEngine
 
 logger = structlog.get_logger(__name__)
@@ -59,7 +61,7 @@ class Combat:
         self.participants: list[CombatParticipant] = []
         self.current_turn_index = 0
         self.round_number = 1
-        self.turn_timer_task: asyncio.Task | None = None
+        self.turn_timer_task: asyncio.Task[None] | None = None
 
         logger.info("combat_initialized", room_id=room_id)
 
@@ -186,7 +188,7 @@ class Combat:
         if self.turn_timer_task:
             self.turn_timer_task.cancel()
 
-        async def timer():
+        async def timer() -> None:
             try:
                 await asyncio.sleep(timeout)
                 # Timeout - perform default action
@@ -337,7 +339,7 @@ class Combat:
     async def _handle_character_death(
         self,
         character: Character,
-        session,
+        session: "AsyncSession",
     ) -> None:
         """
         Handle a character's death in combat.

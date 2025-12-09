@@ -241,111 +241,117 @@ async def handle_player_death(
         death_location=death_location,
     )
 
-    should_close = session is None
+    if session is not None:
+        return await _handle_player_death_impl(character_id, death_location, engine, session)
+    else:
+        async with get_session() as new_session:
+            return await _handle_player_death_impl(
+                character_id, death_location, engine, new_session
+            )
 
-    try:
-        if session is None:
-            session = get_session()
-            await session.__aenter__()
 
-        # Get character
-        result = await session.execute(select(Character).where(Character.id == character_id))
-        character = result.scalar_one_or_none()
+async def _handle_player_death_impl(
+    character_id: UUID,
+    death_location: str,
+    engine: "GameEngine",
+    session: "AsyncSession",
+) -> PlayerDeathInfo:
+    """Internal implementation of handle_player_death."""
+    # Get character
+    result = await session.execute(select(Character).where(Character.id == character_id))
+    character = result.scalar_one_or_none()
 
-        if not character:
-            raise ValueError(f"Character {character_id} not found")
+    if not character:
+        raise ValueError(f"Character {character_id} not found")
 
-        # Calculate XP penalty (10% of current level's XP)
-        from waystone.game.systems.experience import xp_for_level, xp_for_next_level
+    # Calculate XP penalty (10% of current level's XP)
+    from waystone.game.systems.experience import xp_for_level, xp_for_next_level
 
-        current_level_xp = xp_for_level(character.level)
-        next_level_xp = xp_for_next_level(character.level)
+    current_level_xp = xp_for_level(character.level)
+    next_level_xp = xp_for_next_level(character.level)
 
-        # Lose 10% of the XP needed for current level
-        xp_loss = int(next_level_xp * PLAYER_DEATH_XP_PENALTY)
+    # Lose 10% of the XP needed for current level
+    xp_loss = int(next_level_xp * PLAYER_DEATH_XP_PENALTY)
 
-        # Don't drop below current level's minimum
-        new_xp = max(current_level_xp, character.experience - xp_loss)
-        actual_xp_lost = character.experience - new_xp
+    # Don't drop below current level's minimum
+    new_xp = max(current_level_xp, character.experience - xp_loss)
+    actual_xp_lost = character.experience - new_xp
 
-        character.experience = new_xp
+    character.experience = new_xp
 
-        # Respawn at safe location with 1 HP
-        old_room = character.current_room_id
-        character.current_room_id = PLAYER_RESPAWN_ROOM
-        character.current_hp = 1
+    # Respawn at safe location with 1 HP
+    old_room = character.current_room_id
+    character.current_room_id = PLAYER_RESPAWN_ROOM
+    character.current_hp = 1
 
-        # Apply weakened status (tracked via timestamp)
-        weakened_until = datetime.now() + timedelta(seconds=PLAYER_DEATH_WEAKENED_DURATION)
+    # Apply weakened status (tracked via timestamp)
+    weakened_until = datetime.now() + timedelta(seconds=PLAYER_DEATH_WEAKENED_DURATION)
 
-        # TODO: Store weakened status in character model
-        # For now, we'll just log it and implement status tracking later
+    # TODO: Store weakened status in character model
+    # For now, we'll just log it and implement status tracking later
 
-        await session.commit()
+    await session.commit()
 
-        # Update room tracking
-        old_room_obj = engine.world.get(old_room)
-        if old_room_obj:
-            old_room_obj.remove_player(str(character_id))
+    # Update room tracking
+    old_room_obj = engine.world.get(old_room)
+    if old_room_obj:
+        old_room_obj.remove_player(str(character_id))
 
-        new_room_obj = engine.world.get(PLAYER_RESPAWN_ROOM)
-        if new_room_obj:
-            new_room_obj.add_player(str(character_id))
+    new_room_obj = engine.world.get(PLAYER_RESPAWN_ROOM)
+    if new_room_obj:
+        new_room_obj.add_player(str(character_id))
 
-        # Broadcast death message to old room
-        death_msg = colorize(
-            f"\n{character.name} falls in battle and fades away...",
+    # Broadcast death message to old room
+    death_msg = colorize(
+        f"\n{character.name} falls in battle and fades away...",
+        "RED",
+    )
+    engine.broadcast_to_room(old_room, death_msg)
+
+    # Broadcast respawn message to new room
+    respawn_msg = colorize(
+        f"\n{character.name} appears in a flash of light, looking weakened and battered.",
+        "YELLOW",
+    )
+    # Safely get exclude session id
+    char_session = engine.character_to_session.get(str(character_id))
+    exclude_id = char_session.id if char_session else None
+    engine.broadcast_to_room(
+        PLAYER_RESPAWN_ROOM,
+        respawn_msg,
+        exclude=exclude_id,
+    )
+
+    # Send death message to player
+    player_session = engine.character_to_session.get(str(character_id))
+    if player_session:
+        player_death_msg = colorize(
+            f"\n{'=' * 60}\n"
+            f"You have died!\n\n"
+            f"XP Lost: -{actual_xp_lost} ({character.experience}/{xp_for_level(character.level + 1)} XP)\n"
+            f"You awaken at {new_room_obj.name if new_room_obj else PLAYER_RESPAWN_ROOM}\n"
+            f"You feel weakened... (-20% stats for {PLAYER_DEATH_WEAKENED_DURATION // 60} minutes)\n"
+            f"{'=' * 60}",
             "RED",
         )
-        engine.broadcast_to_room(old_room, death_msg)
+        await player_session.connection.send_line(player_death_msg)
 
-        # Broadcast respawn message to new room
-        respawn_msg = colorize(
-            f"\n{character.name} appears in a flash of light, looking weakened and battered.",
-            "YELLOW",
-        )
-        engine.broadcast_to_room(
-            PLAYER_RESPAWN_ROOM,
-            respawn_msg,
-            exclude=engine.character_to_session.get(str(character_id)).id
-            if str(character_id) in engine.character_to_session
-            else None,
-        )
+    death_info = PlayerDeathInfo(
+        character_id=character_id,
+        death_location=death_location,
+        xp_lost=actual_xp_lost,
+        weakened_until=weakened_until,
+    )
 
-        # Send death message to player
-        player_session = engine.character_to_session.get(str(character_id))
-        if player_session:
-            player_death_msg = colorize(
-                f"\n{'=' * 60}\n"
-                f"You have died!\n\n"
-                f"XP Lost: -{actual_xp_lost} ({character.experience}/{xp_for_level(character.level + 1)} XP)\n"
-                f"You awaken at {new_room_obj.name if new_room_obj else PLAYER_RESPAWN_ROOM}\n"
-                f"You feel weakened... (-20% stats for {PLAYER_DEATH_WEAKENED_DURATION // 60} minutes)\n"
-                f"{'=' * 60}",
-                "RED",
-            )
-            await player_session.connection.send_line(player_death_msg)
+    logger.info(
+        "player_death_completed",
+        character_id=str(character_id),
+        character_name=character.name,
+        xp_lost=actual_xp_lost,
+        respawn_location=PLAYER_RESPAWN_ROOM,
+    )
 
-        death_info = PlayerDeathInfo(
-            character_id=character_id,
-            death_location=death_location,
-            xp_lost=actual_xp_lost,
-            weakened_until=weakened_until,
-        )
-
-        logger.info(
-            "player_death_completed",
-            character_id=str(character_id),
-            character_name=character.name,
-            xp_lost=actual_xp_lost,
-            respawn_location=PLAYER_RESPAWN_ROOM,
-        )
-
-        return death_info
-
-    finally:
-        if should_close and session:
-            await session.__aexit__(None, None, None)
+    return death_info
 
 
 async def check_respawns(engine: "GameEngine") -> int:

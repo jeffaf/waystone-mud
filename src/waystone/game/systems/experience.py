@@ -11,6 +11,8 @@ from waystone.database.models import Character
 if TYPE_CHECKING:
     from uuid import UUID
 
+    from sqlalchemy.ext.asyncio import AsyncSession
+
 logger = structlog.get_logger(__name__)
 
 # XP Source Constants
@@ -161,7 +163,7 @@ async def award_xp(
     character_id: "UUID",
     amount: int,
     source: str,
-    session=None,
+    session: "AsyncSession | None" = None,
 ) -> tuple[int, bool]:
     """
     Award experience points to a character and handle level-ups.
@@ -178,62 +180,67 @@ async def award_xp(
     Raises:
         ValueError: If character not found
     """
-    should_close = session is None
+    if session is not None:
+        # Use the provided session
+        return await _award_xp_with_session(character_id, amount, source, session)
+    else:
+        # Create a new session
+        async with get_session() as new_session:
+            return await _award_xp_with_session(character_id, amount, source, new_session)
 
-    try:
-        if session is None:
-            session = get_session()
-            await session.__aenter__()
 
-        # Get character
-        result = await session.execute(select(Character).where(Character.id == character_id))
-        character = result.scalar_one_or_none()
+async def _award_xp_with_session(
+    character_id: "UUID",
+    amount: int,
+    source: str,
+    session: "AsyncSession",
+) -> tuple[int, bool]:
+    """Internal implementation of award_xp with a session."""
+    # Get character
+    result = await session.execute(select(Character).where(Character.id == character_id))
+    character = result.scalar_one_or_none()
 
-        if not character:
-            raise ValueError(f"Character with ID {character_id} not found")
+    if not character:
+        raise ValueError(f"Character with ID {character_id} not found")
 
-        _old_level = character.level  # noqa: F841 - kept for potential logging
-        old_xp = character.experience
+    _old_level = character.level  # noqa: F841 - kept for potential logging
+    old_xp = character.experience
 
-        # Award XP
-        character.experience += amount
-        new_xp = character.experience
+    # Award XP
+    character.experience += amount
+    new_xp = character.experience
+
+    logger.info(
+        "xp_awarded",
+        character_id=str(character_id),
+        character_name=character.name,
+        amount=amount,
+        source=source,
+        old_xp=old_xp,
+        new_xp=new_xp,
+    )
+
+    # Check for level-up(s)
+    leveled_up = False
+    while character.experience >= xp_for_level(character.level + 1):
+        level_up_result = await handle_level_up(character, session)
+        leveled_up = True
 
         logger.info(
-            "xp_awarded",
+            "character_leveled_up",
             character_id=str(character_id),
             character_name=character.name,
-            amount=amount,
-            source=source,
-            old_xp=old_xp,
-            new_xp=new_xp,
+            old_level=level_up_result["old_level"],
+            new_level=level_up_result["new_level"],
+            attribute_points_gained=level_up_result["attribute_points_gained"],
         )
 
-        # Check for level-up(s)
-        leveled_up = False
-        while character.experience >= xp_for_level(character.level + 1):
-            level_up_result = await handle_level_up(character, session)
-            leveled_up = True
+    await session.commit()
 
-            logger.info(
-                "character_leveled_up",
-                character_id=str(character_id),
-                character_name=character.name,
-                old_level=level_up_result["old_level"],
-                new_level=level_up_result["new_level"],
-                attribute_points_gained=level_up_result["attribute_points_gained"],
-            )
-
-        await session.commit()
-
-        return (new_xp, leveled_up)
-
-    finally:
-        if should_close and session:
-            await session.__aexit__(None, None, None)
+    return (new_xp, leveled_up)
 
 
-async def handle_level_up(character: Character, session) -> dict:
+async def handle_level_up(character: Character, session: "AsyncSession") -> dict[str, int]:
     """
     Handle a character leveling up.
 

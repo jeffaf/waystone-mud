@@ -162,10 +162,10 @@ class ChatCommand(Command):
                 async with get_session() as session:
                     from waystone.database.models import User
 
-                    result = await session.execute(
+                    user_result = await session.execute(
                         select(User).where(User.id == UUID(ctx.session.user_id))
                     )
-                    user = result.scalar_one_or_none()
+                    user = user_result.scalar_one_or_none()
                     if user:
                         sender_name = user.username
             except Exception as e:

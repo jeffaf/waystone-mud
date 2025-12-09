@@ -149,7 +149,8 @@ def load_skill_definitions() -> dict[str, Any]:
         return {}
 
     with open(config_path, encoding="utf-8") as f:
-        return yaml.safe_load(f)
+        result = yaml.safe_load(f)
+        return result if isinstance(result, dict) else {}
 
 
 def get_all_skills() -> list[str]:
@@ -159,7 +160,7 @@ def get_all_skills() -> list[str]:
         List of skill names
     """
     definitions = load_skill_definitions()
-    skills = []
+    skills: list[str] = []
 
     for category in definitions.values():
         if isinstance(category, dict):
@@ -181,7 +182,9 @@ def get_skill_info(skill_name: str) -> dict[str, Any] | None:
 
     for category in definitions.values():
         if isinstance(category, dict) and skill_name in category:
-            return category[skill_name]
+            skill_data = category[skill_name]
+            if isinstance(skill_data, dict):
+                return skill_data
 
     return None
 

@@ -73,13 +73,13 @@ class ListCommand(Command):
                     )
                     return
 
-                result = await session.execute(
+                template_result = await session.execute(
                     select(ItemTemplate).where(ItemTemplate.id.in_(item_ids))
                 )
-                templates = result.scalars().all()
+                templates = template_result.scalars().all()
 
                 # Create a mapping for quick lookup
-                template_map = {t.id: t for t in templates}
+                template_map: dict[str, ItemTemplate] = {t.id: t for t in templates}
 
                 # Display items
                 for item_id, stock in sorted(merchant_inventory.items.items()):
@@ -191,12 +191,12 @@ class BuyCommand(Command):
                     return
 
                 # Find item by name
-                result = await session.execute(
+                template_result = await session.execute(
                     select(ItemTemplate).where(
                         ItemTemplate.id.in_(list(merchant_inventory.items.keys()))
                     )
                 )
-                templates = result.scalars().all()
+                templates = template_result.scalars().all()
 
                 target_template = None
                 for template in templates:
@@ -405,12 +405,12 @@ class AppraiseCommand(Command):
                         merchant_npc_id
                     )
                     if merchant_inventory:
-                        result = await session.execute(
+                        template_result = await session.execute(
                             select(ItemTemplate).where(
                                 ItemTemplate.id.in_(list(merchant_inventory.items.keys()))
                             )
                         )
-                        templates = result.scalars().all()
+                        templates = template_result.scalars().all()
 
                         for template in templates:
                             if item_name in template.name.lower():
@@ -445,12 +445,13 @@ class AppraiseCommand(Command):
                     return
 
                 # Calculate prices for item in inventory
-                template = target_item.template
-                buy_price = merchant_system.calculate_buy_price(template.value, character)
-                sell_price = merchant_system.calculate_sell_price(template.value, character)
+                assert target_item is not None  # Type narrowing for mypy
+                item_template = target_item.template
+                buy_price = merchant_system.calculate_buy_price(item_template.value, character)
+                sell_price = merchant_system.calculate_sell_price(item_template.value, character)
 
                 await ctx.connection.send_line("")
-                await ctx.connection.send_line(colorize(f"=== {template.name} ===", "CYAN"))
+                await ctx.connection.send_line(colorize(f"=== {item_template.name} ===", "CYAN"))
                 await ctx.connection.send_line("")
                 await ctx.connection.send_line(
                     f"Buy from merchant: {colorize(f'{buy_price} gold', 'YELLOW')}"
@@ -459,14 +460,14 @@ class AppraiseCommand(Command):
                     f"Sell to merchant:  {colorize(f'{sell_price} gold', 'GREEN')}"
                 )
 
-                if template.quest_item:
+                if item_template.quest_item:
                     await ctx.connection.send_line("")
                     await ctx.connection.send_line(colorize("(Quest items cannot be sold)", "DIM"))
 
                 logger.debug(
                     "item_appraised",
                     character_id=ctx.session.character_id,
-                    item_name=template.name,
+                    item_name=item_template.name,
                 )
 
         except Exception as e:

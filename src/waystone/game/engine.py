@@ -39,7 +39,7 @@ class GameEngine:
         self.character_to_session: dict[str, Session] = {}
         self.telnet_server: TelnetServer | None = None
         self._running = False
-        self._cleanup_task: asyncio.Task | None = None
+        self._cleanup_task: asyncio.Task[None] | None = None
         self._settings = get_settings()
 
         logger.info("game_engine_initialized")

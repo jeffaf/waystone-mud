@@ -2,19 +2,16 @@
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING
 from uuid import UUID
 
 import structlog
 import yaml
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
 from waystone.database.engine import get_session
 from waystone.database.models import Character, ItemInstance, ItemTemplate
-
-if TYPE_CHECKING:
-    pass
 
 logger = structlog.get_logger(__name__)
 
@@ -120,7 +117,7 @@ async def buy_item(
     merchant_npc_id: str,
     item_template_id: str,
     quantity: int = 1,
-    session=None,
+    session: AsyncSession | None = None,
 ) -> tuple[bool, str]:
     """
     Process a buy transaction between character and merchant.
@@ -151,7 +148,7 @@ async def buy_item(
         return False, f"The merchant only has {stock} of that item in stock."
 
     # Get item template for pricing
-    async def _buy_transaction(sess):
+    async def _buy_transaction(sess: AsyncSession) -> tuple[bool, str]:
         """Inner function to handle the transaction."""
         result = await sess.execute(select(ItemTemplate).where(ItemTemplate.id == item_template_id))
         item_template = result.scalar_one_or_none()
@@ -226,7 +223,7 @@ async def sell_item(
     merchant_npc_id: str,
     item_id: str,
     quantity: int = 1,
-    session=None,
+    session: AsyncSession | None = None,
 ) -> tuple[bool, str]:
     """
     Process a sell transaction between character and merchant.
@@ -245,7 +242,7 @@ async def sell_item(
     if not merchant_inventory:
         return False, "That merchant doesn't exist."
 
-    async def _sell_transaction(sess):
+    async def _sell_transaction(sess: AsyncSession) -> tuple[bool, str]:
         """Inner function to handle the transaction."""
         # Get the item instance
         # Handle both UUID string formats (with and without dashes)

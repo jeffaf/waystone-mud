@@ -125,12 +125,12 @@ class GetCommand(Command):
                     return
 
                 # Find items in current room
-                result = await session.execute(
+                room_result = await session.execute(
                     select(ItemInstance)
                     .where(ItemInstance.room_id == character.current_room_id)
                     .options(joinedload(ItemInstance.template))
                 )
-                room_items = result.scalars().all()
+                room_items = room_result.scalars().all()
 
                 # Find matching item
                 target_item = None
@@ -381,16 +381,16 @@ class ExamineCommand(Command):
 
                 # If not in inventory, search room
                 if not target_item:
-                    result = await session.execute(
+                    item_result = await session.execute(
                         select(ItemInstance)
                         .where(ItemInstance.room_id == character.current_room_id)
                         .options(joinedload(ItemInstance.template))
                     )
-                    room_items = result.scalars().all()
+                    room_items = item_result.scalars().all()
 
-                    for item_instance in room_items:
-                        if target_name in item_instance.template.name.lower():
-                            target_item = item_instance
+                    for room_item in room_items:
+                        if target_name in room_item.template.name.lower():
+                            target_item = room_item
                             break
 
                 if not target_item:

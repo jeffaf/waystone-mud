@@ -123,7 +123,7 @@ class Connection:
 
         try:
             # Read character by character with echo for better UX
-            line_buffer = []
+            line_buffer: list[str] = []
             while True:
                 char = await asyncio.wait_for(
                     self.reader.read(1),
