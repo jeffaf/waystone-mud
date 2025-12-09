@@ -3,11 +3,11 @@
 import re
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any
 
 
 class Direction(Enum):
     """Movement directions."""
+
     NORTH = "north"
     SOUTH = "south"
     EAST = "east"
@@ -23,9 +23,16 @@ class Direction(Enum):
     def from_string(cls, s: str) -> "Direction | None":
         """Parse direction from string (handles aliases)."""
         aliases = {
-            'n': 'north', 's': 'south', 'e': 'east', 'w': 'west',
-            'u': 'up', 'd': 'down', 'ne': 'northeast', 'nw': 'northwest',
-            'se': 'southeast', 'sw': 'southwest',
+            "n": "north",
+            "s": "south",
+            "e": "east",
+            "w": "west",
+            "u": "up",
+            "d": "down",
+            "ne": "northeast",
+            "nw": "northwest",
+            "se": "southeast",
+            "sw": "southwest",
         }
         s = s.lower().strip()
         s = aliases.get(s, s)
@@ -38,6 +45,7 @@ class Direction(Enum):
 @dataclass
 class RoomInfo:
     """Parsed room information."""
+
     name: str = ""
     description: str = ""
     exits: list[Direction] = field(default_factory=list)
@@ -49,6 +57,7 @@ class RoomInfo:
 @dataclass
 class CharacterStatus:
     """Parsed character status information."""
+
     name: str = ""
     health: int = 100
     max_health: int = 100
@@ -62,6 +71,7 @@ class CharacterStatus:
 @dataclass
 class GameState:
     """Current parsed game state."""
+
     room: RoomInfo = field(default_factory=RoomInfo)
     character: CharacterStatus = field(default_factory=CharacterStatus)
     last_action_result: str = ""
@@ -78,66 +88,85 @@ class GameStateParser:
     """
 
     # ANSI escape code pattern
-    ANSI_PATTERN = re.compile(r'\x1b\[[0-9;]*m')
+    ANSI_PATTERN = re.compile(r"\x1b\[[0-9;]*m")
 
     # Room patterns
-    ROOM_NAME_PATTERN = re.compile(r'^([A-Z][^\n]+)$', re.MULTILINE)
-    EXITS_PATTERN = re.compile(r'\[Exits?:\s*([^\]]+)\]', re.IGNORECASE)
-    EXITS_LIST_PATTERN = re.compile(r'Obvious exits?:\s*(.+?)(?:\n|$)', re.IGNORECASE)
+    ROOM_NAME_PATTERN = re.compile(r"^([A-Z][^\n]+)$", re.MULTILINE)
+    EXITS_PATTERN = re.compile(r"\[Exits?:\s*([^\]]+)\]", re.IGNORECASE)
+    EXITS_LIST_PATTERN = re.compile(r"Obvious exits?:\s*(.+?)(?:\n|$)", re.IGNORECASE)
 
     # Direction patterns for exit parsing
     DIRECTION_WORDS = [
-        'north', 'south', 'east', 'west', 'up', 'down',
-        'northeast', 'northwest', 'southeast', 'southwest',
-        'n', 's', 'e', 'w', 'u', 'd', 'ne', 'nw', 'se', 'sw'
+        "north",
+        "south",
+        "east",
+        "west",
+        "up",
+        "down",
+        "northeast",
+        "northwest",
+        "southeast",
+        "southwest",
+        "n",
+        "s",
+        "e",
+        "w",
+        "u",
+        "d",
+        "ne",
+        "nw",
+        "se",
+        "sw",
     ]
 
     # Character status patterns
-    HP_PATTERN = re.compile(r'(?:HP|Health|Hit Points?):\s*(\d+)/(\d+)', re.IGNORECASE)
-    MANA_PATTERN = re.compile(r'(?:MP|Mana|Magic):\s*(\d+)/(\d+)', re.IGNORECASE)
-    LEVEL_PATTERN = re.compile(r'Level:\s*(\d+)', re.IGNORECASE)
-    GOLD_PATTERN = re.compile(r'(?:Gold|Money|Coins?):\s*(\d+)', re.IGNORECASE)
+    HP_PATTERN = re.compile(r"(?:HP|Health|Hit Points?):\s*(\d+)/(\d+)", re.IGNORECASE)
+    MANA_PATTERN = re.compile(r"(?:MP|Mana|Magic):\s*(\d+)/(\d+)", re.IGNORECASE)
+    LEVEL_PATTERN = re.compile(r"Level:\s*(\d+)", re.IGNORECASE)
+    GOLD_PATTERN = re.compile(r"(?:Gold|Money|Coins?):\s*(\d+)", re.IGNORECASE)
 
     # Money patterns (Cealdish currency)
     MONEY_PATTERN = re.compile(
-        r'(\d+)\s*(?:gold\s*)?marks?|(\d+)\s*(?:silver\s*)?talents?|'
-        r'(\d+)\s*(?:copper\s*)?jots?|(\d+)\s*(?:iron\s*)?drabs?',
-        re.IGNORECASE
+        r"(\d+)\s*(?:gold\s*)?marks?|(\d+)\s*(?:silver\s*)?talents?|"
+        r"(\d+)\s*(?:copper\s*)?jots?|(\d+)\s*(?:iron\s*)?drabs?",
+        re.IGNORECASE,
     )
 
     # NPC/Player patterns - these appear in "You see:" sections
-    SEE_PATTERN = re.compile(r'You see:\s*(.+?)(?:\n\n|\n[A-Z]|\Z)', re.IGNORECASE | re.DOTALL)
-    ALSO_HERE_PATTERN = re.compile(r'Also here:\s*(.+?)(?:\n|$)', re.IGNORECASE)
+    SEE_PATTERN = re.compile(r"You see:\s*(.+?)(?:\n\n|\n[A-Z]|\Z)", re.IGNORECASE | re.DOTALL)
+    ALSO_HERE_PATTERN = re.compile(r"Also here:\s*(.+?)(?:\n|$)", re.IGNORECASE)
     # NPC "is here" pattern used by look command (e.g., "a giant sewer rat is here")
-    IS_HERE_PATTERN = re.compile(r'^(.+?)\s+is here\.', re.IGNORECASE | re.MULTILINE)
+    IS_HERE_PATTERN = re.compile(r"^(.+?)\s+is here\.", re.IGNORECASE | re.MULTILINE)
 
     # Item patterns
-    ITEM_ON_GROUND_PATTERN = re.compile(r'(?:On the ground|Items?):\s*(.+?)(?:\n\n|\n[A-Z]|\Z)', re.IGNORECASE | re.DOTALL)
+    ITEM_ON_GROUND_PATTERN = re.compile(
+        r"(?:On the ground|Items?):\s*(.+?)(?:\n\n|\n[A-Z]|\Z)", re.IGNORECASE | re.DOTALL
+    )
 
     # Combat patterns
     COMBAT_PATTERNS = [
-        re.compile(r'attacks?\s+you', re.IGNORECASE),
-        re.compile(r'you\s+attack', re.IGNORECASE),
-        re.compile(r'damage', re.IGNORECASE),
-        re.compile(r'combat', re.IGNORECASE),
-        re.compile(r'fighting', re.IGNORECASE),
+        re.compile(r"attacks?\s+you", re.IGNORECASE),
+        re.compile(r"you\s+attack", re.IGNORECASE),
+        re.compile(r"damage", re.IGNORECASE),
+        re.compile(r"combat", re.IGNORECASE),
+        re.compile(r"fighting", re.IGNORECASE),
     ]
 
     # Action result patterns
     SUCCESS_PATTERNS = [
-        re.compile(r'you\s+(?:get|take|pick\s+up)', re.IGNORECASE),
-        re.compile(r'you\s+(?:drop|put|place)', re.IGNORECASE),
-        re.compile(r'you\s+(?:go|move|walk|travel)', re.IGNORECASE),
-        re.compile(r'you\s+(?:buy|sell|purchase)', re.IGNORECASE),
-        re.compile(r'you\s+(?:say|tell|whisper)', re.IGNORECASE),
+        re.compile(r"you\s+(?:get|take|pick\s+up)", re.IGNORECASE),
+        re.compile(r"you\s+(?:drop|put|place)", re.IGNORECASE),
+        re.compile(r"you\s+(?:go|move|walk|travel)", re.IGNORECASE),
+        re.compile(r"you\s+(?:buy|sell|purchase)", re.IGNORECASE),
+        re.compile(r"you\s+(?:say|tell|whisper)", re.IGNORECASE),
     ]
 
     FAILURE_PATTERNS = [
         re.compile(r"can'?t|cannot|unable", re.IGNORECASE),
-        re.compile(r'no\s+exit', re.IGNORECASE),
-        re.compile(r'not\s+found', re.IGNORECASE),
+        re.compile(r"no\s+exit", re.IGNORECASE),
+        re.compile(r"not\s+found", re.IGNORECASE),
         re.compile(r"don'?t\s+have", re.IGNORECASE),
-        re.compile(r'invalid|unknown', re.IGNORECASE),
+        re.compile(r"invalid|unknown", re.IGNORECASE),
     ]
 
     def __init__(self) -> None:
@@ -151,7 +180,7 @@ class GameStateParser:
 
     def strip_ansi(self, text: str) -> str:
         """Remove ANSI escape codes."""
-        return self.ANSI_PATTERN.sub('', text)
+        return self.ANSI_PATTERN.sub("", text)
 
     def parse(self, text: str) -> GameState:
         """
@@ -182,7 +211,7 @@ class GameStateParser:
 
     def _parse_room(self, text: str) -> None:
         """Parse room information from text."""
-        lines = text.strip().split('\n')
+        lines = text.strip().split("\n")
         if not lines:
             return
 
@@ -212,10 +241,10 @@ class GameStateParser:
         # Parse NPCs/players in room
         also_here = self.ALSO_HERE_PATTERN.search(text)
         if also_here:
-            names = [n.strip() for n in also_here.group(1).split(',')]
+            names = [n.strip() for n in also_here.group(1).split(",")]
             # Simple heuristic: NPCs usually have titles, players are just names
             for name in names:
-                if any(word in name.lower() for word in ['guard', 'merchant', 'keeper', 'master']):
+                if any(word in name.lower() for word in ["guard", "merchant", "keeper", "master"]):
                     if name not in self._current_state.room.npcs:
                         self._current_state.room.npcs.append(name)
                 else:
@@ -227,7 +256,7 @@ class GameStateParser:
         for match in is_here_matches:
             name = match.strip()
             # Skip if it's a player-like name (capital first letter only, no articles)
-            if name.startswith(('a ', 'an ', 'the ', 'A ', 'An ', 'The ')):
+            if name.startswith(("a ", "an ", "the ", "A ", "An ", "The ")):
                 # This is likely an NPC/creature
                 if name not in self._current_state.room.npcs:
                     self._current_state.room.npcs.append(name)
@@ -235,7 +264,7 @@ class GameStateParser:
         # Parse items
         item_match = self.ITEM_ON_GROUND_PATTERN.search(text)
         if item_match:
-            items = [i.strip() for i in item_match.group(1).split(',')]
+            items = [i.strip() for i in item_match.group(1).split(",")]
             self._current_state.room.items = [i for i in items if i]
 
         # Extract description (text between name and exits)
@@ -245,7 +274,7 @@ class GameStateParser:
 
             # Find where description ends (usually at exits or "You see")
             desc_end = len(desc_text)
-            for marker in ['[Exit', 'Obvious exit', 'You see:', 'Also here:']:
+            for marker in ["[Exit", "Obvious exit", "You see:", "Also here:"]:
                 pos = desc_text.find(marker)
                 if pos > 0:
                     desc_end = min(desc_end, pos)
@@ -257,7 +286,7 @@ class GameStateParser:
         """Parse exits from an exit string."""
         exits = []
         # Split by common delimiters
-        parts = re.split(r'[,\s]+', exit_str.lower())
+        parts = re.split(r"[,\s]+", exit_str.lower())
 
         for part in parts:
             part = part.strip()
@@ -372,7 +401,7 @@ class GameStateParser:
             actions.append(exit_dir.value)
 
         # Basic actions
-        actions.extend(['look', 'inventory', 'score', 'who', 'help'])
+        actions.extend(["look", "inventory", "score", "who", "help"])
 
         # Contextual
         if self._current_state.room.items:

@@ -1,17 +1,15 @@
 """Tests for the economy and currency system."""
 
-import pytest
-
 from waystone.game.systems.economy import (
     Currency,
     CurrencyUnit,
-    format_money,
-    parse_money,
     drabs_to_jots,
     drabs_to_talents,
+    format_money,
     jots_to_drabs,
-    talents_to_drabs,
     marks_to_drabs,
+    parse_money,
+    talents_to_drabs,
 )
 from waystone.game.systems.merchant import get_charisma_modifier
 

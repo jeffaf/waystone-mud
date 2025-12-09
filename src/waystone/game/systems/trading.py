@@ -92,7 +92,9 @@ def get_active_trade(character_id: UUID) -> TradeSession | None:
     return None
 
 
-def initiate_trade(initiator: Character, target: Character) -> tuple[bool, str, TradeSession | None]:
+def initiate_trade(
+    initiator: Character, target: Character
+) -> tuple[bool, str, TradeSession | None]:
     """
     Start a trade between two characters.
 
@@ -170,7 +172,10 @@ def accept_trade_request(character: Character) -> tuple[bool, str]:
         character_name=character.name,
     )
 
-    return True, "Trade accepted. Use 'offer <item>' to add items or 'offer <amount> money' to add money."
+    return (
+        True,
+        "Trade accepted. Use 'offer <item>' to add items or 'offer <amount> money' to add money.",
+    )
 
 
 def add_item_to_trade(
@@ -560,7 +565,7 @@ def format_trade_status(session: TradeSession, viewer_id: UUID) -> str:
     """
     lines = ["=== Trade Status ===", ""]
 
-    is_initiator = viewer_id == session.initiator_id
+    _is_initiator = viewer_id == session.initiator_id
 
     # Your offer
     your_offer = session.get_offer_for(viewer_id)

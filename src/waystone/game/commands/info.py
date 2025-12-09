@@ -268,9 +268,7 @@ class WealthCommand(Command):
     async def execute(self, ctx: CommandContext) -> None:
         """Execute the wealth command."""
         if not ctx.session.character_id:
-            await ctx.connection.send_line(
-                colorize("You must be playing a character.", "RED")
-            )
+            await ctx.connection.send_line(colorize("You must be playing a character.", "RED"))
             return
 
         try:
@@ -683,9 +681,7 @@ Just type 'guide' for a quick overview.
             if content:
                 await ctx.connection.send_line(colorize(content, "CYAN"))
             else:
-                await ctx.connection.send_line(
-                    colorize(f"Unknown topic: {topic}", "YELLOW")
-                )
+                await ctx.connection.send_line(colorize(f"Unknown topic: {topic}", "YELLOW"))
                 await ctx.connection.send_line("Type 'guide topics' for available topics.")
         else:
             # Show overview

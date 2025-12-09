@@ -1,20 +1,19 @@
 """Tests for the University system."""
 
-import pytest
 from uuid import uuid4
 
 from waystone.game.systems.university import (
+    ADMISSION_QUESTIONS,
+    NINE_MASTERS,
+    RANK_ORDER,
     ArcanumRank,
     MasterReputation,
     UniversityStatus,
-    NINE_MASTERS,
-    ADMISSION_QUESTIONS,
-    RANK_ORDER,
     calculate_tuition,
     can_access_room,
+    clear_university_cache,
     get_random_questions,
     get_university_status,
-    clear_university_cache,
     rank_from_string,
     rank_to_display,
     score_answer,
@@ -132,7 +131,7 @@ class TestNineMasters:
 
     def test_master_fields(self):
         """Test each master has required fields."""
-        for master_id, master in NINE_MASTERS.items():
+        for _master_id, master in NINE_MASTERS.items():
             assert "name" in master
             assert "title" in master
             assert "domain" in master
@@ -150,12 +149,12 @@ class TestAdmissionQuestions:
     def test_questions_exist(self):
         """Test admission questions are defined."""
         assert len(ADMISSION_QUESTIONS) > 0
-        for category, questions in ADMISSION_QUESTIONS.items():
+        for _category, questions in ADMISSION_QUESTIONS.items():
             assert len(questions) > 0
 
     def test_question_structure(self):
         """Test each question has required fields."""
-        for category, questions in ADMISSION_QUESTIONS.items():
+        for _category, questions in ADMISSION_QUESTIONS.items():
             for q in questions:
                 assert "question" in q
                 assert "excellent" in q
@@ -206,7 +205,9 @@ class TestScoreAnswer:
             "excellent": ["belief"],
             "good": ["focus"],
         }
-        rating, score = score_answer(question, "I'm not entirely sure but I think it has something to do with magic")
+        rating, score = score_answer(
+            question, "I'm not entirely sure but I think it has something to do with magic"
+        )
         assert rating == "adequate"
         assert score == 40
 

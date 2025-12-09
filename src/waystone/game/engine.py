@@ -226,18 +226,18 @@ class GameEngine:
             ReleaseCommand,
             SympathyCommand,
         )
-        from waystone.game.commands.university import (
-            AdmitCommand,
-            RankCommand,
-            TuitionCommand,
-            WorkCommand,
-        )
         from waystone.game.commands.trading import (
             CancelTradeCommand,
             OfferCommand,
             RemoveOfferCommand,
             TradeAcceptCommand,
             TradeCommand,
+        )
+        from waystone.game.commands.university import (
+            AdmitCommand,
+            RankCommand,
+            TuitionCommand,
+            WorkCommand,
         )
 
         registry = get_registry()

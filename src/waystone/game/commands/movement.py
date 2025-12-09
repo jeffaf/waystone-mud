@@ -94,11 +94,12 @@ class MoveCommand(Command):
                     status = get_university_status(character.id)
                     if not can_access_room(status.arcanum_rank, requires_rank):
                         from waystone.game.systems.university import rank_from_string
+
                         required = rank_from_string(requires_rank)
                         await ctx.connection.send_line(
                             colorize(
                                 f"Access denied. This area requires {rank_to_display(required)} rank.",
-                                "RED"
+                                "RED",
                             )
                         )
                         await ctx.connection.send_line(

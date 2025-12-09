@@ -187,9 +187,7 @@ class Connection:
                                 cursor_pos = len(line_buffer)
                             continue
 
-                        elif seq2 == "C":  # Right arrow - ignore for now
-                            continue
-                        elif seq2 == "D":  # Left arrow - ignore for now
+                        elif seq2 == "C" or seq2 == "D":  # Right arrow - ignore for now
                             continue
                     continue  # Ignore unknown escape sequences
 

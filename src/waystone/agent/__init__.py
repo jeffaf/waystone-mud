@@ -14,18 +14,18 @@ Usage:
     python -m waystone.agent -u username -p password -c CharName --rules-only
 """
 
-from waystone.agent.client import MUDClient, ConnectionState, GameMessage
-from waystone.agent.parser import GameStateParser, GameState, Direction, RoomInfo
 from waystone.agent.agent import (
-    MUDAgent,
     AgentConfig,
     Goal,
     GoalType,
-    LLMBackend,
     HaikuBackend,
+    LLMBackend,
+    MUDAgent,
     OllamaBackend,
     RuleBasedBackend,
 )
+from waystone.agent.client import ConnectionState, GameMessage, MUDClient
+from waystone.agent.parser import Direction, GameState, GameStateParser, RoomInfo
 
 __all__ = [
     # Client

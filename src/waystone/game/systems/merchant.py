@@ -365,7 +365,10 @@ async def sell_item(
         )
 
         qty_str = f"{quantity} " if quantity > 1 else ""
-        return True, f"You sold {qty_str}{item_instance.template.name} for {format_money(total_price)}."
+        return (
+            True,
+            f"You sold {qty_str}{item_instance.template.name} for {format_money(total_price)}.",
+        )
 
     # Use provided session or create a new one
     if session is not None:

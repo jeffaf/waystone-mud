@@ -145,9 +145,7 @@ async def attack_npc(
     async with get_session() as session:
         from sqlalchemy import select
 
-        result = await session.execute(
-            select(Character).where(Character.id == attacker_id)
-        )
+        result = await session.execute(select(Character).where(Character.id == attacker_id))
         attacker = result.scalar_one_or_none()
 
         if not attacker:
@@ -174,7 +172,7 @@ async def attack_npc(
                 f"You lunge at {npc.name} but strike only air.",
             ]
             if is_fumble:
-                miss_msg = colorize(f"FUMBLE! ", "RED") + random.choice(miss_msgs)
+                miss_msg = colorize("FUMBLE! ", "RED") + random.choice(miss_msgs)
             else:
                 miss_msg = random.choice(miss_msgs)
             return False, f"{miss_msg} (Roll: {final_roll} vs AC {npc_defense})", 0
@@ -192,7 +190,10 @@ async def attack_npc(
 
         # Varied hit messages based on damage
         if is_critical:
-            hit_desc = colorize("CRITICAL HIT! ", "YELLOW") + f"You strike {npc.name} with devastating force"
+            hit_desc = (
+                colorize("CRITICAL HIT! ", "YELLOW")
+                + f"You strike {npc.name} with devastating force"
+            )
         elif total_damage >= 8:
             hit_desc = f"You land a powerful blow on {npc.name}"
         elif total_damage >= 5:

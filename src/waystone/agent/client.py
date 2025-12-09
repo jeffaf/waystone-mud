@@ -15,6 +15,7 @@ logger = structlog.get_logger(__name__)
 
 class ConnectionState(Enum):
     """Connection state of the MUD client."""
+
     DISCONNECTED = "disconnected"
     CONNECTING = "connecting"
     CONNECTED = "connected"
@@ -25,6 +26,7 @@ class ConnectionState(Enum):
 @dataclass
 class GameMessage:
     """A message received from the MUD server."""
+
     raw: str
     timestamp: datetime = field(default_factory=datetime.now)
     message_type: str = "unknown"  # prompt, room, combat, chat, system, etc.
@@ -39,14 +41,14 @@ class MUDClient:
     """
 
     # ANSI escape code pattern for stripping colors
-    ANSI_PATTERN = re.compile(r'\x1b\[[0-9;]*m')
+    ANSI_PATTERN = re.compile(r"\x1b\[[0-9;]*m")
 
     # Common prompts and patterns
     PROMPT_PATTERNS = [
-        re.compile(r'^> ?$'),  # Standard prompt
-        re.compile(r'^Password: ?$'),  # Password prompt
-        re.compile(r'^Username: ?$'),  # Username prompt
-        re.compile(r'^\[.*\] > ?$'),  # Status prompt
+        re.compile(r"^> ?$"),  # Standard prompt
+        re.compile(r"^Password: ?$"),  # Password prompt
+        re.compile(r"^Username: ?$"),  # Username prompt
+        re.compile(r"^\[.*\] > ?$"),  # Status prompt
     ]
 
     def __init__(
@@ -97,7 +99,7 @@ class MUDClient:
 
     def strip_ansi(self, text: str) -> str:
         """Remove ANSI escape codes from text."""
-        return self.ANSI_PATTERN.sub('', text)
+        return self.ANSI_PATTERN.sub("", text)
 
     def _classify_message(self, text: str) -> str:
         """
@@ -113,19 +115,19 @@ class MUDClient:
                 return "prompt"
 
         # Room descriptions typically start with a name
-        if clean and clean[0].isupper() and '\n' in text:
+        if clean and clean[0].isupper() and "\n" in text:
             return "room"
 
         # Combat messages
-        if any(word in clean.lower() for word in ['attack', 'damage', 'hit', 'miss', 'kill']):
+        if any(word in clean.lower() for word in ["attack", "damage", "hit", "miss", "kill"]):
             return "combat"
 
         # Chat/communication
-        if any(word in clean.lower() for word in ['says', 'tells you', 'chat:', '[ooc]']):
+        if any(word in clean.lower() for word in ["says", "tells you", "chat:", "[ooc]"]):
             return "chat"
 
         # System messages
-        if any(word in clean.lower() for word in ['welcome', 'goodbye', 'error', 'invalid']):
+        if any(word in clean.lower() for word in ["welcome", "goodbye", "error", "invalid"]):
             return "system"
 
         return "unknown"
@@ -147,8 +149,7 @@ class MUDClient:
         try:
             # Use telnetlib3 for proper telnet protocol handling
             self._reader, self._writer = await asyncio.wait_for(
-                telnetlib3.open_connection(self.host, self.port, encoding='utf-8'),
-                timeout=10.0
+                telnetlib3.open_connection(self.host, self.port, encoding="utf-8"), timeout=10.0
             )
 
             self._state = ConnectionState.CONNECTED
@@ -272,10 +273,7 @@ class MUDClient:
         while self._running and self._reader:
             try:
                 # telnetlib3 returns strings directly
-                text = await asyncio.wait_for(
-                    self._reader.read(4096),
-                    timeout=1.0
-                )
+                text = await asyncio.wait_for(self._reader.read(4096), timeout=1.0)
 
                 if not text:
                     # Connection closed
@@ -286,13 +284,15 @@ class MUDClient:
                 buffer += text
 
                 # Debug: log raw data received
-                logger.debug("raw_data_received", length=len(text), preview=text[:100].replace('\n', '\\n'))
+                logger.debug(
+                    "raw_data_received", length=len(text), preview=text[:100].replace("\n", "\\n")
+                )
 
                 # Process complete lines
-                while '\n' in buffer or '\r' in buffer:
+                while "\n" in buffer or "\r" in buffer:
                     # Find line boundary
                     end_pos = -1
-                    for delim in ['\r\n', '\n', '\r']:
+                    for delim in ["\r\n", "\n", "\r"]:
                         pos = buffer.find(delim)
                         if pos >= 0 and (end_pos < 0 or pos < end_pos):
                             end_pos = pos
@@ -302,13 +302,15 @@ class MUDClient:
                         break
 
                     line = buffer[:end_pos]
-                    buffer = buffer[end_pos + delim_len:]
+                    buffer = buffer[end_pos + delim_len :]
 
                     if line:  # Skip empty lines
                         self._process_line(line)
 
                 # Check for prompt (no newline)
-                if buffer and any(p.match(self.strip_ansi(buffer).strip()) for p in self.PROMPT_PATTERNS):
+                if buffer and any(
+                    p.match(self.strip_ansi(buffer).strip()) for p in self.PROMPT_PATTERNS
+                ):
                     self._process_line(buffer)
                     buffer = ""
 
@@ -371,14 +373,18 @@ class MUDClient:
         await asyncio.sleep(1.0)
 
         # Check for success
-        recent = self._message_history[-10:] if len(self._message_history) >= 10 else self._message_history
+        recent = (
+            self._message_history[-10:]
+            if len(self._message_history) >= 10
+            else self._message_history
+        )
         for msg in recent:
             clean = self.strip_ansi(msg.raw).lower()
-            if 'welcome back' in clean or 'logged in' in clean or 'characters' in clean:
+            if "welcome back" in clean or "logged in" in clean or "characters" in clean:
                 self._state = ConnectionState.LOGGED_IN
                 logger.info("login_successful", username=username)
                 return True
-            if 'invalid' in clean or 'incorrect' in clean or 'failed' in clean:
+            if "invalid" in clean or "incorrect" in clean or "failed" in clean:
                 logger.warning("login_failed", username=username)
                 return False
 
@@ -408,28 +414,39 @@ class MUDClient:
         for _ in range(10):  # Check up to 5 seconds
             await asyncio.sleep(0.5)
 
-            recent = self._message_history[-30:] if len(self._message_history) >= 30 else self._message_history
+            recent = (
+                self._message_history[-30:]
+                if len(self._message_history) >= 30
+                else self._message_history
+            )
 
             # Check for success early
             for msg in recent:
                 clean = self.strip_ansi(msg.raw).lower()
-                if 'welcome to the world' in clean or '[exits:' in clean:
+                if "welcome to the world" in clean or "[exits:" in clean:
                     logger.debug("play_success_detected", message=clean[:60])
                     self._state = ConnectionState.PLAYING
                     logger.info("playing_character", character=character_name)
                     return True
 
         # Final check with debug
-        recent = self._message_history[-30:] if len(self._message_history) >= 30 else self._message_history
+        recent = (
+            self._message_history[-30:]
+            if len(self._message_history) >= 30
+            else self._message_history
+        )
 
         # Debug: log what messages we received after play command
-        logger.debug("play_response_messages", count=len(recent),
-                     messages=[self.strip_ansi(m.raw)[:60] for m in recent[-10:]])
+        logger.debug(
+            "play_response_messages",
+            count=len(recent),
+            messages=[self.strip_ansi(m.raw)[:60] for m in recent[-10:]],
+        )
 
         for msg in recent:
             clean = self.strip_ansi(msg.raw).lower()
             # Success patterns from Waystone
-            if 'welcome to the world' in clean:
+            if "welcome to the world" in clean:
                 self._state = ConnectionState.PLAYING
                 logger.info("playing_character", character=character_name)
                 return True
@@ -437,14 +454,14 @@ class MUDClient:
             if "don't have a character named" in clean:
                 logger.warning("character_not_found", character=character_name)
                 return False
-            if 'already being played' in clean:
+            if "already being played" in clean:
                 logger.warning("character_in_use", character=character_name)
                 return False
 
         # Check for room description (Exits: indicates we're in the game world)
         for msg in recent:
             clean = self.strip_ansi(msg.raw).lower()
-            if '[exits:' in clean or 'exits:' in clean:
+            if "[exits:" in clean or "exits:" in clean:
                 self._state = ConnectionState.PLAYING
                 logger.info("playing_character", character=character_name)
                 return True
@@ -452,8 +469,8 @@ class MUDClient:
         # Check if prompt changed to game prompt (not Character Select)
         for msg in recent:
             clean = self.strip_ansi(msg.raw).strip()
-            if clean == '>' or clean.endswith(' >'):
-                if '(character select)' not in clean.lower() and '(login)' not in clean.lower():
+            if clean == ">" or clean.endswith(" >"):
+                if "(character select)" not in clean.lower() and "(login)" not in clean.lower():
                     self._state = ConnectionState.PLAYING
                     return True
 
@@ -470,7 +487,11 @@ class MUDClient:
         Returns:
             Concatenated recent output
         """
-        recent = self._message_history[-count:] if len(self._message_history) >= count else self._message_history
+        recent = (
+            self._message_history[-count:]
+            if len(self._message_history) >= count
+            else self._message_history
+        )
         lines = []
         for msg in recent:
             text = self.strip_ansi(msg.raw) if strip_ansi else msg.raw

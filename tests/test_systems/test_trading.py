@@ -493,19 +493,17 @@ class TestTradeCompletion:
         sword_row = result.one()
 
         result = await db_session.execute(
-            select(ItemInstance.owner_id, ItemInstance.quantity).where(ItemInstance.id == potions_id)
+            select(ItemInstance.owner_id, ItemInstance.quantity).where(
+                ItemInstance.id == potions_id
+            )
         )
         potions_row = result.one()
 
         # Re-query characters for money
-        result = await db_session.execute(
-            select(Character.gold).where(Character.id == trader1.id)
-        )
+        result = await db_session.execute(select(Character.gold).where(Character.id == trader1.id))
         trader1_gold = result.scalar_one()
 
-        result = await db_session.execute(
-            select(Character.gold).where(Character.id == trader2.id)
-        )
+        result = await db_session.execute(select(Character.gold).where(Character.id == trader2.id))
         trader2_gold = result.scalar_one()
 
         # Sword should now belong to trader2
@@ -563,7 +561,9 @@ class TestTradeCancellation:
 class TestTradeAcceptanceReset:
     """Tests for acceptance reset when trade is modified."""
 
-    async def test_acceptance_resets_on_item_add(self, db_session, trader1, trader2, item_templates):
+    async def test_acceptance_resets_on_item_add(
+        self, db_session, trader1, trader2, item_templates
+    ):
         """Test that acceptance resets when items are added."""
         item = ItemInstance(
             template_id="trade_sword",

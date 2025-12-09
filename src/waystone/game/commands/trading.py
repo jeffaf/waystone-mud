@@ -9,7 +9,7 @@ from sqlalchemy.orm import joinedload
 from waystone.database.engine import get_session
 from waystone.database.models import Character, ItemInstance
 from waystone.game.systems import trading as trading_system
-from waystone.game.systems.economy import format_money, parse_money
+from waystone.game.systems.economy import parse_money
 from waystone.network import colorize
 
 from .base import Command, CommandContext
@@ -51,7 +51,10 @@ class TradeCommand(Command):
                         await ctx.connection.send_line(colorize(status, "CYAN"))
                     else:
                         await ctx.connection.send_line(
-                            colorize("You are not in a trade. Use 'trade <player>' to start one.", "YELLOW")
+                            colorize(
+                                "You are not in a trade. Use 'trade <player>' to start one.",
+                                "YELLOW",
+                            )
                         )
                     return
 
@@ -154,7 +157,10 @@ class TradeAcceptCommand(Command):
                             await ctx.connection.send_line(colorize(message, "YELLOW"))
                     else:
                         await ctx.connection.send_line(
-                            colorize("Waiting for the other player to accept your trade request.", "YELLOW")
+                            colorize(
+                                "Waiting for the other player to accept your trade request.",
+                                "YELLOW",
+                            )
                         )
                     return
 
@@ -214,9 +220,7 @@ class OfferCommand(Command):
 
                 trade_session = trading_system.get_active_trade(character.id)
                 if not trade_session:
-                    await ctx.connection.send_line(
-                        colorize("You are not in a trade.", "YELLOW")
-                    )
+                    await ctx.connection.send_line(colorize("You are not in a trade.", "YELLOW"))
                     return
 
                 # Check for "money" keyword
@@ -313,9 +317,7 @@ class RemoveOfferCommand(Command):
 
                 trade_session = trading_system.get_active_trade(character.id)
                 if not trade_session:
-                    await ctx.connection.send_line(
-                        colorize("You are not in a trade.", "YELLOW")
-                    )
+                    await ctx.connection.send_line(colorize("You are not in a trade.", "YELLOW"))
                     return
 
                 # Check for "money" keyword

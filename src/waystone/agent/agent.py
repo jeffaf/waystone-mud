@@ -6,7 +6,7 @@ Uses Claude Haiku (primary) or Ollama (optional) for decision-making.
 import asyncio
 import os
 from abc import ABC, abstractmethod
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 
@@ -15,6 +15,7 @@ import structlog
 # Load .env file for API keys
 try:
     from dotenv import load_dotenv
+
     # Look for .env in project root
     env_path = Path(__file__).parent.parent.parent.parent / ".env"
     if env_path.exists():
@@ -22,14 +23,15 @@ try:
 except ImportError:
     pass  # python-dotenv not installed, use environment variables directly
 
-from waystone.agent.client import MUDClient, ConnectionState
-from waystone.agent.parser import GameStateParser, GameState, Direction
+from waystone.agent.client import MUDClient
+from waystone.agent.parser import Direction, GameState, GameStateParser
 
 logger = structlog.get_logger(__name__)
 
 
 class GoalType(Enum):
     """Types of goals the agent can pursue."""
+
     EXPLORE = "explore"  # Explore the world
     GATHER_MONEY = "gather_money"  # Earn currency
     LEVEL_UP = "level_up"  # Gain experience
@@ -42,6 +44,7 @@ class GoalType(Enum):
 @dataclass
 class Goal:
     """A goal for the agent to pursue."""
+
     goal_type: GoalType
     priority: int = 1  # Higher = more important
     target: str = ""  # Optional target (room, item, player, etc.)
@@ -52,6 +55,7 @@ class Goal:
 @dataclass
 class AgentConfig:
     """Configuration for the MUD agent."""
+
     host: str = "localhost"
     port: int = 4000
     username: str = ""
@@ -100,6 +104,7 @@ class HaikuBackend(LLMBackend):
         # Import here to avoid dependency issues if not using Haiku
         try:
             import anthropic
+
             self.client = anthropic.Anthropic(api_key=self.api_key)
         except ImportError:
             raise ImportError("anthropic package required: pip install anthropic")
@@ -135,7 +140,7 @@ CREATURE INDICATORS (attack these):
 Current game state:
 {context}
 
-Available actions: {', '.join(available_actions)}
+Available actions: {", ".join(available_actions)}
 
 RULES:
 - If you see "is here" with a creature name, use "attack <creature>"
@@ -155,19 +160,22 @@ Action:"""
                 lambda: self.client.messages.create(
                     model="claude-3-5-haiku-20241022",
                     max_tokens=50,
-                    messages=[{"role": "user", "content": prompt}]
-                )
+                    messages=[{"role": "user", "content": prompt}],
+                ),
             )
 
             # Track token usage
-            if hasattr(response, 'usage'):
+            if hasattr(response, "usage"):
                 self.total_input_tokens += response.usage.input_tokens
                 self.total_output_tokens += response.usage.output_tokens
 
             action = response.content[0].text.strip().lower()
-            logger.debug("haiku_decision", action=action,
-                        input_tokens=response.usage.input_tokens if hasattr(response, 'usage') else 0,
-                        output_tokens=response.usage.output_tokens if hasattr(response, 'usage') else 0)
+            logger.debug(
+                "haiku_decision",
+                action=action,
+                input_tokens=response.usage.input_tokens if hasattr(response, "usage") else 0,
+                output_tokens=response.usage.output_tokens if hasattr(response, "usage") else 0,
+            )
             return action
 
         except Exception as e:
@@ -193,7 +201,7 @@ class OllamaBackend(LLMBackend):
     def __init__(self, model: str = "llama3.2", host: str = "http://localhost:11434") -> None:
         """Initialize Ollama backend."""
         self.model = model
-        self.host = host.rstrip('/')
+        self.host = host.rstrip("/")
 
         logger.info("ollama_backend_initialized", model=model, host=host)
 
@@ -204,31 +212,33 @@ class OllamaBackend(LLMBackend):
 State:
 {context}
 
-Available: {', '.join(available_actions[:10])}
+Available: {", ".join(available_actions[:10])}
 
 Command:"""
 
         try:
             import aiohttp
 
-            async with aiohttp.ClientSession() as session:
-                async with session.post(
+            async with (
+                aiohttp.ClientSession() as session,
+                session.post(
                     f"{self.host}/api/generate",
                     json={
                         "model": self.model,
                         "prompt": prompt,
                         "stream": False,
-                        "options": {"num_predict": 20}
+                        "options": {"num_predict": 20},
                     },
-                    timeout=aiohttp.ClientTimeout(total=30)
-                ) as resp:
-                    if resp.status == 200:
-                        data = await resp.json()
-                        action = data.get("response", "").strip().lower()
-                        # Clean up - take first word/command
-                        action = action.split('\n')[0].split()[0] if action else "look"
-                        logger.debug("ollama_decision", action=action)
-                        return action
+                    timeout=aiohttp.ClientTimeout(total=30),
+                ) as resp,
+            ):
+                if resp.status == 200:
+                    data = await resp.json()
+                    action = data.get("response", "").strip().lower()
+                    # Clean up - take first word/command
+                    action = action.split("\n")[0].split()[0] if action else "look"
+                    logger.debug("ollama_decision", action=action)
+                    return action
 
         except ImportError:
             logger.error("aiohttp required for ollama: pip install aiohttp")
@@ -251,7 +261,7 @@ class RuleBasedBackend(LLMBackend):
         """Use simple rules to decide action."""
         # Parse context for room name
         room_name = ""
-        for line in context.split('\n'):
+        for line in context.split("\n"):
             if line.startswith("Location:"):
                 room_name = line.split(":", 1)[1].strip()
                 break
@@ -261,8 +271,18 @@ class RuleBasedBackend(LLMBackend):
             self._visited_rooms.add(room_name)
 
         # Priority: unexplored directions > items > random direction > look
-        directions = ['north', 'south', 'east', 'west', 'up', 'down',
-                      'northeast', 'northwest', 'southeast', 'southwest']
+        directions = [
+            "north",
+            "south",
+            "east",
+            "west",
+            "up",
+            "down",
+            "northeast",
+            "northwest",
+            "southeast",
+            "southwest",
+        ]
 
         # Try unexplored directions first
         for action in available_actions:
@@ -288,11 +308,16 @@ class RuleBasedBackend(LLMBackend):
         if not direction:
             return ""
         opposites = {
-            Direction.NORTH: "south", Direction.SOUTH: "north",
-            Direction.EAST: "west", Direction.WEST: "east",
-            Direction.UP: "down", Direction.DOWN: "up",
-            Direction.NORTHEAST: "southwest", Direction.SOUTHWEST: "northeast",
-            Direction.NORTHWEST: "southeast", Direction.SOUTHEAST: "northwest",
+            Direction.NORTH: "south",
+            Direction.SOUTH: "north",
+            Direction.EAST: "west",
+            Direction.WEST: "east",
+            Direction.UP: "down",
+            Direction.DOWN: "up",
+            Direction.NORTHEAST: "southwest",
+            Direction.SOUTHWEST: "northeast",
+            Direction.NORTHWEST: "southeast",
+            Direction.SOUTHEAST: "northwest",
         }
         return opposites.get(direction, "")
 
@@ -431,7 +456,7 @@ class MUDAgent:
         print("📊 AGENT SESSION REPORT")
         print("=" * 60)
 
-        print(f"\n🎯 STATISTICS:")
+        print("\n🎯 STATISTICS:")
         print(f"   Actions taken: {len(self._action_history)}")
         print(f"   Rooms visited: {len(self._session_data['rooms_visited'])}")
         print(f"   NPCs encountered: {len(self._session_data['npcs_seen'])}")
@@ -443,33 +468,33 @@ class MUDAgent:
         if isinstance(self.backend, HaikuBackend):
             input_tokens, output_tokens = self.backend.get_token_usage()
             cost = self.backend.get_estimated_cost()
-            print(f"\n💰 API USAGE:")
+            print("\n💰 API USAGE:")
             print(f"   Input tokens: {input_tokens:,}")
             print(f"   Output tokens: {output_tokens:,}")
             print(f"   Estimated cost: ${cost:.4f}")
 
         if self._session_data["rooms_visited"]:
-            print(f"\n🗺️  ROOMS EXPLORED:")
+            print("\n🗺️  ROOMS EXPLORED:")
             for room in sorted(self._session_data["rooms_visited"]):
                 print(f"   - {room}")
 
         if self._session_data["npcs_seen"]:
-            print(f"\n👥 NPCs SEEN:")
+            print("\n👥 NPCs SEEN:")
             for npc in sorted(self._session_data["npcs_seen"]):
                 print(f"   - {npc}")
 
         if self._session_data["access_denied"]:
-            print(f"\n🚫 ACCESS DENIED (need higher rank):")
+            print("\n🚫 ACCESS DENIED (need higher rank):")
             for msg in self._session_data["access_denied"][:5]:
                 print(f"   - {msg}")
 
         if self._session_data["errors_encountered"]:
-            print(f"\n⚠️  POTENTIAL ISSUES/BUGS:")
+            print("\n⚠️  POTENTIAL ISSUES/BUGS:")
             for error in self._session_data["errors_encountered"][:10]:
                 print(f"   - {error}")
 
         # Suggestions
-        print(f"\n💡 OBSERVATIONS:")
+        print("\n💡 OBSERVATIONS:")
         if self._session_data["repeated_actions"] > 3:
             print("   - Agent got stuck repeating actions - may need better exploration logic")
         if self._session_data["combat_encounters"] == 0:
@@ -478,7 +503,10 @@ class MUDAgent:
             print("   - Limited exploration - check for movement blockers")
         if self._session_data["access_denied"]:
             print("   - Some areas require University rank - agent needs to advance first")
-        if not self._session_data["errors_encountered"] and self._session_data["repeated_actions"] <= 3:
+        if (
+            not self._session_data["errors_encountered"]
+            and self._session_data["repeated_actions"] <= 3
+        ):
             print("   - Session ran smoothly with no major issues!")
 
         print("\n" + "=" * 60 + "\n")
@@ -542,7 +570,11 @@ class MUDAgent:
         action = await self.backend.decide_action(context, available)
 
         # Check for repeated actions
-        if len(self._action_history) >= 2 and self._action_history[-1] == action and self._action_history[-2] == action:
+        if (
+            len(self._action_history) >= 2
+            and self._action_history[-1] == action
+            and self._action_history[-2] == action
+        ):
             self._session_data["repeated_actions"] += 1
 
         # Record and execute
@@ -581,7 +613,7 @@ class MUDAgent:
         # Track access denied messages (potential areas to explore later)
         if "access denied" in output_lower or "requires" in output_lower and "rank" in output_lower:
             # Extract the message
-            for line in output.split('\n'):
+            for line in output.split("\n"):
                 if "access denied" in line.lower() or "requires" in line.lower():
                     if line not in self._session_data["access_denied"]:
                         self._session_data["access_denied"].append(line.strip())
@@ -590,7 +622,7 @@ class MUDAgent:
         error_indicators = ["error", "invalid", "failed", "unknown command", "can't", "cannot"]
         for indicator in error_indicators:
             if indicator in output_lower:
-                for line in output.split('\n'):
+                for line in output.split("\n"):
                     if indicator in line.lower() and line.strip():
                         if line.strip() not in self._session_data["errors_encountered"]:
                             self._session_data["errors_encountered"].append(line.strip())

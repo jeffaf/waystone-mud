@@ -9,8 +9,8 @@ Commands for interacting with the University system:
 
 from waystone.game.commands.base import Command, CommandContext
 from waystone.game.systems.university import (
-    ArcanumRank,
     NINE_MASTERS,
+    ArcanumRank,
     calculate_tuition,
     get_random_questions,
     get_university_status,
@@ -67,12 +67,8 @@ class AdmitCommand(Command):
         await ctx.connection.send_line(colorize("  UNIVERSITY ADMISSION EXAMINATION", "BOLD"))
         await ctx.connection.send_line(colorize("═" * 50, "YELLOW"))
         await ctx.connection.send_line("")
-        await ctx.connection.send_line(
-            "The Masters have assembled to examine your worthiness."
-        )
-        await ctx.connection.send_line(
-            "Answer each question to the best of your ability."
-        )
+        await ctx.connection.send_line("The Masters have assembled to examine your worthiness.")
+        await ctx.connection.send_line("Answer each question to the best of your ability.")
         await ctx.connection.send_line("")
 
         # Get 2 random questions (simplified admission for new players)
@@ -83,10 +79,8 @@ class AdmitCommand(Command):
             master_id = list(NINE_MASTERS.keys())[i % len(NINE_MASTERS)]
             master = NINE_MASTERS[master_id]
 
-            await ctx.connection.send_line(
-                colorize(f"Master {master['name']} asks:", "CYAN")
-            )
-            await ctx.connection.send_line(f"  \"{q['question']}\"")
+            await ctx.connection.send_line(colorize(f"Master {master['name']} asks:", "CYAN"))
+            await ctx.connection.send_line(f'  "{q["question"]}"')
             await ctx.connection.send_line("")
 
             # Get player's answer
@@ -154,9 +148,7 @@ class AdmitCommand(Command):
             await ctx.connection.send_line(
                 f"Rank: {colorize(rank_to_display(status.arcanum_rank), 'CYAN')}"
             )
-            await ctx.connection.send_line(
-                f"Term: {status.current_term}"
-            )
+            await ctx.connection.send_line(f"Term: {status.current_term}")
             await ctx.connection.send_line("")
 
             # Show tuition
@@ -175,9 +167,7 @@ class AdmitCommand(Command):
             await ctx.connection.send_line(
                 colorize("The Masters have voted to REJECT your admission.", "RED")
             )
-            await ctx.connection.send_line(
-                "Study harder and return next term to try again."
-            )
+            await ctx.connection.send_line("Study harder and return next term to try again.")
 
         await ctx.connection.send_line("")
 
@@ -264,13 +254,9 @@ class TuitionCommand(Command):
             talents = status.tuition_amount // 100
             jots = status.tuition_amount % 100
             tuition_str = f"{talents} talents, {jots} jots" if talents else f"{jots} jots"
-            await ctx.connection.send_line(
-                f"Amount Due: {colorize(tuition_str, 'YELLOW')}"
-            )
+            await ctx.connection.send_line(f"Amount Due: {colorize(tuition_str, 'YELLOW')}")
             await ctx.connection.send_line("")
-            await ctx.connection.send_line(
-                f"Use '{colorize('tuition pay', 'CYAN')}' to pay."
-            )
+            await ctx.connection.send_line(f"Use '{colorize('tuition pay', 'CYAN')}' to pay.")
 
         await ctx.connection.send_line("")
 
@@ -307,9 +293,7 @@ class RankCommand(Command):
             await ctx.connection.send_line(
                 colorize("You are not a member of the Arcanum.", "YELLOW")
             )
-            await ctx.connection.send_line(
-                "Visit the Hollows to apply for admission."
-            )
+            await ctx.connection.send_line("Visit the Hollows to apply for admission.")
             await ctx.connection.send_line("")
             return
 
@@ -317,9 +301,7 @@ class RankCommand(Command):
             f"Rank: {colorize(rank_to_display(status.arcanum_rank), 'CYAN')}"
         )
         await ctx.connection.send_line(f"Term: {status.current_term}")
-        await ctx.connection.send_line(
-            f"Last Exam Score: {status.admission_score}%"
-        )
+        await ctx.connection.send_line(f"Last Exam Score: {status.admission_score}%")
         await ctx.connection.send_line("")
 
         # Show master reputations
@@ -350,9 +332,7 @@ class RankCommand(Command):
 
         await ctx.connection.send_line("")
         avg_rep = status.average_reputation()
-        await ctx.connection.send_line(
-            f"Overall Standing: {avg_rep:+.1f}"
-        )
+        await ctx.connection.send_line(f"Overall Standing: {avg_rep:+.1f}")
         await ctx.connection.send_line("")
 
 
@@ -403,9 +383,7 @@ class WorkCommand(Command):
         job_name = ctx.args[0].lower()
 
         if job_name not in self.JOBS:
-            await ctx.connection.send_line(
-                colorize(f"Unknown job: {job_name}", "RED")
-            )
+            await ctx.connection.send_line(colorize(f"Unknown job: {job_name}", "RED"))
             await ctx.connection.send_line("Available jobs: scriv, medica, artificery")
             return
 
@@ -414,6 +392,7 @@ class WorkCommand(Command):
 
         # Check rank requirement
         from waystone.game.systems.university import RANK_ORDER
+
         if RANK_ORDER.index(status.arcanum_rank) < RANK_ORDER.index(job["requires_rank"]):
             await ctx.connection.send_line(
                 colorize(f"This job requires {rank_to_display(job['requires_rank'])} rank.", "RED")
@@ -436,14 +415,10 @@ class WorkCommand(Command):
         pay_str = f"{talents} talents, {jots} jots" if talents else f"{jots} jots"
 
         await ctx.connection.send_line("")
-        await ctx.connection.send_line(
-            f"You spend some time working as a {job['name']}."
-        )
+        await ctx.connection.send_line(f"You spend some time working as a {job['name']}.")
         await ctx.connection.send_line(job["description"] + ".")
         await ctx.connection.send_line("")
-        await ctx.connection.send_line(
-            f"You earn {colorize(pay_str, 'GREEN')}."
-        )
+        await ctx.connection.send_line(f"You earn {colorize(pay_str, 'GREEN')}.")
         await ctx.connection.send_line("")
 
         # Small reputation boost

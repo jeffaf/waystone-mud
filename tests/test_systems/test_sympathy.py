@@ -5,7 +5,6 @@ from collections.abc import AsyncGenerator
 from unittest.mock import AsyncMock, Mock
 
 import pytest
-from sqlalchemy import select
 
 from waystone.database.engine import get_session, init_db
 from waystone.database.models import Character, CharacterBackground, User
@@ -13,16 +12,12 @@ from waystone.game.engine import GameEngine
 from waystone.game.systems.magic.sympathy import (
     HEAT_SOURCE_ENERGY,
     MATERIAL_DATABASE,
-    MAX_BINDINGS_BY_ALAR,
     RANK_EFFICIENCY_CAPS,
     RANK_NAMES,
     RANK_XP_REQUIREMENTS,
     BacklashSeverity,
-    Binding,
     BindingType,
-    EnergySource,
     HeatSourceType,
-    MaterialProperties,
     SympatheticBacklash,
     SympatheticLink,
     award_sympathy_xp,
@@ -38,7 +33,6 @@ from waystone.game.systems.magic.sympathy import (
     get_sympathy_rank,
     get_sympathy_xp,
     release_all_bindings,
-    release_binding,
 )
 from waystone.game.world import Room
 from waystone.network import Connection, Session, SessionState
@@ -353,7 +347,7 @@ class TestBacklash:
     def test_body_heat_increases_risk(self) -> None:
         """Test that body heat increases backlash risk."""
         # Just verify function works with body heat flag
-        backlash = check_for_backlash(0.5, True, 2)
+        _backlash = check_for_backlash(0.5, True, 2)
         # May or may not get backlash due to randomness
 
     def test_backlash_severity_levels(self) -> None:
@@ -484,9 +478,7 @@ class TestXPAndProgression:
             assert initial_xp == 50
 
             # Award XP - function takes character_id (UUID), not Character
-            new_xp_amount, leveled_up = await award_sympathy_xp(
-                character.id, 100, session
-            )
+            new_xp_amount, leveled_up = await award_sympathy_xp(character.id, 100, session)
             await session.commit()
 
             # Verify XP increased
