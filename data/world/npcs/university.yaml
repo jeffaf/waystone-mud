@@ -1,0 +1,179 @@
+# University NPCs for Waystone MUD
+# These are NPCs found at the University
+
+npcs:
+  - id: student
+    name: "a university student"
+    description: |
+      A young student wearing the grey robe of a novice. They carry an
+      armload of books and look perpetually worried about upcoming
+      examinations. Like most students, they seem sleep-deprived and
+      slightly malnourished from spending their coins on tuition rather
+      than food.
+    level: 1
+    max_hp: 15
+    attributes:
+      strength: 8
+      dexterity: 10
+      constitution: 9
+      intelligence: 14
+      wisdom: 11
+      charisma: 10
+    behavior: passive
+    loot_table_id: null
+    dialogue:
+      greeting: "Oh, hello. Sorry, I'm rather busy with my studies..."
+      keywords:
+        university: "The University is... challenging. But worth it, I hope."
+        studies: "I'm focusing on sympathy and artificing. When I'm not sleeping in the Mews, anyway."
+        exams: "Don't remind me. I have an admissions exam coming up soon."
+        tuition: "It's expensive, but knowledge is priceless. That's what they tell us, anyway."
+    respawn_time: 0
+
+  - id: master_lorren
+    name: "Master Lorren, the Chancellor"
+    description: |
+      Master Lorren, Chancellor of the University and Master Archivist.
+      He is tall and thin with prematurely grey hair and dark, intelligent
+      eyes. His expression is stern and humorless - he suffers no fools
+      and tolerates no disruption to the Archives. He wears the black
+      robes of a master with subtle grey trim marking his position as
+      Chancellor. When he speaks, students listen.
+    level: 10
+    max_hp: 100
+    attributes:
+      strength: 10
+      dexterity: 11
+      constitution: 12
+      intelligence: 20
+      wisdom: 19
+      charisma: 14
+    behavior: stationary
+    loot_table_id: null
+    dialogue:
+      greeting: "Speak your business quickly. I have little time for idle conversation."
+      keywords:
+        archives: "The Archives are sacred. Silence and respect are not optional here."
+        books: "Knowledge is the greatest treasure. Treat all books with care."
+        university: "The University has stood for centuries. It will stand for centuries more."
+        lorren: "I am the Master Archivist and Chancellor. I expect proper decorum from all students."
+        rules: "The Archives have strict rules. Break them and you will be barred. Permanently."
+    respawn_time: 0
+
+  - id: scriv
+    name: "a stern scriv"
+    description: |
+      A scriv - one of Master Lorren's assistants in the Archives. This
+      one has sharp features and sharper eyes that miss nothing. They
+      enforce the Archives' rules with zealous efficiency: absolute
+      silence, no food or drink, careful handling of all materials, and
+      proper check-out procedures. Cross them at your peril.
+    level: 3
+    max_hp: 30
+    attributes:
+      strength: 9
+      dexterity: 11
+      constitution: 10
+      intelligence: 16
+      wisdom: 15
+      charisma: 8
+    behavior: stationary
+    loot_table_id: null
+    dialogue:
+      greeting: "Silence in the Archives. State your business in whispers or leave."
+      keywords:
+        books: "All books must be checked out properly. No exceptions."
+        rules: "Silence. No food. No drink. Respect the materials. Simple enough?"
+        lorren: "Master Lorren's word is law in the Archives. Remember that."
+        checkout: "Present your admission tile and request slip. I'll fetch the book if it's available."
+    respawn_time: 0
+
+  - id: master_kilvin
+    name: "Master Kilvin, the Artificer"
+    description: |
+      Master Kilvin is an imposing figure, tall and broad-shouldered with
+      the build of a blacksmith. His dark skin gleams with sweat from the
+      forge's heat. He wears the black master's robe over practical work
+      clothes. His hands are scarred from years of metalwork and artificing.
+      When he speaks, his voice rumbles like distant thunder, but his
+      manner is kind to students who show genuine effort.
+    level: 10
+    max_hp: 120
+    attributes:
+      strength: 18
+      dexterity: 13
+      constitution: 16
+      intelligence: 18
+      wisdom: 16
+      charisma: 12
+    behavior: stationary
+    loot_table_id: null
+    dialogue:
+      greeting: "Well met. Are you here to learn, or just to gawk at my forge?"
+      keywords:
+        artificery: "Artificing is art and science combined. It requires patience, precision, and practice."
+        sygaldry: "Sygaldry is the heart of our craft. Each rune must be perfect or the binding fails."
+        forge: "This forge has served the University for generations. I keep it burning day and night."
+        work: "Show me your work. I judge by effort and quality, not by empty words."
+        kilvin: "I am Master Kilvin. I teach artificing and expect dedication from my students."
+    respawn_time: 0
+
+  - id: master_arwyl
+    name: "Master Arwyl, the Physician"
+    description: |
+      Master Arwyl is a middle-aged man with kind eyes and gentle hands.
+      He wears the black master's robes over green healer's garb. His
+      manner is calm and reassuring - perfect for a physician. The smell
+      of medicinal herbs follows him everywhere. He moves between patients
+      with quiet efficiency, teaching his students through demonstration
+      rather than lecture.
+    level: 8
+    max_hp: 80
+    attributes:
+      strength: 9
+      dexterity: 14
+      constitution: 12
+      intelligence: 17
+      wisdom: 18
+      charisma: 15
+    behavior: stationary
+    loot_table_id: null
+    dialogue:
+      greeting: "Welcome to the Medica. Are you ill or injured? Or perhaps here to learn?"
+      keywords:
+        healing: "Healing is both art and science. Knowledge of herbs, anatomy, and gentle hands."
+        medica: "The Medica has served the University for centuries. We heal all who need it."
+        herbs: "Every herb has its purpose. Learn them well and you can cure most ailments."
+        students: "My students learn through practice. Observation first, then careful application."
+        arwyl: "I am Master Arwyl. I teach medicine and the healing arts."
+    respawn_time: 0
+
+  - id: elodin
+    name: "Master Elodin, the Namer"
+    description: |
+      Master Elodin is unlike any other master. Young for his rank, he
+      has wild hair and wilder eyes that seem to see beyond the surface
+      of things. He wears his master's robes carelessly, often inside-out
+      or backwards. His behavior is unpredictable - sometimes profound,
+      sometimes seemingly mad. He teaches Naming, the most mysterious and
+      dangerous of all the arcane arts.
+    level: 15
+    max_hp: 90
+    attributes:
+      strength: 10
+      dexterity: 12
+      constitution: 11
+      intelligence: 22
+      wisdom: 20
+      charisma: 16
+    behavior: wander
+    loot_table_id: null
+    dialogue:
+      greeting: "Ah! You see me, but do you SEE me? More importantly, do you see yourself?"
+      keywords:
+        naming: "Naming is not about control. It's about understanding. True, deep understanding."
+        name: "Everything has a name. Find it and you find truth. But be careful - truth cuts both ways."
+        elodin: "I am Elodin. Or am I? Names are slippery things, even my own."
+        teach: "I teach those who are ready to learn. The question is: are you ready?"
+        wind: "The wind knows your name. Do you know its name? No? Then you have much to learn."
+    respawn_time: 0

@@ -116,6 +116,15 @@ class Character(Base, TimestampMixin):
         comment="Unspent attribute points for character customization",
     )
 
+    # Currency
+    gold: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        default=100,
+        server_default="100",
+        comment="Character's gold currency",
+    )
+
     # Location and progression
     current_room_id: Mapped[str] = mapped_column(
         String(100),
@@ -190,6 +199,16 @@ class Character(Base, TimestampMixin):
         default=dict,
         server_default="{}",
         comment="Character skills with ranks and XP",
+    )
+
+    # Visited rooms - list of room IDs the character has visited
+    # Used for tracking exploration and awarding XP for first-time visits
+    visited_rooms: Mapped[list[str]] = mapped_column(
+        JSON,
+        nullable=False,
+        default=list,
+        server_default="[]",
+        comment="List of room IDs the character has visited",
     )
 
     # Relationships

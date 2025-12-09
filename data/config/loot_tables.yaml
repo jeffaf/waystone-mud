@@ -1,0 +1,111 @@
+# Waystone MUD Loot Tables
+# Define loot drops for NPCs, containers, and other sources
+
+loot_tables:
+  # Bandit enemy loot
+  - id: bandit_loot
+    gold_min: 5
+    gold_max: 20
+    entries:
+      - item_id: dagger
+        chance: 0.3
+        min_quantity: 1
+        max_quantity: 1
+      - item_id: bread
+        chance: 0.5
+        min_quantity: 1
+        max_quantity: 2
+      - item_id: health_potion
+        chance: 0.1
+        min_quantity: 1
+        max_quantity: 1
+
+  # Wolf enemy loot
+  - id: wolf_loot
+    gold_min: 0
+    gold_max: 0
+    entries:
+      - item_id: wolf_pelt
+        chance: 0.8
+        min_quantity: 1
+        max_quantity: 1
+      - item_id: wolf_meat
+        chance: 0.6
+        min_quantity: 1
+        max_quantity: 3
+
+  # Goblin enemy loot
+  - id: goblin_loot
+    gold_min: 1
+    gold_max: 10
+    entries:
+      - item_id: rusty_sword
+        chance: 0.2
+        min_quantity: 1
+        max_quantity: 1
+      - item_id: leather_armor
+        chance: 0.15
+        min_quantity: 1
+        max_quantity: 1
+      - item_id: bread
+        chance: 0.4
+        min_quantity: 1
+        max_quantity: 1
+
+  # Treasure chest loot
+  - id: treasure_chest
+    gold_min: 50
+    gold_max: 200
+    entries:
+      - item_id: health_potion
+        chance: 0.7
+        min_quantity: 2
+        max_quantity: 5
+      - item_id: mana_potion
+        chance: 0.6
+        min_quantity: 1
+        max_quantity: 3
+      - item_id: iron_sword
+        chance: 0.3
+        min_quantity: 1
+        max_quantity: 1
+      - item_id: steel_armor
+        chance: 0.25
+        min_quantity: 1
+        max_quantity: 1
+
+  # Rare boss loot
+  - id: boss_loot
+    gold_min: 100
+    gold_max: 500
+    entries:
+      - item_id: legendary_sword
+        chance: 0.1
+        min_quantity: 1
+        max_quantity: 1
+      - item_id: enchanted_armor
+        chance: 0.15
+        min_quantity: 1
+        max_quantity: 1
+      - item_id: health_potion
+        chance: 1.0
+        min_quantity: 3
+        max_quantity: 5
+      - item_id: mana_potion
+        chance: 1.0
+        min_quantity: 2
+        max_quantity: 4
+      - item_id: rare_gem
+        chance: 0.5
+        min_quantity: 1
+        max_quantity: 2
+
+  # Basic rat loot (common low-level enemy)
+  - id: rat_loot
+    gold_min: 0
+    gold_max: 2
+    entries:
+      - item_id: rat_tail
+        chance: 0.5
+        min_quantity: 1
+        max_quantity: 1

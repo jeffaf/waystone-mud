@@ -1,0 +1,113 @@
+# Merchant NPCs for Waystone MUD
+# These NPCs buy and sell goods
+
+npcs:
+  - id: merchant_imre
+    name: "Devi, the merchant"
+    description: |
+      A shrewd merchant woman with sharp eyes and a calculating smile.
+      Devi runs a profitable business in Imre, buying and selling all
+      manner of goods. She's known for driving hard bargains but being
+      fair in her dealings. Her shop is well-stocked with basic supplies,
+      tools, and occasional curiosities.
+    level: 1
+    max_hp: 15
+    attributes:
+      strength: 8
+      dexterity: 10
+      constitution: 10
+      intelligence: 14
+      wisdom: 13
+      charisma: 15
+    behavior: merchant
+    loot_table_id: null
+    dialogue:
+      greeting: "Welcome to my shop! I buy and sell all manner of goods. What can I do for you?"
+      keywords:
+        buy: "I have many items for sale. Just ask!"
+        sell: "I'll buy most things, as long as they're in good condition."
+        trade: "Fair prices, always. That's my motto."
+        imre: "Imre is a fine city for trade. The University keeps business flowing."
+    respawn_time: 0  # Merchants don't respawn - they're permanent
+
+  - id: blacksmith_imre
+    name: "Caleb, the blacksmith"
+    description: |
+      A burly blacksmith with muscled arms and soot-stained hands. Caleb's
+      forge has served Imre for two generations. He specializes in weapons,
+      armor, and horseshoes, though he can craft most anything from metal.
+      His work is solid and reliable, if not particularly fancy.
+    level: 1
+    max_hp: 25
+    attributes:
+      strength: 16
+      dexterity: 12
+      constitution: 15
+      intelligence: 11
+      wisdom: 12
+      charisma: 10
+    behavior: merchant
+    loot_table_id: null
+    dialogue:
+      greeting: "Need something forged? I work with steel, iron, and bronze. Quality work, fair prices."
+      keywords:
+        weapons: "I can craft or repair most weapons. Swords, axes, maces - you name it."
+        armor: "I make chainmail, plate pieces, and shields. Heavy work, but good protection."
+        repair: "Bring me damaged equipment and I'll fix it up for you."
+        forge: "Been working this forge since I was a boy. My father taught me well."
+    respawn_time: 0
+
+  - id: innkeeper_anker
+    name: "Anker, the innkeeper"
+    description: |
+      The proprietor of the Barrel and Tap, one of Imre's more respectable
+      establishments. Anker is a rotund man with a friendly demeanor and
+      a talent for remembering faces. He serves decent food and ale, and
+      rents rooms upstairs for travelers. He keeps a cudgel behind the bar
+      for troublemakers.
+    level: 2
+    max_hp: 30
+    attributes:
+      strength: 13
+      dexterity: 10
+      constitution: 14
+      intelligence: 11
+      wisdom: 14
+      charisma: 13
+    behavior: merchant
+    loot_table_id: null
+    dialogue:
+      greeting: "Welcome to the Barrel and Tap! Food, drink, and rooms available. What'll it be?"
+      keywords:
+        food: "We've got stew, bread, cheese, and roasted meat. Fills the belly proper."
+        drink: "Ale, wine, or mead? All fresh and reasonably priced."
+        room: "Clean beds upstairs. Two coppers a night, breakfast included."
+        imre: "Fine city, Imre. Close enough to the University for business, far enough to avoid the politics."
+    respawn_time: 0
+
+  - id: apothecary_imre
+    name: "Manet, the apothecary"
+    description: |
+      An elderly apothecary with gentle hands and vast knowledge of herbs
+      and remedies. Manet's shop smells of dried plants, tinctures, and
+      exotic spices. He can prepare healing potions, antidotes, and various
+      medicinal compounds. Former students from the Medica often consult him.
+    level: 1
+    max_hp: 12
+    attributes:
+      strength: 7
+      dexterity: 11
+      constitution: 9
+      intelligence: 16
+      wisdom: 17
+      charisma: 12
+    behavior: merchant
+    loot_table_id: null
+    dialogue:
+      greeting: "Greetings. Do you seek healing, cures, or perhaps alchemical supplies?"
+      keywords:
+        healing: "I have various healing potions and salves. They work quickly and leave no scars."
+        poison: "I deal in cures for poison, not poisons themselves. I'm a healer, not an assassin."
+        herbs: "My shelves hold herbs from across the Four Corners. Each has its uses."
+        medica: "I trained at the Medica many years ago. The University taught me well."
+    respawn_time: 0

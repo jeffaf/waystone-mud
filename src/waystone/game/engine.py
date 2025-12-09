@@ -8,7 +8,7 @@ import structlog
 from waystone.config import get_settings
 from waystone.database.engine import close_db, init_db
 from waystone.game.commands.base import CommandContext, get_registry
-from waystone.game.world import Room, load_all_rooms
+from waystone.game.world import NPCTemplate, Room, load_all_npcs, load_all_rooms
 from waystone.network import (
     WELCOME_BANNER,
     Connection,
@@ -32,6 +32,8 @@ class GameEngine:
     def __init__(self) -> None:
         """Initialize the game engine."""
         self.world: dict[str, Room] = {}
+        self.npc_templates: dict[str, NPCTemplate] = {}
+        self.room_npcs: dict[str, list[str]] = {}  # room_id -> list of NPC template IDs
         self.connections: dict[UUID, Connection] = {}
         self.session_manager: SessionManager = SessionManager()
         self.character_to_session: dict[str, Session] = {}
@@ -66,6 +68,22 @@ class GameEngine:
         except Exception as e:
             logger.error("world_load_failed", error=str(e), exc_info=True)
             raise
+
+        # Load NPC templates
+        logger.info("loading_npcs")
+        try:
+            npc_path = self._settings.world_dir / "npcs"
+            self.npc_templates = load_all_npcs(npc_path)
+            logger.info(
+                "npcs_loaded",
+                total_npc_templates=len(self.npc_templates),
+            )
+        except Exception as e:
+            logger.error("npc_load_failed", error=str(e), exc_info=True)
+            raise
+
+        # Spawn NPCs in their designated rooms
+        self._spawn_initial_npcs()
 
         # Register all commands
         self._register_commands()
@@ -159,6 +177,7 @@ class GameEngine:
         from waystone.game.commands.info import (
             HelpCommand,
             IncreaseCommand,
+            SaveCommand,
             ScoreCommand,
             TimeCommand,
             WhoCommand,
@@ -188,6 +207,7 @@ class GameEngine:
             UpCommand,
             WestCommand,
         )
+        from waystone.game.commands.npc import ConsiderCommand
 
         registry = get_registry()
 
@@ -236,6 +256,7 @@ class GameEngine:
         registry.register(ScoreCommand())
         registry.register(TimeCommand())
         registry.register(IncreaseCommand())
+        registry.register(SaveCommand())
 
         # Inventory and equipment commands
         registry.register(InventoryCommand())
@@ -246,6 +267,9 @@ class GameEngine:
         registry.register(EquipCommand())
         registry.register(UnequipCommand())
         registry.register(EquipmentCommand())
+
+        # NPC commands
+        registry.register(ConsiderCommand())
 
         logger.info(
             "commands_registered",
@@ -473,20 +497,94 @@ class GameEngine:
                         error=str(e),
                     )
 
+    def _spawn_initial_npcs(self) -> None:
+        """
+        Spawn NPCs in their designated rooms based on templates.
+
+        This is called once at startup to populate the world with NPCs.
+        For now, this spawns NPCs in specific rooms based on their type.
+        Future enhancement: Load spawn data from YAML files.
+        """
+        # Define NPC spawn locations
+        # Format: {room_id: [npc_template_ids]}
+        spawn_locations = {
+            # University NPCs
+            "university_archives": ["scriv", "master_lorren"],
+            "university_courtyard": ["student"],
+            "university_artificery": ["master_kilvin"],
+            "university_medica": ["master_arwyl"],
+            # Imre merchants (when Imre rooms are added)
+            # Enemies will spawn dynamically or in specific danger zones
+        }
+
+        total_spawned = 0
+        for room_id, npc_ids in spawn_locations.items():
+            if room_id not in self.world:
+                logger.warning(
+                    "npc_spawn_room_not_found",
+                    room_id=room_id,
+                    npc_ids=npc_ids,
+                )
+                continue
+
+            for npc_id in npc_ids:
+                if npc_id not in self.npc_templates:
+                    logger.warning(
+                        "npc_template_not_found",
+                        npc_id=npc_id,
+                        room_id=room_id,
+                    )
+                    continue
+
+                # Add NPC to room's NPC list
+                if room_id not in self.room_npcs:
+                    self.room_npcs[room_id] = []
+                self.room_npcs[room_id].append(npc_id)
+                total_spawned += 1
+
+        logger.info(
+            "npcs_spawned",
+            total_spawned=total_spawned,
+            total_rooms_with_npcs=len(self.room_npcs),
+        )
+
     async def _periodic_cleanup(self) -> None:
-        """Periodically clean up expired sessions and other resources."""
+        """Periodically clean up expired sessions and check for NPC respawns."""
+        tick_count = 0
+
         while self._running:
             try:
-                # Wait 5 minutes between cleanups
-                await asyncio.sleep(300)
+                # Wait 30 seconds between ticks
+                await asyncio.sleep(30)
+                tick_count += 1
 
-                # Clean up expired sessions
-                expired_count = self.session_manager.cleanup_expired()
+                # Clean up expired sessions (every 10 ticks = 5 minutes)
+                if tick_count % 10 == 0:
+                    expired_count = self.session_manager.cleanup_expired()
 
-                if expired_count > 0:
-                    logger.info(
-                        "periodic_cleanup_completed",
-                        expired_sessions=expired_count,
+                    if expired_count > 0:
+                        logger.info(
+                            "periodic_cleanup_completed",
+                            expired_sessions=expired_count,
+                        )
+
+                # Check for NPC respawns every tick
+                from waystone.game.systems.death import check_respawns
+
+                try:
+                    respawned_count = await check_respawns(self)
+
+                    if respawned_count > 0:
+                        logger.debug(
+                            "respawn_check_completed",
+                            respawned_count=respawned_count,
+                        )
+
+                except Exception as e:
+                    logger.error(
+                        "respawn_check_error",
+                        error=str(e),
+                        exc_info=True,
                     )
 
             except asyncio.CancelledError:

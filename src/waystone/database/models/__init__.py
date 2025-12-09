@@ -3,6 +3,7 @@
 from waystone.database.models.base import Base, TimestampMixin
 from waystone.database.models.character import Character, CharacterBackground
 from waystone.database.models.item import ItemInstance, ItemSlot, ItemTemplate, ItemType
+from waystone.database.models.npc import NPC, NPCTemplate
 from waystone.database.models.room import Room
 from waystone.database.models.user import User
 
@@ -17,4 +18,6 @@ __all__ = [
     "ItemInstance",
     "ItemType",
     "ItemSlot",
+    "NPC",
+    "NPCTemplate",
 ]

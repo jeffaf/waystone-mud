@@ -26,9 +26,17 @@ from waystone.game.commands.communication import (
 )
 from waystone.game.commands.info import (
     HelpCommand,
+    IncreaseCommand,
+    SaveCommand,
     ScoreCommand,
     TimeCommand,
     WhoCommand,
+)
+from waystone.game.commands.merchant import (
+    AppraiseCommand,
+    BuyCommand,
+    ListCommand,
+    SellCommand,
 )
 from waystone.game.commands.movement import (
     DownCommand,
@@ -90,7 +98,14 @@ __all__ = [
     "WhoCommand",
     "ScoreCommand",
     "TimeCommand",
+    "IncreaseCommand",
+    "SaveCommand",
     # Skill commands
     "SkillsCommand",
     "TrainCommand",
+    # Merchant commands
+    "ListCommand",
+    "BuyCommand",
+    "SellCommand",
+    "AppraiseCommand",
 ]

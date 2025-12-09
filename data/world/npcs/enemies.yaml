@@ -1,0 +1,86 @@
+# Enemy NPCs for Waystone MUD
+# These are hostile NPCs that will attack players
+
+npcs:
+  - id: bandit
+    name: "a scrappy bandit"
+    description: |
+      A rough-looking bandit with weathered features and suspicious eyes.
+      Dressed in mismatched leather armor, they carry a rusty shortsword
+      and a hungry look. Probably desperate enough to attack travelers for
+      coin or supplies.
+    level: 2
+    max_hp: 30
+    attributes:
+      strength: 12
+      dexterity: 14
+      constitution: 12
+      intelligence: 8
+      wisdom: 10
+      charisma: 8
+    behavior: aggressive
+    loot_table_id: bandit_loot
+    dialogue: null
+    respawn_time: 300  # 5 minutes
+
+  - id: wolf
+    name: "a grey wolf"
+    description: |
+      A lean grey wolf with sharp yellow eyes and bared fangs. Its ribs
+      show through its mangy coat - hunger has made it bold and dangerous.
+      It watches you warily, ready to pounce at any sign of weakness.
+    level: 1
+    max_hp: 20
+    attributes:
+      strength: 11
+      dexterity: 15
+      constitution: 12
+      intelligence: 3
+      wisdom: 12
+      charisma: 6
+    behavior: aggressive
+    loot_table_id: null  # Wolves don't carry loot
+    dialogue: null
+    respawn_time: 180  # 3 minutes
+
+  - id: highway_robber
+    name: "a dangerous highway robber"
+    description: |
+      An experienced highwayman wearing quality leather armor and a dark
+      cloak. Unlike common bandits, this one moves with practiced confidence
+      and keeps their weapons well-maintained. A professional criminal who
+      knows how to handle themselves in a fight.
+    level: 4
+    max_hp: 50
+    attributes:
+      strength: 14
+      dexterity: 16
+      constitution: 14
+      intelligence: 12
+      wisdom: 12
+      charisma: 10
+    behavior: aggressive
+    loot_table_id: highway_robber_loot
+    dialogue: null
+    respawn_time: 600  # 10 minutes
+
+  - id: rabid_dog
+    name: "a rabid dog"
+    description: |
+      A medium-sized dog with foam dripping from its muzzle and wild,
+      unfocused eyes. Its behavior is erratic and unpredictable - it
+      snaps at the air and growls at nothing. The poor creature is
+      clearly suffering from rabies and poses a serious danger.
+    level: 2
+    max_hp: 25
+    attributes:
+      strength: 10
+      dexterity: 14
+      constitution: 10
+      intelligence: 2
+      wisdom: 10
+      charisma: 4
+    behavior: aggressive
+    loot_table_id: null
+    dialogue: null
+    respawn_time: 240  # 4 minutes

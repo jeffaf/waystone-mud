@@ -346,6 +346,8 @@ class Combat:
             character: The defeated character
             session: Database session for updates
         """
+        from waystone.game.systems.death import handle_player_death
+
         death_msg = colorize(
             f"\n{character.name} has been defeated!",
             "RED",
@@ -355,12 +357,24 @@ class Combat:
         # Remove from combat
         self.participants = [p for p in self.participants if p.character_id != str(character.id)]
 
-        # Restore HP to 1 and move to safe location
-        character.current_hp = 1
-        # TODO: Move to respawn point when we have that feature
-        # For now, keep them in the same room
-
-        await session.commit()
+        # Handle player death with full death mechanics
+        try:
+            await handle_player_death(
+                character_id=character.id,
+                death_location=self.room_id,
+                engine=self.engine,
+                session=session,
+            )
+        except Exception as e:
+            logger.error(
+                "player_death_handling_failed",
+                character_id=str(character.id),
+                error=str(e),
+                exc_info=True,
+            )
+            # Fallback: restore HP to 1 if death handler fails
+            character.current_hp = 1
+            await session.commit()
 
         # Check if combat should end
         if len(self.participants) <= 1:

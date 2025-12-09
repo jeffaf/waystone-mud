@@ -1,0 +1,54 @@
+# Waystone MUD Merchant Configurations
+# Defines merchant inventories and prices
+
+merchants:
+  # General merchant in Imre
+  - npc_id: merchant_imre
+    gold: 500
+    items:
+      bread: -1  # unlimited stock
+      water_flask: -1
+      torch: -1
+      health_potion: 10
+      rope: 5
+      backpack: 3
+
+  # Blacksmith in Imre
+  - npc_id: blacksmith_imre
+    gold: 1000
+    items:
+      iron_sword: 3
+      dagger: 5
+      leather_armor: 2
+      iron_helm: 2
+      buckler: 4
+      steel_sword: 1
+
+  # Apothecary in Imre
+  - npc_id: apothecary_imre
+    gold: 750
+    items:
+      health_potion: 20
+      mana_potion: 15
+      antidote: 10
+      healing_salve: 8
+
+  # University bookshop
+  - npc_id: bookshop_university
+    gold: 2000
+    items:
+      basic_alchemy_tome: 2
+      rhetoric_manual: 3
+      history_book: 5
+      blank_journal: -1
+      quill_and_ink: -1
+
+  # Tavern keeper
+  - npc_id: tavern_keeper
+    gold: 300
+    items:
+      ale: -1
+      wine: -1
+      bread: -1
+      cheese: -1
+      meat_pie: 10

@@ -300,7 +300,7 @@ class ExamineCommand(Command):
             await ctx.connection.send_line(colorize("You must be playing a character.", "RED"))
             return
 
-        item_name = " ".join(ctx.args).lower()
+        target_name = " ".join(ctx.args).lower()
 
         try:
             async with get_session() as session:
@@ -316,12 +316,65 @@ class ExamineCommand(Command):
                     await ctx.connection.send_line(colorize("Character not found.", "RED"))
                     return
 
+            # First, check for NPCs in the room
+            room_id = character.current_room_id
+            room_npc_ids = ctx.engine.room_npcs.get(room_id, [])
+
+            for npc_id in room_npc_ids:
+                npc_template = ctx.engine.npc_templates.get(npc_id)
+                if npc_template and target_name in npc_template.name.lower():
+                    # Found an NPC - display NPC details
+                    await ctx.connection.send_line("")
+                    await ctx.connection.send_line(colorize(npc_template.name.title(), "CYAN"))
+                    await ctx.connection.send_line("-" * len(npc_template.name))
+                    await ctx.connection.send_line(npc_template.description.strip())
+                    await ctx.connection.send_line("")
+
+                    # Show behavior
+                    behavior_colors = {
+                        "aggressive": "RED",
+                        "passive": "GREEN",
+                        "merchant": "YELLOW",
+                        "stationary": "CYAN",
+                        "wander": "BLUE",
+                    }
+                    behavior_color = behavior_colors.get(npc_template.behavior, "WHITE")
+                    await ctx.connection.send_line(
+                        f"Behavior: {colorize(npc_template.behavior.capitalize(), behavior_color)}"
+                    )
+
+                    # Show level and health
+                    await ctx.connection.send_line(
+                        f"Level: {colorize(str(npc_template.level), 'WHITE')} | "
+                        f"Health: {colorize(str(npc_template.max_hp), 'WHITE')} HP"
+                    )
+
+                    # Show dialogue availability
+                    if npc_template.dialogue:
+                        await ctx.connection.send_line("")
+                        await ctx.connection.send_line(
+                            colorize("This NPC appears willing to talk.", "CYAN")
+                        )
+                        if "greeting" in npc_template.dialogue:
+                            await ctx.connection.send_line(
+                                f'  "{npc_template.dialogue["greeting"]}"'
+                            )
+
+                    logger.debug(
+                        "npc_examined",
+                        character_id=ctx.session.character_id,
+                        npc_id=npc_template.id,
+                    )
+                    return
+
+            # No NPC found, search for items
+            async with get_session() as session:
                 # Search inventory first
                 target_item = None
                 for item_instance in character.items:
                     if (
                         item_instance.room_id is None
-                        and item_name in item_instance.template.name.lower()
+                        and target_name in item_instance.template.name.lower()
                     ):
                         target_item = item_instance
                         break
@@ -336,13 +389,13 @@ class ExamineCommand(Command):
                     room_items = result.scalars().all()
 
                     for item_instance in room_items:
-                        if item_name in item_instance.template.name.lower():
+                        if target_name in item_instance.template.name.lower():
                             target_item = item_instance
                             break
 
                 if not target_item:
                     await ctx.connection.send_line(
-                        colorize(f"You don't see '{item_name}' here.", "YELLOW")
+                        colorize(f"You don't see '{target_name}' here.", "YELLOW")
                     )
                     return
 
@@ -363,9 +416,7 @@ class ExamineCommand(Command):
 
         except Exception as e:
             logger.error("examine_command_failed", error=str(e), exc_info=True)
-            await ctx.connection.send_line(
-                colorize("Failed to examine item. Please try again.", "RED")
-            )
+            await ctx.connection.send_line(colorize("Failed to examine. Please try again.", "RED"))
 
 
 class GiveCommand(Command):

@@ -433,3 +433,52 @@ class IncreaseCommand(Command):
             await ctx.connection.send_line(
                 colorize("Failed to increase attribute. Please try again.", "RED")
             )
+
+
+class SaveCommand(Command):
+    """Manually save character data to the database."""
+
+    name = "save"
+    aliases = []
+    help_text = "save - Save your character's current state"
+    min_args = 0
+
+    async def execute(self, ctx: CommandContext) -> None:
+        """Execute the save command."""
+        if not ctx.session.character_id:
+            await ctx.connection.send_line(
+                colorize("You must be playing a character to save.", "RED")
+            )
+            return
+
+        try:
+            async with get_session() as session:
+                # Get character to ensure it exists
+                result = await session.execute(
+                    select(Character).where(Character.id == UUID(ctx.session.character_id))
+                )
+                character = result.scalar_one_or_none()
+
+                if not character:
+                    await ctx.connection.send_line(colorize("Character not found.", "RED"))
+                    return
+
+                # Commit any pending changes to the database
+                await session.commit()
+
+                # Success message
+                await ctx.connection.send_line(
+                    colorize(f"✓ {character.name}'s data has been saved.", "GREEN")
+                )
+
+                logger.info(
+                    "character_saved",
+                    character_id=ctx.session.character_id,
+                    character_name=character.name,
+                )
+
+        except Exception as e:
+            logger.error("save_command_failed", error=str(e), exc_info=True)
+            await ctx.connection.send_line(
+                colorize("Failed to save character. Please try again.", "RED")
+            )

@@ -7,6 +7,7 @@ from sqlalchemy import select
 
 from waystone.database.engine import get_session
 from waystone.database.models import Character
+from waystone.game.systems.experience import XP_EXPLORATION_NEW_ROOM, award_xp
 from waystone.network import colorize
 
 from .base import Command, CommandContext
@@ -96,9 +97,43 @@ class MoveCommand(Command):
                     exclude=ctx.session.id,
                 )
 
+                # Check if this is a new room for exploration XP
+                visited_rooms = character.visited_rooms or []
+                is_new_room = destination_id not in visited_rooms
+
                 # Update character location
                 character.current_room_id = destination_id
+
+                # Track visited room
+                if is_new_room:
+                    visited_rooms.append(destination_id)
+                    character.visited_rooms = visited_rooms
+
                 await session.commit()
+
+                # Award exploration XP for new rooms
+                if is_new_room:
+                    xp_awarded, leveled_up = await award_xp(
+                        character.id,
+                        XP_EXPLORATION_NEW_ROOM,
+                        "exploration_new_room",
+                        session=session,
+                    )
+
+                    await ctx.connection.send_line(
+                        colorize(
+                            f"✨ You discovered a new location! +{XP_EXPLORATION_NEW_ROOM} XP",
+                            "YELLOW",
+                        )
+                    )
+
+                    if leveled_up:
+                        await ctx.connection.send_line(
+                            colorize(
+                                f"🎉 Congratulations! You've reached level {character.level}!",
+                                "GREEN",
+                            )
+                        )
 
                 # Add to new room
                 destination_room.add_player(ctx.session.character_id)
@@ -298,6 +333,19 @@ class LookCommand(Command):
 
                 # Show room description
                 await ctx.connection.send_line(room.format_description())
+
+                # Show NPCs in room
+                room_npc_ids = ctx.engine.room_npcs.get(character.current_room_id, [])
+                if room_npc_ids:
+                    await ctx.connection.send_line("")
+                    for npc_id in room_npc_ids:
+                        npc_template = ctx.engine.npc_templates.get(npc_id)
+                        if npc_template:
+                            # Color code by behavior
+                            npc_color = "RED" if npc_template.behavior == "aggressive" else "GREEN"
+                            await ctx.connection.send_line(
+                                colorize(f"{npc_template.name} is here.", npc_color)
+                            )
 
                 # Show other players in room
                 other_players = [pid for pid in room.players if pid != ctx.session.character_id]
