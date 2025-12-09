@@ -635,9 +635,15 @@ class GameEngine:
 
                 # Check for NPC respawns every tick
                 from waystone.game.systems.death import check_respawns
+                from waystone.game.systems.npc_combat import check_npc_respawns
 
                 try:
+                    # Check death system respawns
                     respawned_count = await check_respawns(self)
+
+                    # Check combat system respawns (from _pending_respawns)
+                    combat_respawned = await check_npc_respawns(self)
+                    respawned_count += combat_respawned
 
                     if respawned_count > 0:
                         logger.debug(
