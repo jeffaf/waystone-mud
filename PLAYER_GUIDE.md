@@ -395,10 +395,48 @@ Improve reputation by:
 
 ---
 
+## The Fae Realm
+
+### Finding the Fae
+
+The Fae is a shadow realm accessible through ancient greystones - the standing stones found near Imre. Travel to the Greystones (from Imre North Road) and at twilight, type `enter fae` to step through.
+
+### The Cthaeh
+
+Deep in the Fae, in the Cthaeh's Clearing, dwells an ancient oracle. It speaks only truth - but uses truth as a weapon. The Sithe, immortal hunters, kill anyone who speaks with it.
+
+**Warning:** Speaking to the Cthaeh is dangerous. Accepting its curse is **permanent and irreversible**.
+
+### Fae Commands
+
+| Command | Description |
+|---------|-------------|
+| `enter fae` | Enter the Fae realm at greystones |
+| `speak cthaeh` | Speak to the Cthaeh (PERMANENT) |
+| `embrace curse` | Accept the curse (CANNOT BE UNDONE) |
+| `curse` | View your curse status |
+| `leavefae` | Return to the mortal world |
+
+### The Curse
+
+If you accept the Cthaeh's curse, you gain:
+- **+15% damage** on all attacks
+- **+10% critical hit chance** (on top of natural 20)
+- **+3 to STR, DEX, CON** attributes
+
+But in exchange, the Cthaeh assigns "biddings" - targets you must kill within 24 hours:
+- **Success**: +50% bonus XP for the kill
+- **Failure**: Lose buffs, get -10% stat debuff for 4 hours
+
+The curse is **permanent**. Choose wisely.
+
+---
+
 ## Getting Help
 
 - `help` - List all commands
 - `help <command>` - Detailed help on a command
 - `who` - See online players who might help
+- `guide <topic>` - View guides: combat, sympathy, university, fae
 
 Good luck in the Four Corners, and may your Alar be strong!

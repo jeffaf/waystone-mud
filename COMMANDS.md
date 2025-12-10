@@ -185,6 +185,29 @@ Available when at the University location.
 | `attack <npc>` | Initiate combat |
 | `consider <npc>` | Check difficulty |
 
+## The Fae Realm
+
+Commands available in the Fae realm and Greystones area.
+
+| Command | Aliases | Description |
+|---------|---------|-------------|
+| `enter fae` | | Step through the greystones into the Fae |
+| `speak cthaeh` | `speak`, `talk cthaeh` | Speak with the Cthaeh oracle (at clearing) |
+| `embrace curse` | `acceptcurse` | Accept the Cthaeh's curse (PERMANENT!) |
+| `curse` | | View your curse status and current bidding |
+| `leavefae` | `return` | Leave the Fae and return to the mortal world |
+
+### Cthaeh Curse Effects
+
+If you accept the curse, you gain combat bonuses:
+- **+15% damage** on all attacks
+- **+10% crit chance** (stacks with natural 20)
+- **+3 STR/DEX/CON** stat bonus
+
+The Cthaeh assigns "biddings" (kill targets) once per day:
+- Complete bidding: +50% bonus XP
+- Fail bidding: -10% stat debuff for 4 hours
+
 ## Quick Reference
 
 ### Essential Shortcuts
