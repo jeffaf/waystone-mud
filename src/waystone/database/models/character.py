@@ -11,6 +11,7 @@ from .base import Base, TimestampMixin
 
 if TYPE_CHECKING:
     from .item import ItemInstance
+    from .quest import Quest
     from .user import User
 
 
@@ -261,6 +262,12 @@ class Character(Base, TimestampMixin):
         "ItemInstance",
         back_populates="owner",
         foreign_keys="ItemInstance.owner_id",
+        cascade="all, delete-orphan",
+    )
+
+    quests: Mapped[list["Quest"]] = relationship(
+        "Quest",
+        back_populates="character",
         cascade="all, delete-orphan",
     )
 

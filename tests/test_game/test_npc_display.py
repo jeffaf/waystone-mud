@@ -1,17 +1,18 @@
 """Tests for NPC display functionality."""
 
 import pytest
-from waystone.game.world.npc_loader import NPCTemplate
-from waystone.game.systems.npc_combat import spawn_npc, reset_all_npcs, get_npcs_in_room
+
+from waystone.game.systems.npc_combat import get_npcs_in_room, reset_all_npcs, spawn_npc
 from waystone.game.systems.npc_display import (
-    get_health_condition,
-    get_short_health_status,
-    get_item_display_name,
     find_npc_by_keywords,
-    group_npcs_by_template,
-    get_npc_color,
     format_npc_room_presence,
+    get_health_condition,
+    get_item_display_name,
+    get_npc_color,
+    get_short_health_status,
+    group_npcs_by_template,
 )
+from waystone.game.world.npc_loader import NPCTemplate
 
 
 @pytest.fixture(autouse=True)
@@ -183,7 +184,7 @@ class TestNPCGrouping:
             name="a giant rat",
             description="A rat",
         )
-        npc = spawn_npc(template, "test_room")
+        spawn_npc(template, "test_room")
 
         npcs = get_npcs_in_room("test_room")
         groups = group_npcs_by_template(npcs)

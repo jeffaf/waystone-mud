@@ -53,6 +53,11 @@ from waystone.game.commands.movement import (
     UpCommand,
     WestCommand,
 )
+from waystone.game.commands.quest import (
+    QuestAbandonCommand,
+    QuestInfoCommand,
+    QuestLogCommand,
+)
 from waystone.game.commands.skills import (
     SkillsCommand,
     TrainCommand,
@@ -112,6 +117,10 @@ __all__ = [
     "BuyCommand",
     "SellCommand",
     "AppraiseCommand",
+    # Quest commands
+    "QuestLogCommand",
+    "QuestInfoCommand",
+    "QuestAbandonCommand",
     # Social emote commands
     "EmoteCommands",
     "EmotesCommand",

@@ -410,7 +410,7 @@ class SocialEmoteCommand(Command):
                     if target_session:
                         exclude_ids.add(target_session.id)
 
-                    for session_id in list(exclude_ids):
+                    for _session_id in list(exclude_ids):
                         ctx.engine.broadcast_to_room(
                             character.current_room_id,
                             colorize(room_msg, "MAGENTA"),
@@ -469,7 +469,7 @@ The target will see a special message just for them!""",
 
 # Create all emote command classes
 EmoteCommands: list[type[SocialEmoteCommand]] = [
-    _create_emote_command(emote_name) for emote_name in EMOTES.keys()
+    _create_emote_command(emote_name) for emote_name in EMOTES
 ]
 
 

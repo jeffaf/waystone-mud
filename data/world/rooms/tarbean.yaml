@@ -1,0 +1,273 @@
+rooms:
+  - id: tarbean_dockside
+    name: "Tarbean Dockside"
+    area: tarbean
+    description: |
+      The harbor sprawls before you, a chaotic maze of piers and warehouses
+      stretching along the grey water. Ships from across the Commonwealth and
+      beyond crowd the docks - merchant vessels, fishing boats, and the
+      occasional naval frigate. The air reeks of fish, tar, and salt water.
+      Sailors stumble between ships and taverns, while longshoremen haul cargo
+      with brutal efficiency. Gulls wheel overhead, screaming for scraps.
+
+      The Waterside slums lie to the west. The Hillside merchant district rises
+      to the north. A narrow alley winds east toward abandoned warehouses.
+    exits:
+      north: tarbean_hillside
+      east: tarbean_abandoned_warehouse
+      west: tarbean_waterside
+    properties:
+      outdoor: true
+      lit: true
+      safe_zone: false
+
+  - id: tarbean_waterside
+    name: "Waterside Slums"
+    area: tarbean
+    description: |
+      This is where Tarbean's poorest struggle to survive. Ramshackle buildings
+      lean against each other like drunks, their walls stained with years of
+      grime and neglect. Narrow alleys twist between them, pooling with
+      questionable water when it rains. Ragged children watch from doorways
+      with hungry, calculating eyes. The smell of human waste and rotting
+      garbage is omnipresent. Those who live here learn quickly: trust no one,
+      steal what you need, and never show weakness.
+
+      The docks lie to the east. Beggars Corner is north through the maze of
+      alleys. Rooftops beckon above for those quick and desperate enough.
+    exits:
+      north: tarbean_beggars_corner
+      east: tarbean_dockside
+      up: tarbean_rooftops
+    properties:
+      outdoor: true
+      lit: false
+      safe_zone: false
+
+  - id: tarbean_hillside
+    name: "Hillside District"
+    area: tarbean
+    description: |
+      The wealthy merchants and minor nobility of Tarbean make their homes on
+      the hillside, far enough from the stench of the docks to maintain their
+      refined sensibilities. Well-maintained stone buildings line clean
+      cobblestone streets. Guards patrol regularly, ensuring the "undesirable
+      elements" stay in their proper place below. Shops here sell fine goods
+      at prices meant to exclude the poor. The contrast with Waterside is
+      stark - two different cities separated by wealth and stone walls.
+
+      The marketplace bustles to the east. The docks sprawl below to the south.
+      A guard post stands watch to the northeast.
+    exits:
+      south: tarbean_dockside
+      east: tarbean_marketplace
+      northeast: tarbean_guard_post
+    properties:
+      outdoor: true
+      lit: true
+      safe_zone: true
+
+  - id: tarbean_marketplace
+    name: "Tarbean Marketplace"
+    area: tarbean
+    description: |
+      The central marketplace serves as Tarbean's beating heart, where all
+      classes mingle whether they wish to or not. Vendors hawk everything from
+      fresh fish to stolen jewelry, their voices competing in a constant
+      cacophony. The smell of cooking food mingles with less pleasant odors
+      from the nearby tanneries. Pickpockets work the crowds expertly while
+      merchants guard their wares with suspicious eyes. The guard post is
+      visible to the north, but somehow crimes happen here regardless.
+
+      Hillside lies to the west. Tanners Lane stinks to the south. The Drover
+      Lot, where caravans arrive, is southeast. Beggars cluster at the
+      southwest corner.
+    exits:
+      west: tarbean_hillside
+      north: tarbean_guard_post
+      south: tarbean_tanners_lane
+      southeast: tarbean_drover_lot
+      southwest: tarbean_beggars_corner
+    properties:
+      outdoor: true
+      lit: true
+      safe_zone: false
+
+  - id: tarbean_tanners_lane
+    name: "Tanners Lane"
+    area: tarbean
+    description: |
+      The overwhelming stench of the tanning process assaults your senses -
+      animal hides soaking in urine, lime, and worse. Workers labor in the
+      yards, scraping flesh from skins and working leather in massive vats.
+      The ground is stained and slippery with runoff. Even the poorest avoid
+      this area unless necessity drives them here. The tanners themselves seem
+      immune to the smell, their hands and arms permanently discolored from
+      their trade. At least the work is honest, which is more than can be said
+      for most occupations in Tarbean.
+
+      The marketplace lies to the north, thankfully upwind.
+    exits:
+      north: tarbean_marketplace
+    properties:
+      outdoor: true
+      lit: true
+      safe_zone: false
+
+  - id: tarbean_drover_lot
+    name: "Drover Lot"
+    area: tarbean
+    description: |
+      A large open area where caravans arrive and depart, connecting Tarbean
+      to the rest of the Commonwealth. Teamsters tend their horses and oxen
+      while merchants negotiate prices and guard their wagons. The ground is
+      churned mud mixed with dung, marked by countless wheel ruts. This is
+      where news from other cities arrives, carried by traders and travelers.
+      The Great Stone Road stretches east toward Imre and the University,
+      several days journey through bandit country and worse.
+
+      The marketplace is northwest. The Commonwealth Road leads east toward
+      distant Imre.
+    exits:
+      northwest: tarbean_marketplace
+      east: commonwealth_road_west
+    properties:
+      outdoor: true
+      lit: true
+      safe_zone: true
+
+  - id: tarbean_abandoned_warehouse
+    name: "Abandoned Warehouse"
+    area: tarbean
+    description: |
+      This warehouse has long since been abandoned by legitimate trade, its
+      roof partially collapsed and its walls covered in grime. Now it serves
+      as shelter for the desperate and meeting place for the dangerous. Broken
+      crates and rotting rope litter the floor. The shadows are deep here, and
+      movement in the darkness could be rats, street children, or something
+      worse. The wind whistles through gaps in the walls, carrying the smell
+      of the nearby docks. Those who come here do so carefully, hand on weapon.
+
+      The docks lie to the west. Rooftops provide escape upward for the agile.
+    exits:
+      west: tarbean_dockside
+      up: tarbean_rooftops
+    properties:
+      outdoor: false
+      lit: false
+      safe_zone: false
+
+  - id: tarbean_rooftops
+    name: "Tarbean Rooftops"
+    area: tarbean
+    description: |
+      Up here, above the filth and danger of the streets, the city takes on a
+      different character. Slate roofs and wooden shingles stretch in all
+      directions, a landscape only the desperate and skilled navigate. The
+      footing is treacherous - one slip means a fall that could cripple or
+      kill. But up here the air is cleaner, and you can see trouble coming.
+      Street children who survive in Tarbean learn the rooftops early, using
+      them to escape pursuers and travel unseen. The view shows the entire
+      city: the harbor to the south, wealthy Hillside to the north, and the
+      sprawling slums between.
+
+      Careful climbing allows descent to Waterside, the warehouse, or Beggars
+      Corner.
+    exits:
+      down: tarbean_waterside
+      east: tarbean_abandoned_warehouse
+      north: tarbean_beggars_corner
+    properties:
+      outdoor: true
+      lit: true
+      safe_zone: false
+
+  - id: tarbean_beggars_corner
+    name: "Beggars Corner"
+    area: tarbean
+    description: |
+      Where the Waterside slums meet the marketplace, a small square has
+      become territory for Tarbean's beggars, orphans, and street children.
+      They cluster here, displaying wounds real and fake, pleading for coins
+      from market-goers. Some are genuinely desperate; others work for
+      organized groups that take a cut of their earnings. The younger children
+      huddle together for warmth and protection, their eyes old beyond their
+      years. Guards occasionally sweep through to move them along, but they
+      always return. This is where you learn to survive on the streets - or
+      fail to.
+
+      The marketplace is northeast. Waterside sprawls to the south. Rooftops
+      offer escape above.
+    exits:
+      northeast: tarbean_marketplace
+      south: tarbean_waterside
+      down: tarbean_rooftops
+    properties:
+      outdoor: true
+      lit: false
+      safe_zone: false
+
+  - id: tarbean_guard_post
+    name: "City Guard Post"
+    area: tarbean
+    description: |
+      The guard post is a squat stone building with barred windows and a heavy
+      door. City guards in leather armor come and go, maintaining what passes
+      for law and order in Tarbean. Their jurisdiction seems to extend mainly
+      to protecting the wealthy and keeping the poor contained. Wanted notices
+      are nailed to a board outside - mostly for thieves, murderers, and those
+      who failed to pay their debts. Inside, the guards drink, dice, and
+      occasionally venture out on patrol. Justice in Tarbean is a flexible
+      concept, heavily influenced by the weight of your purse.
+
+      Hillside lies to the southwest. The marketplace is to the south.
+    exits:
+      southwest: tarbean_hillside
+      south: tarbean_marketplace
+    properties:
+      outdoor: false
+      lit: true
+      safe_zone: true
+
+  - id: commonwealth_road_west
+    name: "Commonwealth Road West"
+    area: roads
+    description: |
+      The Great Stone Road stretches east and west, connecting the major cities
+      of the Commonwealth. Here at the western end, Tarbean's influence is
+      strong - the Drover Lot lies just to the west, busy with caravans. To
+      the east, the road winds through farmland and forest for several days
+      before reaching Imre and the University. The road itself is well-
+      maintained, built centuries ago with skill that modern engineers envy.
+      Still, bandits plague this route, and smart travelers move in groups
+      with hired guards.
+
+      Tarbean's Drover Lot is west. The road continues east toward Imre.
+    exits:
+      west: tarbean_drover_lot
+      east: commonwealth_road_mid
+    properties:
+      outdoor: true
+      lit: true
+      safe_zone: false
+
+  - id: commonwealth_road_mid
+    name: "Commonwealth Road"
+    area: roads
+    description: |
+      The road continues through rolling farmland, marked by ancient stone
+      mile markers. Farms and small villages are visible in the distance, but
+      the road itself is exposed and lonely. Merchants' caravans pass by
+      occasionally, their guards watching the treeline nervously. This stretch
+      is notorious for bandits, who strike fast and disappear into the
+      countryside. The road is ancient and well-built, but that makes it an
+      attractive target - valuable cargo travels these stones.
+
+      The road continues east toward Imre and west toward Tarbean.
+    exits:
+      west: commonwealth_road_west
+      east: imre_north_road
+    properties:
+      outdoor: true
+      lit: true
+      safe_zone: false

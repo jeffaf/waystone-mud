@@ -180,6 +180,13 @@ class GameEngine:
             SayCommand,
             TellCommand,
         )
+        from waystone.game.commands.fae import (
+            AcceptCurseCommand,
+            CurseCommand,
+            EnterFaeCommand,
+            LeaveFaeCommand,
+            SpeakCthaehCommand,
+        )
         from waystone.game.commands.info import (
             GuideCommand,
             HelpCommand,
@@ -216,6 +223,10 @@ class GameEngine:
             WestCommand,
         )
         from waystone.game.commands.npc import ConsiderCommand
+        from waystone.game.commands.social import (
+            EmoteCommands,
+            EmotesCommand,
+        )
         from waystone.game.commands.sympathy import (
             BindCommand,
             BindingsCommand,
@@ -238,17 +249,6 @@ class GameEngine:
             RankCommand,
             TuitionCommand,
             WorkCommand,
-        )
-        from waystone.game.commands.social import (
-            EmoteCommands,
-            EmotesCommand,
-        )
-        from waystone.game.commands.fae import (
-            AcceptCurseCommand,
-            CurseCommand,
-            EnterFaeCommand,
-            LeaveFaeCommand,
-            SpeakCthaehCommand,
         )
 
         registry = get_registry()

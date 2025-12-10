@@ -1,0 +1,380 @@
+# NPCs for Tarbean - The Gritty Port Capital
+# A mix of enemies and NPCs representing the dangerous streets of the Commonwealth's capital
+
+npcs:
+  # ENEMIES - Street threats and city dangers
+  - id: street_thug
+    name: "a street thug"
+    keywords: [thug, street, ruffian, tough, mugger]
+    short_description: "a street thug"
+    long_description: "A street thug leans against the wall, watching passersby with predatory eyes."
+    equipment:
+      main_hand: rusty_dagger
+      body: worn_leather_vest
+    inventory:
+      - rusty_dagger
+      - dirty_rag
+    description: |
+      A rough character with scarred knuckles and cold, calculating eyes.
+      This thug makes a living preying on the weak in Tarbean's dark alleys,
+      taking whatever they can from travelers foolish enough to wander alone.
+      Their clothes are stained and worn, and they smell of cheap ale and
+      desperation. Violence is second nature to them.
+    level: 2
+    max_hp: 28
+    attributes:
+      strength: 13
+      dexterity: 12
+      constitution: 11
+      intelligence: 8
+      wisdom: 9
+      charisma: 7
+    behavior: aggressive
+    loot_table_id: street_thug_loot
+    dialogue: null
+    respawn_time: 180  # 3 minutes
+
+  - id: street_thug_veteran
+    name: "a veteran street thug"
+    keywords: [thug, veteran, street, tough, enforcer]
+    short_description: "a veteran street thug"
+    long_description: "A scarred veteran thug blocks the alley, cracking their knuckles menacingly."
+    equipment:
+      main_hand: chipped_shortsword
+      body: reinforced_leather_vest
+    inventory:
+      - chipped_shortsword
+      - reinforced_leather_vest
+      - stolen_coin_purse
+    description: |
+      A seasoned street enforcer who has survived years in Tarbean's brutal
+      underworld. Multiple scars cross their face and arms, each telling a
+      story of violence. They carry themselves with the confidence of someone
+      who's killed before and won't hesitate to do it again. Their equipment
+      is better maintained than most street thugs - this one knows their trade.
+    level: 3
+    max_hp: 38
+    attributes:
+      strength: 14
+      dexterity: 13
+      constitution: 13
+      intelligence: 9
+      wisdom: 10
+      charisma: 8
+    behavior: aggressive
+    loot_table_id: street_thug_loot
+    dialogue: null
+    respawn_time: 240  # 4 minutes
+
+  - id: dockworker_brawler
+    name: "an angry dockworker"
+    keywords: [dockworker, docker, worker, laborer, brawler]
+    short_description: "an angry dockworker"
+    long_description: "A muscular dockworker stands here, fists clenched and spoiling for a fight."
+    equipment:
+      main_hand: cargo_hook
+      body: stained_work_shirt
+    inventory:
+      - cargo_hook
+      - work_gloves
+      - tobacco_pouch
+    description: |
+      A dock laborer with arms like tree trunks from years of hauling cargo.
+      Their hands are calloused and strong enough to crack skulls. While not
+      inherently criminal, the hard life of the docks has made them quick to
+      anger and quicker to violence. They smell of sweat, salt water, and tar.
+      Cross them wrong and you'll learn why dockworkers are feared in tavern
+      brawls across the port.
+    level: 3
+    max_hp: 42
+    attributes:
+      strength: 16
+      dexterity: 11
+      constitution: 15
+      intelligence: 8
+      wisdom: 9
+      charisma: 9
+    behavior: passive  # Only attacks if provoked
+    loot_table_id: dockworker_loot
+    dialogue: null
+    respawn_time: 300  # 5 minutes
+
+  - id: waterside_gang_member
+    name: "a Waterside gang member"
+    keywords: [gang, member, waterside, criminal, thief]
+    short_description: "a Waterside gang member"
+    long_description: "A gang member wearing Waterside colors watches the street with alert eyes."
+    equipment:
+      main_hand: curved_knife
+      body: dark_leather_jacket
+      accessory: gang_colors
+    inventory:
+      - curved_knife
+      - dark_leather_jacket
+      - gang_token
+      - stolen_goods
+    description: |
+      A member of one of Tarbean's organized crime families. Unlike common
+      street thugs, this criminal belongs to a structured gang that controls
+      territory along the waterfront. They wear their gang's colors openly,
+      confident in the protection and reputation it provides. Their knife is
+      well-maintained and they move with practiced efficiency. Cross one of
+      them and you cross them all.
+    level: 4
+    max_hp: 48
+    attributes:
+      strength: 13
+      dexterity: 15
+      constitution: 13
+      intelligence: 11
+      wisdom: 11
+      charisma: 10
+    behavior: aggressive
+    loot_table_id: gang_member_loot
+    dialogue: null
+    respawn_time: 420  # 7 minutes
+
+  - id: city_guard_tarbean
+    name: "a Tarbean city guard"
+    keywords: [guard, city, watch, soldier, patrol]
+    short_description: "a Tarbean city guard"
+    long_description: "A city guard patrols here, hand resting on their sword hilt."
+    equipment:
+      main_hand: guard_shortsword
+      body: guard_chainmail
+      head: guard_helm
+      accessory: city_watch_badge
+    inventory:
+      - guard_shortsword
+      - guard_chainmail
+      - guard_helm
+      - whistle
+      - arrest_warrant
+    description: |
+      A member of Tarbean's city watch, tasked with maintaining what little
+      order exists in the Commonwealth's capital. Their chainmail is decent
+      quality and the city crest is emblazoned on their tabard. While supposed
+      to protect citizens, many guards are known to take bribes and look the
+      other way. Still, they're well-trained soldiers who can handle themselves
+      in a fight. Attack one at your peril.
+    level: 5
+    max_hp: 60
+    attributes:
+      strength: 15
+      dexterity: 13
+      constitution: 15
+      intelligence: 10
+      wisdom: 12
+      charisma: 11
+    behavior: passive  # Only attacks if provoked or witnessing crimes
+    loot_table_id: city_guard_loot
+    dialogue:
+      greeting: "Move along, citizen. No trouble on my watch."
+      keywords:
+        law: "The law is clear. Break it and face the consequences."
+        crime: "Report any criminal activity to the city watch immediately."
+        tarbean: "Tarbean's a rough city, but we keep the worst of it in check."
+        bribe: "Watch your tongue. That's a serious accusation."
+    respawn_time: 600  # 10 minutes
+
+  # PASSIVE NPCs - City inhabitants and quest givers
+  - id: street_urchin
+    name: "a ragged street urchin"
+    keywords: [urchin, child, kid, street, beggar, orphan]
+    short_description: "a ragged street urchin"
+    long_description: "A dirty-faced street urchin watches you with curious, hungry eyes."
+    equipment:
+      body: tattered_rags
+    inventory:
+      - stolen_bread
+      - shiny_pebble
+    description: |
+      A thin child with hollow cheeks and oversized eyes, dressed in layers
+      of tattered rags. One of countless orphans living rough on Tarbean's
+      streets, surviving by begging, stealing, and running errands for those
+      who'll pay a copper. Despite their circumstances, there's a sharp
+      intelligence in those eyes and a will to survive. They know the city's
+      secrets better than most adults.
+    level: 1
+    max_hp: 10
+    attributes:
+      strength: 6
+      dexterity: 14
+      constitution: 8
+      intelligence: 12
+      wisdom: 13
+      charisma: 10
+    behavior: passive
+    loot_table_id: null
+    dialogue:
+      greeting: "Got a copper to spare? I'm awful hungry..."
+      keywords:
+        city: "I know every alley and hidey-hole in Tarbean. Gotta, to survive."
+        streets: "The streets teach you quick - be fast, be smart, or be dead."
+        gang: "The gangs sometimes hire us to run messages. Pays better than begging."
+        help: "If you need to know something about the city, I might know. For a price."
+    respawn_time: 0
+
+  - id: fishmonger_tarbean
+    name: "Bren, the fishmonger"
+    keywords: [bren, fishmonger, merchant, fish, seller]
+    short_description: "Bren, the fishmonger"
+    long_description: "Bren stands behind a stall piled with fish, calling out to passersby."
+    equipment:
+      body: stained_apron
+      hands: fish_gutting_knife
+    inventory:
+      - fish_gutting_knife
+      - fresh_fish
+      - salted_fish
+      - fishing_net
+    description: |
+      A weathered merchant with sun-darkened skin and the permanent smell of
+      fish. Bren works the docks every morning buying fresh catch, then sells
+      it from a market stall until evening. Honest by Tarbean standards, though
+      that's not saying much. Will sell fish, basic supplies, and occasionally
+      information about the comings and goings at the port.
+    level: 1
+    max_hp: 18
+    attributes:
+      strength: 12
+      dexterity: 10
+      constitution: 13
+      intelligence: 10
+      wisdom: 12
+      charisma: 11
+    behavior: merchant
+    loot_table_id: null
+    dialogue:
+      greeting: "Fresh fish! Caught this morning! What can I get you?"
+      keywords:
+        fish: "Got cod, mackerel, and some nice sea bass today. All fresh!"
+        docks: "I'm down at the docks every dawn. See everything that comes and goes."
+        supplies: "I sell some basic supplies too - rope, hooks, salt. Dock necessities."
+        tarbean: "Lived here all my life. It's a hard city, but it's home."
+    respawn_time: 0
+
+  - id: caravan_master
+    name: "Roth, the caravan master"
+    keywords: [roth, caravan, master, trader, merchant, traveler]
+    short_description: "Roth, the caravan master"
+    long_description: "Roth checks cargo manifests, organizing supplies for the next caravan departure."
+    equipment:
+      body: travel_worn_coat
+      accessory: merchant_guild_seal
+      main_hand: ledger_book
+    inventory:
+      - ledger_book
+      - merchant_guild_seal
+      - route_maps
+      - cargo_manifest
+    description: |
+      A middle-aged merchant who coordinates trade caravans between Tarbean
+      and other cities across the Commonwealth. Their coat shows the wear of
+      countless journeys, and their eyes hold the wariness of someone who's
+      fought off bandits more than once. They know the roads, the dangers, and
+      which routes are currently safe for travel. A valuable source of
+      information for those planning to leave the city.
+    level: 2
+    max_hp: 24
+    attributes:
+      strength: 11
+      dexterity: 12
+      constitution: 12
+      intelligence: 14
+      wisdom: 15
+      charisma: 13
+    behavior: passive
+    loot_table_id: null
+    dialogue:
+      greeting: "Planning to travel? I can tell you which roads are safe... for a price."
+      keywords:
+        caravan: "I run caravans to Imre, Anilin, and sometimes as far as Vintas. Regular schedule."
+        travel: "The roads are dangerous. Bandits, wolves, worse things. Best to travel in groups."
+        imre: "Imre's about three days journey. The University makes it more civilized than Tarbean."
+        job: "I sometimes hire guards for dangerous routes. If you can handle yourself..."
+        tarbean: "The capital's a cesspit, but it's where the money flows. Can't avoid it in trade."
+    respawn_time: 0
+
+  - id: beggar_king
+    name: "the Beggar King"
+    keywords: [beggar, king, mysterious, informant, boss]
+    short_description: "the Beggar King"
+    long_description: "A mysterious figure sits in the shadows, watching everything with knowing eyes."
+    equipment:
+      body: deceptively_fine_rags
+      accessory: hidden_dagger
+      accessory2: beggar_crown
+    inventory:
+      - hidden_dagger
+      - coded_messages
+      - street_map
+      - information_ledger
+    description: |
+      A enigmatic figure who commands the loyalty of Tarbean's beggars and
+      street urchins. Beneath the layers of carefully arranged rags, there's
+      a sharp mind and sharper ambition. The Beggar King knows everything that
+      happens on Tarbean's streets - every crime, every secret, every whispered
+      conversation. Information is their currency, and they trade it carefully.
+      Some say they were once nobility fallen on hard times. Others say they're
+      a criminal mastermind. The truth is probably both.
+    level: 6
+    max_hp: 55
+    attributes:
+      strength: 10
+      dexterity: 15
+      constitution: 12
+      intelligence: 17
+      wisdom: 16
+      charisma: 15
+    behavior: passive
+    loot_table_id: null
+    dialogue:
+      greeting: "Welcome to my kingdom of shadows. Information is power, and I have... much information."
+      keywords:
+        information: "Everything has a price. What do you wish to know?"
+        beggars: "The beggars are my eyes and ears. Nothing happens in this city without my knowledge."
+        streets: "I rule these streets more truly than any guard or gang. They just don't know it."
+        secrets: "Everyone has secrets. The question is, which ones are worth knowing?"
+        gangs: "The gangs think they run Tarbean. Amusing. They're merely the most visible players."
+        quest: "Perhaps we could help each other. I have... needs that require someone of your talents."
+    respawn_time: 0
+
+  - id: drunk_sailor
+    name: "a drunk sailor"
+    keywords: [sailor, drunk, seaman, mariner, drunkard]
+    short_description: "a drunk sailor"
+    long_description: "A sailor staggers here, reeking of rum and barely able to stand."
+    equipment:
+      body: salt_stained_shirt
+      legs: sailcloth_trousers
+    inventory:
+      - empty_rum_bottle
+      - ship_token
+      - waterlogged_map
+    description: |
+      A weathered sailor who's clearly spent their shore leave drinking away
+      their wages. They sway unsteadily, singing off-key sea shanties and
+      muttering about distant ports. Their clothes are salt-stained and their
+      hands rope-burned from years of working the rigging. In between bouts
+      of incoherent rambling, they occasionally share surprisingly useful
+      information about ships, sea routes, and foreign lands.
+    level: 1
+    max_hp: 16
+    attributes:
+      strength: 13
+      dexterity: 8
+      constitution: 14
+      intelligence: 9
+      wisdom: 7
+      charisma: 10
+    behavior: passive
+    loot_table_id: null
+    dialogue:
+      greeting: "*hic* Ahoy there, mate! Buy a sailor a drink? Got tales of the sea to share!"
+      keywords:
+        sea: "The sea's a cruel mistress, she is. But beautiful... *hic* so beautiful..."
+        ship: "Sailed on the Windward Pride. Fine vessel. Or was it the Sea Dragon? Hard to remember..."
+        ports: "Been to Junpui, Ralien, even far Ademre once. Exotic places, exotic drinks!"
+        tavern: "Best rum's at the Dockside Inn. Or maybe the Sailor's Rest? They all blur together..."
+    respawn_time: 0

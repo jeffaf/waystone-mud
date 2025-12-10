@@ -8,8 +8,8 @@ Handles:
 """
 
 import random
-from dataclasses import dataclass, field
-from datetime import datetime, timedelta, timezone
+from dataclasses import dataclass
+from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING, Any
 
 import structlog
@@ -72,7 +72,7 @@ class CthaehStatus:
             return False
         if not self.target_expires_at:
             return False
-        return datetime.now(timezone.utc) < self.target_expires_at
+        return datetime.now(UTC) < self.target_expires_at
 
     def is_bidding_expired(self) -> bool:
         """Check if current bidding has expired (failed)."""
@@ -80,7 +80,7 @@ class CthaehStatus:
             return False
         if not self.target_expires_at:
             return False
-        return datetime.now(timezone.utc) >= self.target_expires_at
+        return datetime.now(UTC) >= self.target_expires_at
 
     def can_receive_new_bidding(self) -> bool:
         """Check if character can receive a new bidding."""
@@ -91,13 +91,13 @@ class CthaehStatus:
         if not self.last_bidding_time:
             return True
         cooldown_end = self.last_bidding_time + timedelta(hours=BIDDING_COOLDOWN_HOURS)
-        return datetime.now(timezone.utc) >= cooldown_end
+        return datetime.now(UTC) >= cooldown_end
 
     def has_failure_debuff(self) -> bool:
         """Check if character has the failure debuff active."""
         if not self.failure_debuff_until:
             return False
-        return datetime.now(timezone.utc) < self.failure_debuff_until
+        return datetime.now(UTC) < self.failure_debuff_until
 
     def get_stat_modifier(self) -> float:
         """Get the stat modifier from curse effects."""
@@ -175,7 +175,7 @@ def accept_curse(character: "Character") -> CthaehStatus:
         return status  # Already cursed
 
     status.cursed = True
-    status.curse_accepted_at = datetime.now(timezone.utc)
+    status.curse_accepted_at = datetime.now(UTC)
     status.completed_biddings = 0
     status.failed_biddings = 0
 
@@ -257,7 +257,7 @@ def assign_new_bidding(
     if status.is_bidding_expired():
         # Mark previous bidding as failed
         status.failed_biddings += 1
-        status.failure_debuff_until = datetime.now(timezone.utc) + timedelta(
+        status.failure_debuff_until = datetime.now(UTC) + timedelta(
             hours=BIDDING_FAILURE_DEBUFF_HOURS
         )
         logger.info(
@@ -272,8 +272,8 @@ def assign_new_bidding(
     status.current_target = target_id
     status.target_type = target_type
     status.target_display_name = display_name
-    status.last_bidding_time = datetime.now(timezone.utc)
-    status.target_expires_at = datetime.now(timezone.utc) + timedelta(
+    status.last_bidding_time = datetime.now(UTC)
+    status.target_expires_at = datetime.now(UTC) + timedelta(
         hours=BIDDING_DURATION_HOURS
     )
 
@@ -367,7 +367,7 @@ def format_curse_status(character: "Character") -> list[str]:
 
     # Show buffs/debuffs
     if status.has_failure_debuff():
-        remaining = status.failure_debuff_until - datetime.now(timezone.utc)
+        remaining = status.failure_debuff_until - datetime.now(UTC)
         hours = int(remaining.total_seconds() / 3600)
         minutes = int((remaining.total_seconds() % 3600) / 60)
         lines.append(f"DEBUFF ACTIVE: -{int(BIDDING_FAILURE_STAT_PENALTY*100)}% all stats")
@@ -383,7 +383,7 @@ def format_curse_status(character: "Character") -> list[str]:
 
     # Show current bidding
     if status.has_active_bidding():
-        remaining = status.target_expires_at - datetime.now(timezone.utc)
+        remaining = status.target_expires_at - datetime.now(UTC)
         hours = int(remaining.total_seconds() / 3600)
         minutes = int((remaining.total_seconds() % 3600) / 60)
         lines.append("")

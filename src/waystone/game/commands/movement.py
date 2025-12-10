@@ -371,7 +371,7 @@ class LookCommand(Command):
                     # Group NPCs by template for clean display
                     npc_groups = group_npcs_by_template(npcs)
 
-                    for template_id, npc_list in npc_groups.items():
+                    for _template_id, npc_list in npc_groups.items():
                         # Use first NPC as representative for the group
                         representative_npc = npc_list[0]
                         count = len(npc_list)

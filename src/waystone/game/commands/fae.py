@@ -249,7 +249,7 @@ class SpeakCthaehCommand(Command):
                 await ctx.connection.send_line("")
                 await ctx.connection.send_line(
                     colorize(
-                        f"You have 24 hours to complete this bidding.",
+                        "You have 24 hours to complete this bidding.",
                         "YELLOW",
                     )
                 )
