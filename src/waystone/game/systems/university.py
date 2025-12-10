@@ -117,24 +117,25 @@ NINE_MASTERS = {
 
 
 # Admission exam questions by category
+# Keywords are checked as substrings - more keywords = more forgiving
 ADMISSION_QUESTIONS = {
     "sympathy": [
         {
             "question": "What is the First Law of Sympathy?",
-            "excellent": ["similarity", "like affects like", "similar things"],
-            "good": ["connection", "linked", "related"],
+            "excellent": ["similarity", "like affects like", "similar things", "similars"],
+            "good": ["connection", "linked", "related", "alike", "same"],
             "hint": "It relates to similarity between objects.",
         },
         {
             "question": "What is slippage in sympathy?",
-            "excellent": ["energy loss", "inefficiency", "wasted energy"],
-            "good": ["loss", "waste", "heat"],
+            "excellent": ["energy loss", "inefficiency", "wasted energy", "lost energy"],
+            "good": ["loss", "waste", "heat", "escape", "leak", "inefficient"],
             "hint": "It has to do with energy transfer.",
         },
         {
             "question": "What is the Alar?",
-            "excellent": ["belief", "riding crop of mind", "mental discipline"],
-            "good": ["concentration", "focus", "will"],
+            "excellent": ["belief", "riding crop of mind", "mental discipline", "willpower"],
+            "good": ["concentration", "focus", "will", "mind", "mental", "thought"],
             "hint": "It is a mental faculty essential for sympathy.",
         },
     ],
@@ -142,27 +143,27 @@ ADMISSION_QUESTIONS = {
         {
             "question": "Who founded the University?",
             "excellent": ["teccam", "old masters"],
-            "good": ["ancients", "founders"],
+            "good": ["ancients", "founders", "wise", "scholars"],
             "hint": "There is a statue in the courtyard.",
         },
         {
             "question": "What is the Arcanum?",
-            "excellent": ["arcane studies", "advanced magic", "higher learning"],
-            "good": ["magic school", "university", "sympathy"],
+            "excellent": ["arcane studies", "advanced magic", "higher learning", "arcane arts"],
+            "good": ["magic", "school", "university", "sympathy", "arcanist", "naming"],
             "hint": "It is the magical branch of the University.",
         },
     ],
     "artificery": [
         {
             "question": "What is sygaldry?",
-            "excellent": ["rune magic", "inscribed bindings", "permanent sympathy"],
-            "good": ["runes", "symbols", "writing magic"],
+            "excellent": ["rune magic", "inscribed bindings", "permanent sympathy", "rune craft"],
+            "good": ["runes", "symbols", "writing", "sigil", "inscrib", "engrav", "carv", "etch"],
             "hint": "It involves inscribing things onto objects.",
         },
         {
             "question": "What powers a sympathy lamp?",
             "excellent": ["heat absorption", "temperature differential", "thermal energy"],
-            "good": ["heat", "fire", "warmth"],
+            "good": ["heat", "fire", "warmth", "cold", "temperature", "thermal"],
             "hint": "It relates to temperature.",
         },
     ],
@@ -170,7 +171,7 @@ ADMISSION_QUESTIONS = {
         {
             "question": "What is the difference between knowing a name and calling it?",
             "excellent": ["calling invokes power", "knowing is understanding", "deep knowledge"],
-            "good": ["power", "control", "understanding"],
+            "good": ["power", "control", "understanding", "invoke", "command", "speak"],
             "hint": "One is knowledge, the other is action.",
         },
     ],
@@ -178,7 +179,7 @@ ADMISSION_QUESTIONS = {
         {
             "question": "What is the purpose of a retort in alchemy?",
             "excellent": ["distillation", "separating substances", "purification"],
-            "good": ["mixing", "heating", "processing"],
+            "good": ["mixing", "heating", "processing", "separate", "distill", "purif", "refin"],
             "hint": "It is used to separate things.",
         },
     ],
@@ -313,12 +314,63 @@ def can_promote(character: "Character", current_rank: ArcanumRank) -> tuple[bool
     return (True, "Eligible for promotion.")
 
 
-# University character data cache
+def load_university_status(character: "Character") -> UniversityStatus:
+    """Load university status from a Character model."""
+    status = UniversityStatus(character_id=character.id)
+
+    # Load rank from character
+    status.arcanum_rank = rank_from_string(character.arcanum_rank)
+
+    # Load other data from JSON field
+    data = character.university_data or {}
+    status.current_term = data.get("current_term", 0)
+    status.tuition_paid = data.get("tuition_paid", False)
+    status.tuition_amount = data.get("tuition_amount", 0)
+    status.admission_score = data.get("admission_score", 0)
+
+    # Load master reputations
+    for master_id, rep_data in data.get("master_reputations", {}).items():
+        status.master_reputations[master_id] = MasterReputation(
+            master_id=master_id,
+            reputation=rep_data.get("reputation", 0),
+            interactions=rep_data.get("interactions", 0),
+        )
+
+    return status
+
+
+def save_university_status(character: "Character", status: UniversityStatus) -> None:
+    """Save university status to a Character model."""
+    from sqlalchemy.orm.attributes import flag_modified
+
+    # Save rank
+    character.arcanum_rank = status.arcanum_rank.value
+
+    # Save other data to JSON field
+    character.university_data = {
+        "current_term": status.current_term,
+        "tuition_paid": status.tuition_paid,
+        "tuition_amount": status.tuition_amount,
+        "admission_score": status.admission_score,
+        "master_reputations": {
+            master_id: {
+                "reputation": rep.reputation,
+                "interactions": rep.interactions,
+            }
+            for master_id, rep in status.master_reputations.items()
+        },
+    }
+
+    # Flag JSON as modified so SQLAlchemy tracks the change
+    flag_modified(character, "university_data")
+
+
+# Legacy cache for backward compatibility during transition
 _university_status_cache: dict[UUID, UniversityStatus] = {}
 
 
 def get_university_status(character_id: UUID) -> UniversityStatus:
-    """Get or create university status for a character."""
+    """Get or create university status for a character (legacy cache method)."""
     if character_id not in _university_status_cache:
         _university_status_cache[character_id] = UniversityStatus(character_id=character_id)
     return _university_status_cache[character_id]

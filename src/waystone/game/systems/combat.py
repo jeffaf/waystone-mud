@@ -11,6 +11,7 @@ import structlog
 
 from waystone.database.engine import get_session
 from waystone.database.models import Character
+from waystone.game.systems.cthaeh import get_curse_combat_bonuses
 from waystone.network import colorize
 
 if TYPE_CHECKING:
@@ -275,9 +276,17 @@ class Combat:
             if not attacker or not target:
                 return False, "Character not found!"
 
+            # Get curse bonuses for attacker (if any)
+            curse_bonuses = get_curse_combat_bonuses(attacker)
+            crit_bonus = curse_bonuses.get("crit_bonus", 0)
+            damage_bonus = curse_bonuses.get("damage_bonus", 0)
+
             # Calculate to-hit: d20 + DEX modifier
             to_hit_roll = random.randint(1, 20)
             dex_modifier = (attacker.dexterity - 10) // 2
+            # Crit on natural 20 OR curse crit bonus
+            is_critical = to_hit_roll == 20 or (crit_bonus > 0 and random.random() < crit_bonus)
+            is_fumble = to_hit_roll == 1
 
             # Calculate defense: 10 + DEX modifier (+5 if defending)
             target_dex_mod = (target.dexterity - 10) // 2
@@ -291,9 +300,9 @@ class Combat:
             if target_participant and target_participant.is_defending:
                 target_defense += 5
 
-            # Check hit
+            # Check hit (fumble always misses, critical always hits)
             final_roll = to_hit_roll + dex_modifier
-            if final_roll < target_defense:
+            if is_fumble or (final_roll < target_defense and not is_critical):
                 # Miss
                 miss_msg = colorize(
                     f"{attacker.name} attacks {target.name} but misses! "
@@ -309,21 +318,33 @@ class Combat:
                 return True, "Your attack missed!"
 
             # Hit - calculate damage
-            # Base damage 1d6 + STR modifier - target's armor (simplified)
+            # Base damage 1d6 + STR modifier (2x dice on critical)
             str_modifier = (attacker.strength - 10) // 2
             damage_roll = random.randint(1, 6)
-            total_damage = max(1, damage_roll + str_modifier)  # Minimum 1 damage
+            if is_critical:
+                damage_roll += random.randint(1, 6)  # Double dice on crit
+            base_damage = max(1, damage_roll + str_modifier)
+            # Apply curse damage bonus (+15% if cursed)
+            total_damage = int(base_damage * (1 + damage_bonus))
+            total_damage = max(1, total_damage)  # Minimum 1 damage
 
             # Apply damage
             target.current_hp = max(0, target.current_hp - total_damage)
             await session.commit()
 
             # Broadcast hit message
-            hit_msg = colorize(
-                f"{attacker.name} hits {target.name} for {total_damage} damage! "
-                f"({target.name}: {target.current_hp}/{target.max_hp} HP)",
-                "RED",
-            )
+            if is_critical:
+                hit_msg = colorize(
+                    f"CRITICAL HIT! {attacker.name} hits {target.name} for {total_damage} damage! "
+                    f"({target.name}: {target.current_hp}/{target.max_hp} HP)",
+                    "YELLOW",
+                )
+            else:
+                hit_msg = colorize(
+                    f"{attacker.name} hits {target.name} for {total_damage} damage! "
+                    f"({target.name}: {target.current_hp}/{target.max_hp} HP)",
+                    "RED",
+                )
             self.engine.broadcast_to_room(self.room_id, hit_msg)
 
             # Check for death

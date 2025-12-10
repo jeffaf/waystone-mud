@@ -1,0 +1,285 @@
+---
+# Lore books for Waystone MUD
+# These books can be found in the Archives and provide lore about the world
+
+items:
+  # Fae and Cthaeh Lore
+  - id: book_fae_creatures
+    name: "Creatures of the Fae"
+    description: |
+      A worn leather-bound tome titled 'Creatures of the Fae: A Scholar's Account'.
+      The pages are yellowed with age, and some passages have been scratched out.
+
+      Reading this book reveals the following text:
+
+      The Fae realm exists alongside our own, separated by a barrier that grows
+      thin in certain places - most notably the standing stones known as
+      waystones or greystones. These ancient monuments were not built by human
+      hands, and their true purpose remains unknown.
+
+      Within the Fae, time flows differently. A traveler might spend what feels
+      like hours there, only to return and find days have passed. Or the
+      reverse may occur - years in the Fae passing as mere moments in our world.
+
+      The creatures of Fae are varied and dangerous. The Sithe are hunters who
+      guard against certain threats. They are deadly beyond mortal reckoning,
+      and wise travelers give them wide berth.
+
+      Note: Several pages appear to have been torn from this section.
+    type: misc
+    slot: none
+    weight: 2.0
+    value: 50
+    stackable: false
+    unique: false
+    quest_item: false
+    properties:
+      readable: true
+      category: lore
+
+  - id: book_cthaeh_warning
+    name: "The Oracle's Shadow"
+    description: |
+      A thin journal bound in black leather. The cover bears no title, but
+      someone has written 'DO NOT READ' in red ink across the front page.
+      The ink has faded to brown with age.
+
+      Reading this book reveals the following text:
+
+      I write this as a warning to any who follow my path. The Cthaeh exists.
+      I have spoken with it, and I am already dead because of that choice.
+
+      It is called many things - the Oracle, the Rhinna-tree, the Shadow of
+      All Things. It speaks only truth. Every word it says is absolutely,
+      provably true. This is its curse. This is why it is so dangerous.
+
+      The Cthaeh cannot lie, but it can choose which truths to speak. It sees
+      all possible futures and knows exactly which words will cause the most
+      harm. When it tells you the truth, it is telling you the precise truth
+      that will lead you to ruin.
+
+      The Sithe exist to prevent the Cthaeh's influence from spreading. They
+      kill anyone who speaks with it. They are not cruel - they are trying
+      to prevent catastrophe. If you have spoken to the Cthaeh, they will
+      hunt you. Accept this. You are already a plague carrier.
+
+      Some say the Cthaeh offers gifts - power, knowledge, strength. These
+      gifts are real. The power it grants is genuine. But the price...
+
+      The final pages are blank, as if the author never finished writing.
+    type: misc
+    slot: none
+    weight: 1.0
+    value: 75
+    stackable: false
+    unique: false
+    quest_item: false
+    properties:
+      readable: true
+      category: lore
+
+  - id: book_sithe_history
+    name: "The Silent Hunters"
+    description: |
+      An ancient scroll preserved between two thin wooden boards. The
+      script is written in a flowing hand that predates modern calligraphy.
+
+      Reading this scroll reveals the following text:
+
+      The Sithe are the guardians of the Cthaeh's prison. They have watched
+      the twisted tree since before the creation of the Fae realm itself,
+      or so the oldest stories claim.
+
+      They are not Fae, though they dwell in the Fae realm. They are not
+      human, though they wear human form. They are something older, bound
+      to a single purpose: to ensure that the Cthaeh's poison does not spread.
+
+      When someone speaks with the Cthaeh, the Sithe follow. They do not
+      always kill immediately - sometimes they wait, watching. But they
+      always kill eventually. There are no exceptions. There is no mercy.
+      There is only the prevention of catastrophe.
+
+      Some scholars argue that the Sithe's vigilance is excessive. After all,
+      they say, what harm can words do? These scholars have never spoken
+      with the Cthaeh.
+
+      The Sithe carry bows of a wood that does not grow in any forest, mortal
+      or Fae. Their arrows never miss. Their patience is infinite.
+
+      If you see a Sithe, turn back. If a Sithe speaks to you, obey.
+      If a Sithe raises a bow against you, pray that death comes swiftly.
+    type: misc
+    slot: none
+    weight: 0.5
+    value: 100
+    stackable: false
+    unique: false
+    quest_item: false
+    properties:
+      readable: true
+      category: lore
+
+  - id: book_greystones
+    name: "Of Standing Stones and Twilight"
+    description: |
+      A slim volume with a silver-tooled cover depicting a ring of standing
+      stones beneath a twilight sky. The University seal is embossed on
+      the spine.
+
+      Reading this book reveals the following text:
+
+      The greystones - also called waystones, oldstones, or doorstones - are
+      found throughout the Commonwealth and beyond. They predate all known
+      civilizations and are constructed of a stone not found in any quarry.
+
+      At twilight, when the world stands between day and night, the space
+      between certain stones grows thin. A traveler who knows the way - or
+      who stumbles through by accident - may find themselves in the Fae realm.
+
+      The Fae is not a separate world but a shadow of our own, or perhaps we
+      are a shadow of it. The twilight forest stretches endlessly in all
+      directions, lit by a sky that knows neither sun nor moon.
+
+      Returning from the Fae requires finding the shimmer between worlds.
+      This is easier for some than others. Time spent searching in the Fae
+      passes differently in the mortal world - sometimes faster, sometimes
+      slower. Those who become lost rarely return.
+
+      The University officially denies the existence of the Fae realm. This
+      book was banned from the Archives in 423 LD.
+    type: misc
+    slot: none
+    weight: 1.5
+    value: 60
+    stackable: false
+    unique: false
+    quest_item: false
+    properties:
+      readable: true
+      category: lore
+
+  - id: book_chandrian_signs
+    name: "The Book of Secrets"
+    description: |
+      A tiny book, no larger than a hand, bound in red leather. The pages
+      are tissue-thin and covered in cramped, fearful handwriting.
+
+      Reading this book reveals the following text:
+
+      Do not speak their names. Do not seek them. Do not even think of them
+      overmuch, for they may feel your thoughts and come.
+
+      But if you must know - if you must defend yourself - here are the signs:
+
+      Cyphus bears the blue flame.
+      Stercus is in thrall of iron.
+      Ferule chill and dark of eye.
+      Usnea lives in nothing but decay.
+      Grey Dalcenti never speaks.
+      Pale Alenta brings the blight.
+      Last there is the lord of seven:
+      Hated. Hopeless. Sleepless. Sane.
+
+      The Cthaeh knows their secrets. The Cthaeh knows their weaknesses.
+      The Cthaeh could tell you how to find them, how to hurt them, how to
+      destroy them.
+
+      But the Cthaeh's help is worse than their wrath. Trust me. I know.
+
+      The rest of the pages are blank, but there are faint water stains
+      that might have been tears.
+    type: misc
+    slot: none
+    weight: 0.2
+    value: 200
+    stackable: false
+    unique: true
+    quest_item: false
+    properties:
+      readable: true
+      category: lore
+
+  # General lore books
+  - id: book_university_history
+    name: "A History of the University"
+    description: |
+      A thick tome with the University seal embossed in gold on the cover.
+      The pages are crisp and well-maintained.
+
+      Reading this book reveals the following text:
+
+      The University was founded over two thousand years ago, though its
+      exact origins are lost to history. It stands as the greatest center
+      of learning in the Four Corners of Civilization.
+
+      The University is governed by the Masters, nine scholars of immense
+      knowledge and power. They oversee the various disciplines:
+
+      - Master Lorren: The Archives
+      - Master Kilvin: The Artificery
+      - Master Arwyl: The Medica
+      - Master Elodin: Naming (formerly of the Rookery)
+      - Master Hemme: Rhetoric and Logic
+      - Master Elxa Dal: Sympathy
+      - Master Mandrag: Alchemy
+      - Master Brandeur: Arithmetic
+      - Chancellor Herma: Administration
+
+      Admission to the University requires passing an examination before
+      all nine Masters. Tuition varies based on the Masters' assessment
+      of the student's ability - more talented students pay less.
+
+      The Arcanum is the highest level of study, open only to those who
+      have proven themselves worthy. Its secrets are not discussed in
+      this general history.
+    type: misc
+    slot: none
+    weight: 3.0
+    value: 30
+    stackable: false
+    unique: false
+    quest_item: false
+    properties:
+      readable: true
+      category: lore
+
+  - id: book_sympathy_primer
+    name: "Sympathy: A Primer"
+    description: |
+      A well-worn textbook with numerous marginal notes in different hands.
+      The cover shows a pair of linked objects.
+
+      Reading this book reveals the following text:
+
+      Sympathy is the art of making one thing similar to another through
+      the power of belief and will. At its heart is the principle of
+      similarity: two things that share properties can be linked.
+
+      The Three Laws of Sympathy:
+
+      1. The Doctrine of Correspondence: Similarity enhances sympathy.
+         The more alike two things are, the stronger the link.
+
+      2. The Principle of Consanguinity: Part of a thing can represent
+         the whole. A drop of blood contains the essence of the person.
+
+      3. The Law of Conservation: Energy cannot be created or destroyed,
+         only transferred. All sympathetic links have loss.
+
+      To perform sympathy, one must:
+      - Establish a link between two objects
+      - Split the mind to maintain the connection (the Alar)
+      - Direct energy through the link
+
+      Warning: Drawing too much energy can cause binder's chills.
+      Extreme overexertion can be fatal.
+    type: misc
+    slot: none
+    weight: 1.5
+    value: 40
+    stackable: false
+    unique: false
+    quest_item: false
+    properties:
+      readable: true
+      category: magic

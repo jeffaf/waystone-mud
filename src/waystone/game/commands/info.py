@@ -46,6 +46,12 @@ class HelpCommand(Command):
                 aliases_str = ", ".join(command.aliases)
                 await ctx.connection.send_line(f"  Aliases: {colorize(aliases_str, 'YELLOW')}")
 
+            # Show extended help if available
+            if command.extended_help:
+                await ctx.connection.send_line("")
+                for line in command.extended_help.strip().split("\n"):
+                    await ctx.connection.send_line(f"  {line}")
+
             return
 
         # General help - show all commands
@@ -63,6 +69,7 @@ class HelpCommand(Command):
             await ctx.connection.send_line(colorize("\n Communication:", "YELLOW"))
             await ctx.connection.send_line("  say '<message>, emote :<action>")
             await ctx.connection.send_line("  chat <message>, tell <player> <message>")
+            await ctx.connection.send_line("  emotes - List social emotes (laugh, fart, dance, etc.)")
 
             await ctx.connection.send_line(colorize("\n Information:", "YELLOW"))
             await ctx.connection.send_line("  score, who, time, help [command]")
@@ -667,9 +674,42 @@ Available topics:
   guide sympathy     - Magic system
   guide inventory    - Items & equipment
   guide communication - Chat commands
+  guide fae          - The Fae realm
   guide tips         - Helpful advice
 
 Just type 'guide' for a quick overview.
+""",
+        "fae": """
+╔═══ The Fae Realm ═══╗
+
+The Fae is a shadow realm accessible through ancient greystones.
+At twilight, the barrier between worlds grows thin...
+
+Finding the Fae:
+  Travel to the Greystones (northeast of Imre north road)
+  Type 'enter fae' to step through
+
+The Cthaeh:
+  In the Cthaeh's Clearing lives an ancient oracle
+  It speaks only truth - but truth can be poison
+  Type 'speak cthaeh' to converse (PERMANENT CHOICE!)
+
+The Curse:
+  The Cthaeh offers power in exchange for service
+  Type 'embrace curse' to accept (CANNOT BE UNDONE)
+
+  Benefits:
+    +15% combat damage
+    +10% critical chance
+    +3 to STR, DEX, CON
+
+  Cost:
+    The Cthaeh will assign 'biddings' - targets to kill
+    Complete biddings for bonus XP
+    Fail and suffer debuffs
+
+Type 'curse' anytime to view your curse status.
+WARNING: The Sithe hunt those who speak with the Cthaeh!
 """,
     }
 
@@ -704,6 +744,7 @@ Guide Topics:
   guide combat     - Fighting
   guide sympathy   - Magic system
   guide inventory  - Items & equipment
+  guide fae        - The Fae realm
   guide tips       - Helpful advice
 
 Type 'guide <topic>' for detailed help.

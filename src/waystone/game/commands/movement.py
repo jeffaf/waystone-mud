@@ -4,6 +4,7 @@ from uuid import UUID
 
 import structlog
 from sqlalchemy import select
+from sqlalchemy.orm.attributes import flag_modified
 
 from waystone.database.engine import get_session
 from waystone.database.models import Character
@@ -133,6 +134,8 @@ class MoveCommand(Command):
                 if is_new_room:
                     visited_rooms.append(destination_id)
                     character.visited_rooms = visited_rooms
+                    # Flag JSON column as modified so SQLAlchemy tracks the change
+                    flag_modified(character, "visited_rooms")
 
                 await session.commit()
 

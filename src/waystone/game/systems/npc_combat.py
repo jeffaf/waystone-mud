@@ -18,6 +18,7 @@ import structlog
 
 from waystone.database.engine import get_session
 from waystone.database.models import Character
+from waystone.game.systems.cthaeh import get_curse_combat_bonuses
 from waystone.game.systems.experience import award_xp
 from waystone.network import colorize
 
@@ -161,10 +162,16 @@ async def attack_npc(
         if not attacker:
             return False, "Character not found!", 0
 
+        # Get curse bonuses (if any)
+        curse_bonuses = get_curse_combat_bonuses(attacker)
+        crit_bonus = curse_bonuses.get("crit_bonus", 0)
+        damage_bonus = curse_bonuses.get("damage_bonus", 0)
+
         # Calculate to-hit: d20 + DEX modifier
         to_hit_roll = random.randint(1, 20)
         dex_mod = (attacker.dexterity - 10) // 2
-        is_critical = to_hit_roll == 20
+        # Crit on natural 20 OR curse crit bonus (10% extra chance if cursed)
+        is_critical = to_hit_roll == 20 or (crit_bonus > 0 and random.random() < crit_bonus)
         is_fumble = to_hit_roll == 1
 
         # NPC defense
@@ -192,7 +199,10 @@ async def attack_npc(
         damage_roll = random.randint(1, 6)
         if is_critical:
             damage_roll += random.randint(1, 6)  # Double dice on crit
-        total_damage = max(1, damage_roll + str_mod)
+        base_damage = max(1, damage_roll + str_mod)
+        # Apply curse damage bonus (+15% if cursed)
+        total_damage = int(base_damage * (1 + damage_bonus))
+        total_damage = max(1, total_damage)  # Minimum 1 damage
 
         # Apply damage
         npc.current_hp = max(0, npc.current_hp - total_damage)

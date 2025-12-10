@@ -1,0 +1,84 @@
+npcs:
+  # The Cthaeh - The Oracle in the Tree
+  - id: cthaeh
+    name: "The Cthaeh"
+    keywords: [cthaeh, oracle, tree, voice, it]
+    short_description: "A voice from within the dark tree"
+    long_description: "Something ancient and terrible watches from within the twisted tree."
+    description: |
+      The Cthaeh is not truly visible - it exists within the tree, a presence
+      felt more than seen. Yet you can sense its attention, vast and cold and
+      utterly alien. It has watched the turning of ages, seen empires rise
+      and crumble to dust. It knows everything that will happen, every choice
+      you will make, every consequence that will unfold.
+
+      And it wants to talk to you.
+
+      The butterflies that swirl around the tree - red and black, beautiful
+      and terrible - are said to be the only company the Cthaeh has kept for
+      millennia. The Sithe, the hunters of the Fae, kill anyone who speaks
+      with it. They believe its words are a poison that spreads through fate
+      itself.
+
+      Perhaps they are right.
+    level: 99
+    max_hp: 99999
+    attributes:
+      strength: 1
+      dexterity: 1
+      constitution: 99
+      intelligence: 99
+      wisdom: 99
+      charisma: 99
+    behavior: stationary
+    hostile: false
+    invulnerable: true
+    loot_table_id: null
+    dialogue:
+      greeting: |
+        A voice drifts from the tree, soft as falling leaves, sharp as broken glass.
+        "Ah. Another seeker of truth. How... delightful."
+      keywords:
+        curse: "Curse? No, no. I offer only... clarity. A gift, really. Would you refuse a gift?"
+        truth: "I speak only truth. That is my nature. That is my prison. Every word I say is true. Every word I say brings ruin. Choose which matters more to you."
+        gift: "I can give you power. The strength to overcome your enemies. All I ask in return is... service. Small tasks. Nothing you wouldn't do anyway, given enough time."
+        sithe: "Ah, the Sithe. My jailers. They kill anyone who speaks with me, you know. They're watching us now, arrows nocked. But they won't shoot. Not yet. Not until you leave."
+        fae: "This realm? A shadow of your world. Or perhaps your world is a shadow of this one. It's hard to tell, from where I sit."
+        chandrian: "The Chandrian... yes, I know of them. Would you like me to tell you their secrets? Their signs? Their weaknesses? I could, you know. But you haven't asked the right question yet."
+        help: "Help? I am always helpful. That is the cruelest truth of all."
+    respawn_time: 0
+
+  # Sithe Guardian (doesn't attack unless provoked after speaking to Cthaeh)
+  - id: sithe_watcher
+    name: "A Sithe Watcher"
+    keywords: [sithe, watcher, hunter, fae, elf]
+    short_description: "A pale figure watching from the shadows"
+    long_description: "A tall, pale figure stands motionless among the trees, bow in hand."
+    description: |
+      The Sithe are the hunters of the Fae, ancient and deadly beyond mortal
+      reckoning. This one watches you with eyes like chips of winter ice, an
+      arrow nocked and ready. It makes no move to attack, but you sense it
+      could loose that arrow faster than thought.
+
+      The Sithe exist to prevent the Cthaeh's influence from spreading. They
+      kill anyone who speaks with the oracle. If you have spoken with the
+      Cthaeh and try to leave... this one will try to stop you.
+    level: 20
+    max_hp: 250
+    attributes:
+      strength: 16
+      dexterity: 22
+      constitution: 18
+      intelligence: 14
+      wisdom: 16
+      charisma: 8
+    behavior: stationary
+    hostile: false
+    loot_table_id: sithe_loot
+    dialogue:
+      greeting: "The Sithe says nothing. It watches. It waits."
+      keywords:
+        cthaeh: "The Sithe's grip tightens on its bow. 'Do not speak with it. Turn back now, while you still can.'"
+        help: "The Sithe shakes its head almost imperceptibly. 'I cannot help you. I can only... end what begins here.'"
+        leave: "'If you have spoken with it, we will hunt you. Know this. Accept it. The poison must not spread.'"
+    respawn_time: 300

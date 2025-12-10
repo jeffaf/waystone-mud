@@ -1,0 +1,108 @@
+rooms:
+  # The Greystones - Gateway to Fae
+  - id: greystones
+    name: "The Greystones"
+    area: wilderness
+    description: |
+      A ring of ancient standing stones rises from a hilltop clearing, each
+      massive grey pillar worn smooth by countless centuries. The stones are
+      arranged in a perfect circle, their surfaces covered in faded carvings
+      that seem to shift when you're not looking directly at them. The air
+      here feels different - thicker, charged with something ancient and
+      watchful.
+
+      At twilight, the space between the stones seems to shimmer, as if the
+      boundary between worlds grows thin. Old stories speak of travelers who
+      stepped between the stones at the right moment and were never seen again.
+      Others speak of the Fae realm that lies just beyond...
+
+      The north road back to Imre lies to the south.
+    exits:
+      south: imre_north_road
+    properties:
+      outdoor: true
+      lit: true
+      safe_zone: true
+      fae_gateway: true
+
+  # The Fae Realm - Twilight Forest
+  - id: fae_twilight_forest
+    name: "Twilight Forest"
+    area: fae
+    description: |
+      You stand in a forest that exists in eternal twilight. The sky above is
+      a swirl of deep purples and burning oranges, neither day nor night but
+      something in between. The trees here are impossibly tall, their silver
+      bark gleaming with an inner light. Flowers bloom in colors that have no
+      names in mortal tongues, and the air carries a sweetness that makes your
+      head swim.
+
+      Time moves strangely here. You feel as if you've been walking for hours,
+      yet also as if you just arrived. The forest seems to breathe around you,
+      watchful and ancient beyond measure.
+
+      A path leads deeper into the twilight, toward something that feels both
+      alluring and deeply wrong. The way back to the mortal world shimmers
+      behind you.
+    exits:
+      north: fae_cthaeh_clearing
+      out: greystones
+    properties:
+      outdoor: true
+      lit: true
+      safe_zone: true
+      fae_realm: true
+
+  # The Cthaeh's Clearing
+  - id: fae_cthaeh_clearing
+    name: "The Cthaeh's Clearing"
+    area: fae
+    description: |
+      A perfect circle of grass surrounds a single massive tree. Unlike the
+      silver-barked trees of the twilight forest, this one is dark and twisted,
+      its branches reaching toward the strange sky like grasping fingers. Red
+      and black butterflies flutter around its trunk - the only movement in
+      this unnaturally still place.
+
+      Something watches you from within the tree. You can feel its attention
+      like cold fingers tracing down your spine. This is the Cthaeh - the
+      oracle that speaks only truth, yet whose every word brings ruin. The
+      Sithe hunt and kill any who speak with it, for its words spread like
+      plague through the fabric of fate.
+
+      You should leave. You should turn back now. Yet something holds you
+      here, whispering that the answers you seek lie within...
+
+      Type 'speak cthaeh' if you dare. But know that this choice cannot be
+      undone. The twilight forest lies to the south.
+    exits:
+      south: fae_twilight_forest
+    properties:
+      outdoor: true
+      lit: true
+      safe_zone: true
+      fae_realm: true
+      cthaeh_present: true
+
+  # Fae Court (future expansion)
+  - id: fae_court_approach
+    name: "Approach to the Fae Court"
+    area: fae
+    description: |
+      A path of moonlight solidified into stone leads through gardens of
+      impossible beauty. Statues of Fae lords and ladies line the way, so
+      lifelike they might step down from their pedestals at any moment.
+      Music drifts from somewhere ahead - wild and beautiful and deeply
+      unsettling.
+
+      The Court of the Fae lies ahead. Few mortals have seen it and returned
+      unchanged.
+
+      [This area is under construction.]
+    exits:
+      south: fae_twilight_forest
+    properties:
+      outdoor: true
+      lit: true
+      safe_zone: true
+      fae_realm: true

@@ -186,9 +186,14 @@ rooms:
       side offer little cover, making it easy to see trouble coming - if
       you're paying attention.
 
+      A barely-visible path winds northeast toward a hilltop where ancient
+      standing stones can be glimpsed against the sky. Local folk avoid that
+      place, especially at twilight.
+
       Imre's main square lies to the south.
     exits:
       south: imre_main_square
+      northeast: greystones
     properties:
       outdoor: true
       lit: true

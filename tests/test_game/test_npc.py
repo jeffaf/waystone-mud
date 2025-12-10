@@ -328,13 +328,18 @@ class TestNPCDataIntegrity:
 
         for npc_id, npc in npcs.items():
             assert npc.level >= 1, f"NPC {npc_id} has level < 1"
-            assert npc.level <= 20, f"NPC {npc_id} has unreasonably high level"
+            # Skip invulnerable NPCs (like the Cthaeh) - they can have any level
+            if not npc.invulnerable:
+                assert npc.level <= 20, f"NPC {npc_id} has unreasonably high level"
 
     def test_npc_hp_scales_with_level(self):
         """Test that NPC HP generally scales with level."""
         npcs = load_all_npcs()
 
         for npc_id, npc in npcs.items():
+            # Skip invulnerable NPCs - they may have special HP values
+            if npc.invulnerable:
+                continue
             # HP should be at least 10 per level (rough guideline)
             min_hp = npc.level * 10
             assert npc.max_hp >= min_hp * 0.5, f"NPC {npc_id} has too low HP for its level"

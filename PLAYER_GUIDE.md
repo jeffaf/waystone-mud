@@ -284,6 +284,67 @@ The Four Corners uses a talent-based currency system:
 
 ---
 
+## Social Emotes
+
+Express yourself with fun social actions! Type `emotes` to see all available emotes.
+
+### Using Emotes
+
+| Command | Description |
+|---------|-------------|
+| `emotes` | List all available social emotes |
+| `<emote>` | Perform the emote |
+| `<emote> <player>` | Direct the emote at a player |
+
+### Emote Categories
+
+**Expressions**
+- `laugh` / `giggle` / `chuckle` / `snicker` / `guffaw` / `cackle`
+- `grin` / `smile` / `smirk` / `wink`
+
+**Greetings**
+- `wave` / `bow` / `curtsy` / `salute` / `nod`
+
+**Gestures**
+- `shrug` / `point` / `clap` / `applaud` / `thumbsup`
+- `facepalm` / `headshake` / `eyeroll`
+
+**Emotions**
+- `sigh` / `groan` / `cry` / `sob` / `pout`
+- `blush` / `gasp` / `panic`
+
+**Physical**
+- `stretch` / `yawn` / `flex` / `strut` / `twirl`
+
+**Social**
+- `hug` / `highfive` / `nudge` / `poke` / `pat`
+- `bonk`
+
+**Dance Moves**
+- `dance` / `jig` / `moonwalk` / `dab` / `twerk`
+
+**Bodily Functions**
+- `burp` / `fart` / `sneeze` / `hiccup` / `cough`
+
+### Examples
+
+```
+> laugh
+You throw back your head and laugh heartily!
+(Others see: PlayerName throws back their head and laughs heartily!)
+
+> wink Bob
+You wink suggestively at Bob.
+(Bob sees: PlayerName winks suggestively at you.)
+(Others see: PlayerName winks suggestively at Bob.)
+
+> fart
+You let loose a thunderous fart that echoes through the room.
+(Others see: PlayerName lets loose a thunderous fart. Everyone pretends not to notice.)
+```
+
+---
+
 ## The University & Arcanum
 
 ### Joining the Arcanum

@@ -239,6 +239,17 @@ class GameEngine:
             TuitionCommand,
             WorkCommand,
         )
+        from waystone.game.commands.social import (
+            EmoteCommands,
+            EmotesCommand,
+        )
+        from waystone.game.commands.fae import (
+            AcceptCurseCommand,
+            CurseCommand,
+            EnterFaeCommand,
+            LeaveFaeCommand,
+            SpeakCthaehCommand,
+        )
 
         registry = get_registry()
 
@@ -326,6 +337,18 @@ class GameEngine:
         registry.register(OfferCommand())
         registry.register(RemoveOfferCommand())
         registry.register(CancelTradeCommand())
+
+        # Social emote commands
+        registry.register(EmotesCommand())
+        for emote_cmd_class in EmoteCommands:
+            registry.register(emote_cmd_class())
+
+        # Fae realm commands
+        registry.register(EnterFaeCommand())
+        registry.register(SpeakCthaehCommand())
+        registry.register(AcceptCurseCommand())
+        registry.register(CurseCommand())
+        registry.register(LeaveFaeCommand())
 
         logger.info(
             "commands_registered",
@@ -580,6 +603,9 @@ class GameEngine:
             "imre_sewers_main": ["sewer_rat", "sewer_rat", "sewer_rat"],
             "imre_north_road": ["bandit"],
             "imre_back_alley": ["sewer_rat"],
+            # Fae realm
+            "fae_cthaeh_clearing": ["cthaeh"],
+            "fae_twilight_forest": ["sithe_watcher"],
         }
 
         total_spawned = 0

@@ -221,6 +221,36 @@ class Character(Base, TimestampMixin):
         comment="List of room IDs the character has visited",
     )
 
+    # University Arcanum rank: none, e_lir, re_lar, el_the
+    arcanum_rank: Mapped[str] = mapped_column(
+        String(20),
+        nullable=False,
+        default="none",
+        server_default="none",
+        comment="Arcanum rank at the University",
+    )
+
+    # University data stored as JSON for flexibility
+    # Contains: current_term, tuition_paid, tuition_amount, admission_score, master_reputations
+    university_data: Mapped[dict[str, Any]] = mapped_column(
+        JSON,
+        nullable=False,
+        default=dict,
+        server_default="{}",
+        comment="University status data (term, tuition, reputations)",
+    )
+
+    # Cthaeh curse data - tracks pact with the Cthaeh
+    # Contains: cursed, curse_accepted_at, last_bidding_time, current_target,
+    #           target_type, target_expires_at, completed_biddings, failed_biddings
+    cthaeh_data: Mapped[dict[str, Any]] = mapped_column(
+        JSON,
+        nullable=False,
+        default=dict,
+        server_default="{}",
+        comment="Cthaeh curse/pact data",
+    )
+
     # Relationships
     user: Mapped["User"] = relationship(
         "User",

@@ -40,6 +40,7 @@ class Command(ABC):
     name: str = ""
     aliases: list[str] = []
     help_text: str = ""
+    extended_help: str = ""  # Detailed help shown with 'help <command>'
     min_args: int = 0
     requires_character: bool = True  # Most commands need an active character
 

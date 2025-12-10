@@ -46,6 +46,26 @@ class BindCommand(Command):
     name = "bind"
     aliases = ["link"]
     help_text = "bind <type> <source> <target> - Create a sympathetic binding"
+    extended_help = """Sympathy is the art of creating links between objects to transfer energy.
+
+BINDING TYPES:
+  heat    - Transfer heat between objects (useful for warming/cooling)
+  kinetic - Transfer force/motion (push objects remotely)
+  damage  - Combat binding to harm enemies through linked objects
+  light   - Create or redirect light sources
+  dowse   - Locate similar objects (finding things)
+
+REQUIREMENTS:
+  1. You must HOLD a heat source first (torch, candle, body heat)
+  2. Source and target must have some similarity for best efficiency
+  3. Your Alar (willpower) limits how many bindings you can maintain
+
+EXAMPLES:
+  bind heat coin torch     - Link coin to torch for heat transfer
+  bind damage coin rat     - Link coin to rat for combat
+  bind kinetic stone door  - Link stone to door to push it
+
+WARNING: Using body heat is dangerous! Risk of backlash increases."""
     min_args = 3
 
     async def execute(self, ctx: CommandContext) -> None:
@@ -271,6 +291,24 @@ class SympathyCommand(Command):
     name = "sympathy"
     aliases = ["sym"]
     help_text = "sympathy - Show your sympathy skill and status"
+    extended_help = """Display your sympathy skill rank and current status.
+
+SYMPATHY RANKS:
+  Untrained     - 30% efficiency cap
+  E'lir         - 50% efficiency cap (requires 100 XP)
+  Re'lar        - 65% efficiency cap (requires 300 XP)
+  El'the        - 80% efficiency cap (requires 700 XP)
+  Master        - 90% efficiency cap (requires 1500 XP)
+  Arcane Master - 95% efficiency cap (requires 3000 XP)
+
+Shows: Your current rank, efficiency cap, active bindings,
+max bindings allowed, and current heat source.
+
+RELATED COMMANDS:
+  hold <source> - Set heat source
+  bind          - Create a binding
+  bindings      - List active bindings
+  release       - Release bindings"""
     min_args = 0
 
     async def execute(self, ctx: CommandContext) -> None:
@@ -325,6 +363,23 @@ class HoldCommand(Command):
     name = "hold"
     aliases = ["heatsource"]
     help_text = "hold <item|body> - Designate a heat source for sympathy"
+    extended_help = """Designate a heat source to power your sympathetic bindings.
+
+HEAT SOURCES (by power):
+  candle   - 50 energy   (weak but safe)
+  torch    - 150 energy  (common choice)
+  brazier  - 500 energy  (powerful)
+  bonfire  - 1500 energy (very powerful)
+  body     - 100 energy  (DANGEROUS! 2.5x backlash risk)
+  sun      - 2000 energy (outdoors only, during day)
+
+USAGE:
+  hold torch   - Use a torch from your inventory
+  hold candle  - Use a candle
+  hold body    - Use your own body heat (risky!)
+
+The heat source must be in your inventory (except body/sun).
+More powerful sources allow stronger bindings but deplete faster."""
     min_args = 1
 
     async def execute(self, ctx: CommandContext) -> None:

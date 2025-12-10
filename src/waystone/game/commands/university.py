@@ -20,8 +20,9 @@ from waystone.game.systems.university import (
     ArcanumRank,
     calculate_tuition,
     get_random_questions,
-    get_university_status,
+    load_university_status,
     rank_to_display,
+    save_university_status,
     score_answer,
 )
 from waystone.network import colorize
@@ -70,9 +71,10 @@ class AdmitCommand(Command):
                 await ctx.connection.send_line("Go to the University and find the Hollows.")
                 return
 
-            # Get university status
-            status = get_university_status(character.id)
+            # Load university status from character (persisted to DB)
+            status = load_university_status(character)
 
+            # Already admitted and paid - no need to re-admit
             if status.arcanum_rank != ArcanumRank.NONE and status.tuition_paid:
                 await ctx.connection.send_line(
                     colorize("You are already admitted for this term.", "YELLOW")
@@ -82,13 +84,45 @@ class AdmitCommand(Command):
                 )
                 return
 
-            # Start admission examination
+            # Already admitted but haven't paid - remind them to pay
+            if status.arcanum_rank != ArcanumRank.NONE and status.tuition_amount > 0:
+                await ctx.connection.send_line(
+                    colorize("You have already been admitted this term.", "YELLOW")
+                )
+                talents = status.tuition_amount // 100
+                jots = status.tuition_amount % 100
+                tuition_str = f"{talents} talents, {jots} jots" if talents else f"{jots} jots"
+                await ctx.connection.send_line(
+                    f"Tuition due: {colorize(tuition_str, 'YELLOW')}"
+                )
+                await ctx.connection.send_line(
+                    f"Use '{colorize('tuition pay', 'CYAN')}' to pay and begin your studies."
+                )
+                return
+
+            # Start admission examination - flavor text about Masters arriving
+            await ctx.connection.send_line("")
+            await ctx.connection.send_line(
+                colorize(
+                    "A clerk rings a small bell. \"The Masters will see you now.\"",
+                    "DIM",
+                )
+            )
+            await ctx.connection.send_line("")
+            await ctx.connection.send_line(
+                "One by one, the Nine Masters file in through a side door and take"
+            )
+            await ctx.connection.send_line(
+                "their seats at the long examination table. Their black robes rustle"
+            )
+            await ctx.connection.send_line(
+                "as they settle, studying you with appraising eyes."
+            )
             await ctx.connection.send_line("")
             await ctx.connection.send_line(colorize("═" * 50, "YELLOW"))
             await ctx.connection.send_line(colorize("  UNIVERSITY ADMISSION EXAMINATION", "BOLD"))
             await ctx.connection.send_line(colorize("═" * 50, "YELLOW"))
             await ctx.connection.send_line("")
-            await ctx.connection.send_line("The Masters have assembled to examine your worthiness.")
             await ctx.connection.send_line("Answer each question to the best of your ability.")
             await ctx.connection.send_line("")
 
@@ -181,7 +215,7 @@ class AdmitCommand(Command):
                 )
                 await ctx.connection.send_line("")
                 await ctx.connection.send_line(
-                    f"Use '{colorize('pay tuition', 'CYAN')}' to pay and begin your studies."
+                    f"Use '{colorize('tuition pay', 'CYAN')}' to pay and begin your studies."
                 )
             else:
                 # Rejected
@@ -190,6 +224,24 @@ class AdmitCommand(Command):
                 )
                 await ctx.connection.send_line("Study harder and return next term to try again.")
 
+            # Save university status to database
+            save_university_status(character, status)
+            await session.commit()
+
+            # Masters leave
+            await ctx.connection.send_line("")
+            await ctx.connection.send_line(
+                colorize(
+                    "The Masters rise from their seats. One by one, they file out",
+                    "DIM",
+                )
+            )
+            await ctx.connection.send_line(
+                colorize(
+                    "through the side door, returning to their duties.",
+                    "DIM",
+                )
+            )
             await ctx.connection.send_line("")
 
 
@@ -218,7 +270,7 @@ class TuitionCommand(Command):
                 await ctx.connection.send_line(colorize("Character not found.", "RED"))
                 return
 
-            status = get_university_status(character.id)
+            status = load_university_status(character)
 
             if status.arcanum_rank == ArcanumRank.NONE:
                 await ctx.connection.send_line(
@@ -250,6 +302,10 @@ class TuitionCommand(Command):
                 # Pay tuition
                 character.money -= status.tuition_amount
                 status.tuition_paid = True
+
+                # Save to database
+                save_university_status(character, status)
+                await db_session.commit()
 
                 await ctx.connection.send_line(
                     colorize("You have paid your tuition for this term!", "GREEN")
@@ -312,7 +368,7 @@ class RankCommand(Command):
                 await ctx.connection.send_line(colorize("Character not found.", "RED"))
                 return
 
-            status = get_university_status(character.id)
+            status = load_university_status(character)
 
             await ctx.connection.send_line("")
             await ctx.connection.send_line(colorize("═" * 40, "CYAN"))
@@ -424,7 +480,7 @@ class WorkCommand(Command):
                 return
 
             job = self.JOBS[job_name]
-            status = get_university_status(character.id)
+            status = load_university_status(character)
 
             # Check rank requirement
             from waystone.game.systems.university import RANK_ORDER
@@ -468,3 +524,7 @@ class WorkCommand(Command):
                 status.modify_reputation("master_arwyl", 1)
             elif job_name == "artificery":
                 status.modify_reputation("master_kilvin", 1)
+
+            # Save to database
+            save_university_status(character, status)
+            await db_session.commit()

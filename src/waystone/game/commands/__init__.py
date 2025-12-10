@@ -57,6 +57,10 @@ from waystone.game.commands.skills import (
     SkillsCommand,
     TrainCommand,
 )
+from waystone.game.commands.social import (
+    EmoteCommands,
+    EmotesCommand,
+)
 
 __all__ = [
     # Base classes
@@ -108,4 +112,7 @@ __all__ = [
     "BuyCommand",
     "SellCommand",
     "AppraiseCommand",
+    # Social emote commands
+    "EmoteCommands",
+    "EmotesCommand",
 ]
