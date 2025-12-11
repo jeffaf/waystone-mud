@@ -741,6 +741,30 @@ class GameEngine:
                         exc_info=True,
                     )
 
+                # Regenerate HP for players and NPCs not in combat
+                from waystone.game.systems.regeneration import (
+                    regenerate_all_players,
+                    regenerate_npcs,
+                )
+
+                try:
+                    players_healed = await regenerate_all_players(self)
+                    npcs_healed = await regenerate_npcs(self)
+
+                    if players_healed > 0 or npcs_healed > 0:
+                        logger.debug(
+                            "regeneration_tick",
+                            players_healed=players_healed,
+                            npcs_healed=npcs_healed,
+                        )
+
+                except Exception as e:
+                    logger.error(
+                        "regeneration_error",
+                        error=str(e),
+                        exc_info=True,
+                    )
+
             except asyncio.CancelledError:
                 break
             except Exception as e:

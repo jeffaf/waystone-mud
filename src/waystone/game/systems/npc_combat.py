@@ -112,6 +112,18 @@ def get_npcs_in_room(room_id: str) -> list[NPCInstance]:
     return [npc for npc in _npc_instances[room_id].values() if npc.is_alive]
 
 
+def get_all_npc_instances() -> dict[str, list[NPCInstance]]:
+    """Get all NPC instances organized by room.
+
+    Returns:
+        Dict mapping room_id to list of NPCInstance objects
+    """
+    result: dict[str, list[NPCInstance]] = {}
+    for room_id, npcs in _npc_instances.items():
+        result[room_id] = list(npcs.values())
+    return result
+
+
 def find_npc_by_name(room_id: str, name: str) -> NPCInstance | None:
     """
     Find an NPC in a room by name (partial match).
