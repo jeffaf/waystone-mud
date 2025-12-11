@@ -440,9 +440,6 @@ class Combat:
 
         This method is called every ROUND_INTERVAL seconds by the round loop.
         It processes actions for all participants in initiative order.
-
-        Note: Actual attack/damage mechanics are implemented by another engineer.
-        This is just the framework for round execution.
         """
         self.round_number += 1
 
@@ -480,15 +477,8 @@ class Combat:
                     # Wait state expired
                     participant.wait_state_until = None
 
-            # TODO: Actual combat action processing will be implemented here
-            # For now, just log that this participant would act
-            logger.debug(
-                "participant_turn",
-                entity_id=participant.entity_id,
-                entity_name=participant.entity_name,
-                is_npc=participant.is_npc,
-                round_number=self.round_number,
-            )
+            # Execute auto action for this participant
+            await self._auto_action(participant)
 
         # Reset defending flags at end of round
         for participant in self.participants:
@@ -624,13 +614,163 @@ class Combat:
         )
         return True
 
+    async def _execute_attack(self, attacker: CombatParticipant, defender: CombatParticipant) -> None:
+        """Execute attack from attacker to defender."""
+        hit, is_crit, roll = await roll_to_hit(attacker, defender)
+
+        if hit:
+            damage = await calculate_damage(attacker, is_crit)
+            new_hp = await apply_damage_to_participant(defender, damage)
+
+            # Track damage dealt (for XP sharing later)
+            attacker.damage_dealt += damage
+
+            damage_verb = get_damage_message(damage)
+            crit_text = " **CRITICAL HIT!**" if is_crit else ""
+            msg = colorize(
+                f"{attacker.entity_name}'s attack {damage_verb}s {defender.entity_name} for {damage} damage!{crit_text}",
+                "RED" if is_crit else "YELLOW",
+            )
+            self.engine.broadcast_to_room(self.room_id, msg)
+
+            # Check if defender died
+            if new_hp <= 0:
+                await self._handle_death(defender, attacker)
+        else:
+            msg = colorize(
+                f"{attacker.entity_name}'s attack misses {defender.entity_name}!",
+                "CYAN",
+            )
+            self.engine.broadcast_to_room(self.room_id, msg)
+
+    async def _handle_death(self, victim: CombatParticipant, killer: CombatParticipant) -> None:
+        """Handle participant death."""
+        msg = colorize(
+            f"\n*** {victim.entity_name} has been SLAIN by {killer.entity_name}! ***\n",
+            "RED",
+        )
+        self.engine.broadcast_to_room(self.room_id, msg)
+
+        if victim.is_npc:
+            # NPC death - mark as dead
+            npc = victim._entity_ref
+            if npc:
+                npc.is_alive = False
+
+                # Award XP to all participants who damaged this NPC
+                await self._award_npc_xp(victim, killer)
+
+        # Remove from combat
+        await self.remove_participant(victim.entity_id)
+
+    async def _award_npc_xp(self, npc_victim: CombatParticipant, killer: CombatParticipant) -> None:
+        """Award XP for NPC death to all attackers.
+
+        Awards XP based on damage dealt:
+        - Killer gets bonus XP (40% base)
+        - Other attackers share remaining XP based on damage dealt
+        """
+        from waystone.game.systems.experience import award_xp
+        from waystone.database.engine import get_session
+        from uuid import UUID
+
+        npc = npc_victim._entity_ref
+        if not npc:
+            return
+
+        # Calculate total XP for this NPC
+        base_xp = 10 * npc.level
+
+        # Find all player participants who damaged this NPC
+        attackers = []
+        total_damage = 0
+        for p in self.participants:
+            if not p.is_npc and p.damage_dealt > 0 and not p.fled:
+                attackers.append(p)
+                total_damage += p.damage_dealt
+
+        if not attackers:
+            return
+
+        # Award XP
+        async with get_session() as session:
+            if len(attackers) == 1:
+                # Solo kill - full XP
+                await award_xp(UUID(killer.entity_id), base_xp, f"defeating {npc.name}", session)
+                xp_msg = colorize(f"{killer.entity_name} gains {base_xp} experience!", "GREEN")
+                self.engine.broadcast_to_room(self.room_id, xp_msg)
+            else:
+                # Group kill - distribute based on damage
+                for attacker in attackers:
+                    damage_ratio = attacker.damage_dealt / total_damage
+                    xp_share = int(base_xp * damage_ratio)
+                    if xp_share > 0:
+                        await award_xp(
+                            UUID(attacker.entity_id),
+                            xp_share,
+                            f"defeating {npc.name}",
+                            session,
+                        )
+                        xp_msg = colorize(
+                            f"{attacker.entity_name} gains {xp_share} experience!",
+                            "GREEN",
+                        )
+                        self.engine.broadcast_to_room(self.room_id, xp_msg)
+
+    async def _npc_auto_action(self, participant: CombatParticipant) -> None:
+        """NPC AI - check wimpy, choose target, attack."""
+        npc = participant._entity_ref  # NPCInstance
+        if not npc:
+            return
+
+        # Check wimpy - flee if HP < 20%
+        hp_percent = npc.current_hp / npc.max_hp if npc.max_hp > 0 else 0
+        if hp_percent < 0.2 and npc.behavior != "training_dummy":
+            await self.attempt_flee(participant)
+            return
+
+        # Passive NPCs flee when in combat
+        if npc.behavior == "passive":
+            await self.attempt_flee(participant)
+            return
+
+        # Training dummies don't act
+        if npc.behavior == "training_dummy":
+            return
+
+        # Aggressive NPCs attack
+        if not participant.target_id:
+            # Choose target - prioritize last_hit_by
+            if npc.last_hit_by:
+                for p in self.participants:
+                    if p.entity_id == str(npc.last_hit_by) and not p.fled:
+                        participant.target_id = p.entity_id
+                        break
+
+            # Otherwise pick random player
+            if not participant.target_id:
+                players = [p for p in self.participants if not p.is_npc and not p.fled]
+                if players:
+                    participant.target_id = random.choice(players).entity_id
+
+        # Execute attack if has target
+        if participant.target_id:
+            target = self.get_participant(participant.target_id)
+            if target and not target.fled:
+                await self._execute_attack(participant, target)
+
     async def _auto_action(self, participant: CombatParticipant) -> None:
         """Execute automatic combat action for a participant."""
         # Skip if in wait state
         if self._is_in_wait_state(participant):
             return
 
-        # Find target
+        # NPC AI
+        if participant.is_npc:
+            await self._npc_auto_action(participant)
+            return
+
+        # Player auto-action
         if not participant.target_id:
             return
 
@@ -638,26 +778,7 @@ class Combat:
         if not target or target.fled:
             return
 
-        # Roll to hit
-        hit, is_crit, roll = await roll_to_hit(participant, target)
-
-        if hit:
-            damage = await calculate_damage(participant, is_crit)
-            await apply_damage_to_participant(target, damage)
-
-            damage_verb = get_damage_message(damage)
-            crit_text = " CRITICAL!" if is_crit else ""
-            msg = colorize(
-                f"{participant.entity_name}'s attack {damage_verb}s {target.entity_name} for {damage} damage!{crit_text}",
-                "RED" if is_crit else "YELLOW",
-            )
-            self.engine.broadcast_to_room(self.room_id, msg)
-        else:
-            msg = colorize(
-                f"{participant.entity_name}'s attack misses {target.entity_name}!",
-                "CYAN",
-            )
-            self.engine.broadcast_to_room(self.room_id, msg)
+        await self._execute_attack(participant, target)
 
     def _roll_initiative(self, participant: CombatParticipant) -> int:
         """Roll initiative for a participant.

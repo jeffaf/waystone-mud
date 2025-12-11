@@ -8,7 +8,8 @@ from sqlalchemy import select
 from waystone.database.engine import get_session
 from waystone.database.models import Character
 from waystone.game.systems.combat import Combat, CombatState
-from waystone.game.systems.npc_combat import attack_npc, find_npc_by_name, get_npcs_in_room
+from waystone.game.systems.npc_combat import find_npc_by_name, get_npcs_in_room
+from waystone.game.systems import unified_combat
 from waystone.network import colorize
 
 from .base import Command, CommandContext
@@ -121,20 +122,76 @@ class AttackCommand(Command):
                 npc_target = find_npc_by_name(attacker.current_room_id, target_name)
 
                 if npc_target:
-                    # NPC combat - simpler, no turn-based system
-                    hit, message, damage = await attack_npc(
-                        attacker.id,
-                        npc_target,
-                        ctx.engine,
-                    )
+                    # NPC combat - use unified combat system
+                    # Check for existing combat in room
+                    combat = unified_combat.get_combat_for_room(attacker.current_room_id)
 
-                    # Broadcast the attack result to room
-                    ctx.engine.broadcast_to_room(
-                        attacker.current_room_id,
-                        colorize(f"\n{attacker.name} attacks {npc_target.name}!", "YELLOW"),
-                    )
+                    if not combat:
+                        # Create new combat
+                        combat = await unified_combat.create_combat(
+                            attacker.current_room_id,
+                            ctx.engine,
+                        )
 
-                    await ctx.connection.send_line(message)
+                        # Add player participant
+                        player_participant = await combat.add_participant(
+                            entity_id=str(attacker.id),
+                            entity_name=attacker.name,
+                            is_npc=False,
+                            target_id=npc_target.id,
+                        )
+                        player_participant._entity_ref = attacker
+
+                        # Add NPC participant
+                        npc_participant = await combat.add_participant(
+                            entity_id=npc_target.id,
+                            entity_name=npc_target.name,
+                            is_npc=True,
+                            target_id=str(attacker.id),
+                        )
+                        npc_participant._entity_ref = npc_target
+
+                        # Set NPC's last_hit_by for targeting
+                        npc_target.last_hit_by = str(attacker.id)
+
+                        # Start combat
+                        await combat.start()
+
+                        await ctx.connection.send_line(
+                            colorize(
+                                f"You engage {npc_target.name} in combat! Rounds will execute automatically every 3 seconds.",
+                                "YELLOW",
+                            )
+                        )
+                    else:
+                        # Already in combat - check if player is a participant
+                        player_participant = combat.get_participant(str(attacker.id))
+                        if not player_participant:
+                            # Add player to existing combat
+                            player_participant = await combat.add_participant(
+                                entity_id=str(attacker.id),
+                                entity_name=attacker.name,
+                                is_npc=False,
+                                target_id=npc_target.id,
+                            )
+                            player_participant._entity_ref = attacker
+                            await ctx.connection.send_line(
+                                colorize(f"You join the combat against {npc_target.name}!", "YELLOW")
+                            )
+                        else:
+                            # Player already in combat - switch target
+                            if await combat.switch_target(player_participant, npc_target.id):
+                                await ctx.connection.send_line(
+                                    colorize(f"You now target {npc_target.name}!", "YELLOW")
+                                )
+                            else:
+                                await ctx.connection.send_line(
+                                    colorize("You're already engaged in combat!", "RED")
+                                )
+
+                        # Update NPC's last_hit_by
+                        npc_target.last_hit_by = str(attacker.id)
+
                     return
 
                 # Find player target in room
@@ -290,15 +347,26 @@ class FleeCommand(Command):
             return
 
         try:
-            # Check if in combat
-            combat = get_combat_for_character(ctx.session.character_id)
+            # Check if in unified combat first
+            combat = unified_combat.get_combat_for_entity(ctx.session.character_id)
 
-            if not combat:
+            if combat:
+                # Use unified combat system
+                participant = combat.get_participant(ctx.session.character_id)
+                if participant:
+                    success = await combat.attempt_flee(participant)
+                    # Message is broadcast by attempt_flee
+                    return
+
+            # Fall back to old combat system
+            old_combat = get_combat_for_character(ctx.session.character_id)
+
+            if not old_combat:
                 await ctx.connection.send_line(colorize("You are not in combat!", "RED"))
                 return
 
-            # Attempt to flee
-            success, message = await combat.attempt_flee(ctx.session.character_id)
+            # Attempt to flee (old system)
+            success, message = await old_combat.attempt_flee(ctx.session.character_id)
 
             await ctx.connection.send_line(colorize(message, "GREEN" if success else "RED"))
 
