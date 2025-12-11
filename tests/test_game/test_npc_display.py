@@ -304,8 +304,10 @@ class TestRoomPresenceFormatting:
         npc = spawn_npc(template, "test_room")
 
         result = format_npc_room_presence(npc, 2)
-        # Two NPCs replace "is here" with "are here (x2)"
-        assert "are here (x2)" in result
+        # Two NPCs show "Two <plural name> are here."
+        assert "two" in result.lower()
+        assert "bandits" in result.lower()
+        assert "are here" in result.lower()
 
     def test_three_npcs(self):
         """Test three NPCs shows word count."""

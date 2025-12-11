@@ -170,9 +170,13 @@ class GameEngine:
         )
         from waystone.game.commands.combat import (
             AttackCommand,
+            BashCommand,
             CombatStatusCommand,
             DefendCommand,
+            DisarmCommand,
             FleeCommand,
+            KickCommand,
+            TripCommand,
         )
         from waystone.game.commands.communication import (
             ChatCommand,
@@ -291,6 +295,11 @@ class GameEngine:
         registry.register(DefendCommand())
         registry.register(FleeCommand())
         registry.register(CombatStatusCommand())
+        # Combat skill commands
+        registry.register(BashCommand())
+        registry.register(KickCommand())
+        registry.register(DisarmCommand())
+        registry.register(TripCommand())
 
         # Info commands
         registry.register(HelpCommand())

@@ -270,13 +270,11 @@ def format_npc_room_presence(npc: NPCInstance, count: int) -> str:
     """
     if count == 1:
         return npc.long_description
-    elif count == 2:
-        # Simple pluralization
-        return npc.long_description.replace(" is here", " are here (x2)")
     else:
-        # Numeric count with pluralized name
+        # Use pluralized name with count for 2+ NPCs
         name_plural = _pluralize_npc_name(npc.short_description)
-        return f"{_number_to_word(count).capitalize()} {name_plural} are here."
+        count_word = _number_to_word(count).capitalize()
+        return f"{count_word} {name_plural} are here."
 
 
 def _pluralize_npc_name(name: str) -> str:
@@ -302,6 +300,7 @@ def _pluralize_npc_name(name: str) -> str:
 def _number_to_word(num: int) -> str:
     """Convert small numbers to words."""
     number_words = {
+        2: "two",
         3: "three",
         4: "four",
         5: "five",
