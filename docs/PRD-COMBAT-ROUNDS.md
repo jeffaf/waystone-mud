@@ -2484,11 +2484,28 @@ bool check_hit(struct char_data *attacker, struct char_data *victim) {
 
 ---
 
+## Future Work
+
+Items to implement after the core combat system is complete:
+
+1. **NPC Skill Usage** - NPCs should be able to use combat skills (bash, kick, disarm, trip) during combat rounds, not just auto-attack. Requires NPC AI decision-making based on cooldowns, target condition, and skill availability.
+
+2. **Area of Effect (AOE) Skills** - Skills that affect multiple targets in combat (e.g., whirlwind, cleave).
+
+3. **Pets and Summons** - Support for player-controlled entities that participate in combat alongside their owner.
+
+4. **Combat Formations** - Front/back row mechanics affecting who can be targeted.
+
+5. **Environmental Combat Effects** - Room-based modifiers (darkness, terrain, weather) affecting combat.
+
+---
+
 ## Document Change Log
 
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
 | 1.0 | 2025-12-10 | Atlas | Initial PRD creation |
+| 1.1 | 2025-12-11 | - | Added Future Work section |
 
 ---
 

@@ -304,10 +304,13 @@ class PlayCommand(Command):
 
         try:
             async with get_session() as session:
-                # Find character by name and user
+                # Find character by name and user (case-insensitive)
+                from sqlalchemy import func
+
                 result = await session.execute(
                     select(Character).where(
-                        Character.name == name, Character.user_id == UUID(ctx.session.user_id)
+                        func.lower(Character.name) == name.lower(),
+                        Character.user_id == UUID(ctx.session.user_id),
                     )
                 )
                 character = result.scalar_one_or_none()
