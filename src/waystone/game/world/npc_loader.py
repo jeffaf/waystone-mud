@@ -83,6 +83,10 @@ class NPCTemplate(BaseModel):
     invulnerable: bool = Field(
         default=False, description="Whether the NPC is invulnerable to damage"
     )
+    pack_mentality: bool = Field(
+        default=True,
+        description="Whether same-type NPCs join combat when one is attacked (rats help each other, cowardly thugs don't)",
+    )
 
     class Config:
         """Pydantic configuration."""

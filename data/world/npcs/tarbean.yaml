@@ -30,6 +30,7 @@ npcs:
       wisdom: 9
       charisma: 7
     behavior: aggressive
+    pack_mentality: false  # Tarbean thugs are cowards - they don't help each other
     loot_table_id: street_thug_loot
     dialogue: null
     respawn_time: 180  # 3 minutes
@@ -62,6 +63,7 @@ npcs:
       wisdom: 10
       charisma: 8
     behavior: aggressive
+    pack_mentality: false  # Every thug for themselves
     loot_table_id: street_thug_loot
     dialogue: null
     respawn_time: 240  # 4 minutes

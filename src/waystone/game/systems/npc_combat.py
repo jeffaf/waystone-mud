@@ -50,6 +50,7 @@ class NPCInstance:
     long_description: str = ""  # Shown in room descriptions
     equipment: dict[str, str] = field(default_factory=dict)  # Equipped items by slot
     inventory: list[str] = field(default_factory=list)  # Items this NPC carries
+    pack_mentality: bool = True  # Whether same-type NPCs join combat (rats yes, thugs no)
 
 
 # Global NPC instance tracking: room_id -> {instance_id: NPCInstance}
@@ -85,6 +86,7 @@ def spawn_npc(template: "NPCTemplate", room_id: str) -> NPCInstance:
         long_description=template.long_description or f"{template.name} is here.",
         equipment=dict(template.equipment) if template.equipment else {},
         inventory=list(template.inventory) if template.inventory else [],
+        pack_mentality=getattr(template, "pack_mentality", True),
     )
 
     if room_id not in _npc_instances:

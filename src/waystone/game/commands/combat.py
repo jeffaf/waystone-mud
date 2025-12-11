@@ -155,6 +155,25 @@ class AttackCommand(Command):
                         # Set NPC's last_hit_by for targeting
                         npc_target.last_hit_by = str(attacker.id)
 
+                        # Pack mentality: same-type NPCs join the fight
+                        pack_npcs = []
+                        if npc_target.pack_mentality:
+                            for other_npc in get_npcs_in_room(attacker.current_room_id):
+                                if (
+                                    other_npc.id != npc_target.id
+                                    and other_npc.template_id == npc_target.template_id
+                                    and other_npc.is_alive
+                                    and other_npc.pack_mentality
+                                ):
+                                    pack_participant = await combat.add_participant(
+                                        entity_id=other_npc.id,
+                                        entity_name=other_npc.name,
+                                        is_npc=True,
+                                        target_id=str(attacker.id),
+                                    )
+                                    pack_participant._entity_ref = other_npc
+                                    pack_npcs.append(other_npc)
+
                         # Start combat
                         await combat.start()
 
@@ -164,6 +183,13 @@ class AttackCommand(Command):
                                 "YELLOW",
                             )
                         )
+
+                        # Notify about pack joining
+                        if pack_npcs:
+                            pack_names = ", ".join(n.short_description for n in pack_npcs)
+                            await ctx.connection.send_line(
+                                colorize(f"{pack_names} joins the fight!", "RED")
+                            )
                     else:
                         # Already in combat - check if player is a participant
                         player_participant = combat.get_participant(str(attacker.id))
