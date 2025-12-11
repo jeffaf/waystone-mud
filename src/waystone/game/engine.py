@@ -461,8 +461,8 @@ class GameEngine:
         """
         Get the appropriate prompt for a session.
 
-        For playing characters, shows HP and XP info like classic MUDs:
-        <45/60hp 150xp> >
+        For playing characters, shows level, HP, and XP progress like classic MUDs:
+        <L5 45/60hp 150/400xp>
 
         Args:
             session: The session to get a prompt for
@@ -479,6 +479,7 @@ class GameEngine:
 
                 from waystone.database.engine import get_session as get_db_session
                 from waystone.database.models import Character
+                from waystone.game.systems.experience import xp_for_level
 
                 async with get_db_session() as db_session:
                     result = await db_session.execute(
@@ -487,7 +488,12 @@ class GameEngine:
                     character = result.scalar_one_or_none()
 
                     if character:
-                        hp_color = "GREEN"
+                        # Level display (yellow/gold for level)
+                        level_str = colorize("Level ", "YELLOW") + colorize(
+                            str(character.level), "BOLD"
+                        )
+
+                        # HP with color based on percentage
                         hp_pct = (
                             (character.current_hp / character.max_hp) * 100
                             if character.max_hp > 0
@@ -497,10 +503,16 @@ class GameEngine:
                             hp_color = "RED"
                         elif hp_pct < 50:
                             hp_color = "YELLOW"
-
+                        else:
+                            hp_color = "GREEN"
                         hp_str = colorize(f"{character.current_hp}/{character.max_hp}hp", hp_color)
-                        xp_str = colorize(f"{character.experience}xp", "CYAN")
-                        return f"<{hp_str} {xp_str}> "
+
+                        # XP progress toward next level (cyan for XP)
+                        xp_needed = xp_for_level(character.level + 1)
+                        xp_str = colorize(f"{character.experience}/{xp_needed} xp", "CYAN")
+
+                        # Format: <Level 3, 40/50hp, 300/1000 xp>
+                        return f"<{level_str}, {hp_str}, {xp_str}> "
             except Exception:
                 # Fall back to simple prompt on error
                 pass
