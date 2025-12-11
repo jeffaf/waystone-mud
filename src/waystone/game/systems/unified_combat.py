@@ -1055,6 +1055,25 @@ class Combat:
 
                 # Award XP to all participants who damaged this NPC
                 await self._award_npc_xp(victim, killer)
+        else:
+            # Player death - handle respawn, XP loss, etc.
+            from uuid import UUID
+
+            from waystone.game.systems.death import handle_player_death
+
+            try:
+                await handle_player_death(
+                    character_id=UUID(victim.entity_id),
+                    death_location=self.room_id,
+                    engine=self.engine,
+                )
+            except Exception as e:
+                logger.error(
+                    "player_death_handling_failed",
+                    entity_id=victim.entity_id,
+                    error=str(e),
+                    exc_info=True,
+                )
 
         # Remove from combat
         await self.remove_participant(victim.entity_id)
