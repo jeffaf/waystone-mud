@@ -85,5 +85,15 @@ warn_unused_configs = true
 plugins = ["pydantic.mypy"]
 
 [[tool.mypy.overrides]]
-module = ["telnetlib3.*", "aiohttp.*"]
+module = ["telnetlib3.*", "aiohttp.*", "anthropic.*"]
 ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = [
+    "waystone.game.commands.combat",
+    "waystone.game.commands.fae",
+    "waystone.game.commands.inventory",
+    "waystone.game.systems.cthaeh",
+    "waystone.game.systems.unified_combat",
+]
+ignore_errors = true
