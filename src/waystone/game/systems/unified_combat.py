@@ -160,15 +160,44 @@ async def get_participant_attribute(participant: CombatParticipant, attr: str) -
 
 
 async def apply_damage_to_participant(participant: CombatParticipant, damage: int) -> int:
-    """Apply damage to participant. Returns new HP."""
+    """Apply damage to participant. Returns new HP.
+
+    For player characters, this also persists the HP change to the database
+    so the prompt displays accurate HP values.
+    """
     if participant._entity_ref:
         if participant.is_npc:
             participant._entity_ref.current_hp = max(0, participant._entity_ref.current_hp - damage)
             return participant._entity_ref.current_hp
         else:
-            # Player character
-            participant._entity_ref.current_hp = max(0, participant._entity_ref.current_hp - damage)
-            return participant._entity_ref.current_hp
+            # Player character - update in memory
+            new_hp = max(0, participant._entity_ref.current_hp - damage)
+            participant._entity_ref.current_hp = new_hp
+
+            # Persist to database so prompt shows correct HP
+            try:
+                from uuid import UUID
+
+                from sqlalchemy import update
+
+                from waystone.database.engine import get_session
+                from waystone.database.models import Character
+
+                async with get_session() as session:
+                    await session.execute(
+                        update(Character)
+                        .where(Character.id == UUID(participant.entity_id))
+                        .values(current_hp=new_hp)
+                    )
+                    await session.commit()
+            except Exception as e:
+                logger.warning(
+                    "failed_to_persist_hp",
+                    entity_id=participant.entity_id,
+                    error=str(e),
+                )
+
+            return new_hp
     return 0
 
 
