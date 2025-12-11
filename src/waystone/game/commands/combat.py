@@ -203,7 +203,9 @@ class AttackCommand(Command):
                             )
                             player_participant._entity_ref = attacker
                             await ctx.connection.send_line(
-                                colorize(f"You join the combat against {npc_target.name}!", "YELLOW")
+                                colorize(
+                                    f"You join the combat against {npc_target.name}!", "YELLOW"
+                                )
                             )
                         else:
                             # Player already in combat - switch target
@@ -474,16 +476,12 @@ class BashCommand(Command):
             # Get participant
             participant = combat.get_participant(ctx.session.character_id)
             if not participant:
-                await ctx.connection.send_line(
-                    colorize("You are not in this combat!", "RED")
-                )
+                await ctx.connection.send_line(colorize("You are not in this combat!", "RED"))
                 return
 
             # Check if on cooldown
             if unified_combat.is_skill_on_cooldown(participant, "bash"):
-                await ctx.connection.send_line(
-                    colorize("Bash is still on cooldown!", "RED")
-                )
+                await ctx.connection.send_line(colorize("Bash is still on cooldown!", "RED"))
                 return
 
             # Check if in wait state
@@ -511,9 +509,7 @@ class BashCommand(Command):
 
         except Exception as e:
             logger.error("bash_command_failed", error=str(e), exc_info=True)
-            await ctx.connection.send_line(
-                colorize("Bash failed. Please try again.", "RED")
-            )
+            await ctx.connection.send_line(colorize("Bash failed. Please try again.", "RED"))
 
 
 class KickCommand(Command):
@@ -550,16 +546,12 @@ class KickCommand(Command):
             # Get participant
             participant = combat.get_participant(ctx.session.character_id)
             if not participant:
-                await ctx.connection.send_line(
-                    colorize("You are not in this combat!", "RED")
-                )
+                await ctx.connection.send_line(colorize("You are not in this combat!", "RED"))
                 return
 
             # Check if on cooldown
             if unified_combat.is_skill_on_cooldown(participant, "kick"):
-                await ctx.connection.send_line(
-                    colorize("Kick is still on cooldown!", "RED")
-                )
+                await ctx.connection.send_line(colorize("Kick is still on cooldown!", "RED"))
                 return
 
             # Check if in wait state
@@ -587,9 +579,7 @@ class KickCommand(Command):
 
         except Exception as e:
             logger.error("kick_command_failed", error=str(e), exc_info=True)
-            await ctx.connection.send_line(
-                colorize("Kick failed. Please try again.", "RED")
-            )
+            await ctx.connection.send_line(colorize("Kick failed. Please try again.", "RED"))
 
 
 class DisarmCommand(Command):
@@ -626,16 +616,12 @@ class DisarmCommand(Command):
             # Get participant
             participant = combat.get_participant(ctx.session.character_id)
             if not participant:
-                await ctx.connection.send_line(
-                    colorize("You are not in this combat!", "RED")
-                )
+                await ctx.connection.send_line(colorize("You are not in this combat!", "RED"))
                 return
 
             # Check if on cooldown
             if unified_combat.is_skill_on_cooldown(participant, "disarm"):
-                await ctx.connection.send_line(
-                    colorize("Disarm is still on cooldown!", "RED")
-                )
+                await ctx.connection.send_line(colorize("Disarm is still on cooldown!", "RED"))
                 return
 
             # Check if in wait state
@@ -663,9 +649,7 @@ class DisarmCommand(Command):
 
         except Exception as e:
             logger.error("disarm_command_failed", error=str(e), exc_info=True)
-            await ctx.connection.send_line(
-                colorize("Disarm failed. Please try again.", "RED")
-            )
+            await ctx.connection.send_line(colorize("Disarm failed. Please try again.", "RED"))
 
 
 class TripCommand(Command):
@@ -702,16 +686,12 @@ class TripCommand(Command):
             # Get participant
             participant = combat.get_participant(ctx.session.character_id)
             if not participant:
-                await ctx.connection.send_line(
-                    colorize("You are not in this combat!", "RED")
-                )
+                await ctx.connection.send_line(colorize("You are not in this combat!", "RED"))
                 return
 
             # Check if on cooldown
             if unified_combat.is_skill_on_cooldown(participant, "trip"):
-                await ctx.connection.send_line(
-                    colorize("Trip is still on cooldown!", "RED")
-                )
+                await ctx.connection.send_line(colorize("Trip is still on cooldown!", "RED"))
                 return
 
             # Check if in wait state
@@ -739,6 +719,4 @@ class TripCommand(Command):
 
         except Exception as e:
             logger.error("trip_command_failed", error=str(e), exc_info=True)
-            await ctx.connection.send_line(
-                colorize("Trip failed. Please try again.", "RED")
-            )
+            await ctx.connection.send_line(colorize("Trip failed. Please try again.", "RED"))

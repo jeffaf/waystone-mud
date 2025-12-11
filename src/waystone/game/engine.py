@@ -488,7 +488,11 @@ class GameEngine:
 
                     if character:
                         hp_color = "GREEN"
-                        hp_pct = (character.current_hp / character.max_hp) * 100 if character.max_hp > 0 else 0
+                        hp_pct = (
+                            (character.current_hp / character.max_hp) * 100
+                            if character.max_hp > 0
+                            else 0
+                        )
                         if hp_pct < 25:
                             hp_color = "RED"
                         elif hp_pct < 50:

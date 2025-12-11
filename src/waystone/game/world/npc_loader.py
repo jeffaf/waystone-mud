@@ -77,9 +77,7 @@ class NPCTemplate(BaseModel):
     inventory: list[str] = Field(
         default_factory=list, description="Item template IDs this NPC carries"
     )
-    hostile: bool = Field(
-        default=False, description="Whether the NPC is hostile by default"
-    )
+    hostile: bool = Field(default=False, description="Whether the NPC is hostile by default")
     invulnerable: bool = Field(
         default=False, description="Whether the NPC is invulnerable to damage"
     )

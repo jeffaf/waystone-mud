@@ -273,9 +273,7 @@ def assign_new_bidding(
     status.target_type = target_type
     status.target_display_name = display_name
     status.last_bidding_time = datetime.now(UTC)
-    status.target_expires_at = datetime.now(UTC) + timedelta(
-        hours=BIDDING_DURATION_HOURS
-    )
+    status.target_expires_at = datetime.now(UTC) + timedelta(hours=BIDDING_DURATION_HOURS)
 
     save_cthaeh_status(character, status)
 
@@ -370,11 +368,11 @@ def format_curse_status(character: "Character") -> list[str]:
         remaining = status.failure_debuff_until - datetime.now(UTC)
         hours = int(remaining.total_seconds() / 3600)
         minutes = int((remaining.total_seconds() % 3600) / 60)
-        lines.append(f"DEBUFF ACTIVE: -{int(BIDDING_FAILURE_STAT_PENALTY*100)}% all stats")
+        lines.append(f"DEBUFF ACTIVE: -{int(BIDDING_FAILURE_STAT_PENALTY * 100)}% all stats")
         lines.append(f"  Expires in: {hours}h {minutes}m")
     else:
-        lines.append(f"Combat Bonus: +{int(CURSE_DAMAGE_BONUS*100)}% damage")
-        lines.append(f"Crit Bonus: +{int(CURSE_CRIT_BONUS*100)}% critical chance")
+        lines.append(f"Combat Bonus: +{int(CURSE_DAMAGE_BONUS * 100)}% damage")
+        lines.append(f"Crit Bonus: +{int(CURSE_CRIT_BONUS * 100)}% critical chance")
         lines.append(f"Stat Bonus: +{CURSE_STAT_BONUS} STR, DEX, CON")
 
     lines.append("")

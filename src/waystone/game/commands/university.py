@@ -92,9 +92,7 @@ class AdmitCommand(Command):
                 talents = status.tuition_amount // 100
                 jots = status.tuition_amount % 100
                 tuition_str = f"{talents} talents, {jots} jots" if talents else f"{jots} jots"
-                await ctx.connection.send_line(
-                    f"Tuition due: {colorize(tuition_str, 'YELLOW')}"
-                )
+                await ctx.connection.send_line(f"Tuition due: {colorize(tuition_str, 'YELLOW')}")
                 await ctx.connection.send_line(
                     f"Use '{colorize('tuition pay', 'CYAN')}' to pay and begin your studies."
                 )
@@ -104,7 +102,7 @@ class AdmitCommand(Command):
             await ctx.connection.send_line("")
             await ctx.connection.send_line(
                 colorize(
-                    "A clerk rings a small bell. \"The Masters will see you now.\"",
+                    'A clerk rings a small bell. "The Masters will see you now."',
                     "DIM",
                 )
             )
@@ -115,9 +113,7 @@ class AdmitCommand(Command):
             await ctx.connection.send_line(
                 "their seats at the long examination table. Their black robes rustle"
             )
-            await ctx.connection.send_line(
-                "as they settle, studying you with appraising eyes."
-            )
+            await ctx.connection.send_line("as they settle, studying you with appraising eyes.")
             await ctx.connection.send_line("")
             await ctx.connection.send_line(colorize("═" * 50, "YELLOW"))
             await ctx.connection.send_line(colorize("  UNIVERSITY ADMISSION EXAMINATION", "BOLD"))

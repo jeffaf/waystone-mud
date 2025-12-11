@@ -28,11 +28,13 @@ def use_test_database(tmp_path_factory):
 
     # Reset the cached engine/session factory if they exist
     import waystone.database.engine as engine_module
+
     engine_module._engine = None
     engine_module._async_session_factory = None
 
     # Also clear any cached settings
     from waystone.config import get_settings
+
     get_settings.cache_clear()
 
     yield
@@ -40,6 +42,7 @@ def use_test_database(tmp_path_factory):
     # Cleanup after all tests
     if engine_module._engine is not None:
         import asyncio
+
         try:
             loop = asyncio.get_event_loop()
             if loop.is_running():

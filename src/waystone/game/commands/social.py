@@ -455,10 +455,10 @@ def _create_emote_command(emote_name: str) -> type[SocialEmoteCommand]:
             "extended_help": f"""Express yourself with the {emote_name} emote!
 
 WITHOUT TARGET:
-  {emote_data['self']}
+  {emote_data["self"]}
 
 WITH TARGET:
-  {emote_name} <player> - {emote_data['target_self'].replace('{name}', 'You').replace('{target}', '<player>')}
+  {emote_name} <player> - {emote_data["target_self"].replace("{name}", "You").replace("{target}", "<player>")}
 
 The target will see a special message just for them!""",
             "emote_name": emote_name,

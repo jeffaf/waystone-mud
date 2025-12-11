@@ -157,9 +157,7 @@ class SpeakCthaehCommand(Command):
 
                 # Check if in Cthaeh's clearing
                 if character.current_room_id != CTHAEH_ROOM:
-                    await ctx.connection.send_line(
-                        colorize("The Cthaeh is not here.", "YELLOW")
-                    )
+                    await ctx.connection.send_line(colorize("The Cthaeh is not here.", "YELLOW"))
                     return
 
                 # Check if already cursed
@@ -174,13 +172,9 @@ class SpeakCthaehCommand(Command):
 
         except Exception as e:
             logger.error("speak_cthaeh_failed", error=str(e), exc_info=True)
-            await ctx.connection.send_line(
-                colorize("The tree remains silent.", "RED")
-            )
+            await ctx.connection.send_line(colorize("The tree remains silent.", "RED"))
 
-    async def _offer_curse(
-        self, ctx: CommandContext, character: Character, session
-    ) -> None:
+    async def _offer_curse(self, ctx: CommandContext, character: Character, session) -> None:
         """Offer the curse to an uncursed character."""
         await ctx.connection.send_line("")
         await ctx.connection.send_line(
@@ -225,9 +219,7 @@ class SpeakCthaehCommand(Command):
         status = load_cthaeh_status(character)
 
         await ctx.connection.send_line("")
-        await ctx.connection.send_line(
-            colorize('"Ah, my little shadow returns..."', "WHITE")
-        )
+        await ctx.connection.send_line(colorize('"Ah, my little shadow returns..."', "WHITE"))
         await ctx.connection.send_line("")
 
         # Check if they can receive a new bidding
@@ -236,9 +228,7 @@ class SpeakCthaehCommand(Command):
             new_status = assign_new_bidding(character, ctx.engine)
             if new_status:
                 await session.commit()
-                await ctx.connection.send_line(
-                    colorize('"I have a task for you..."', "WHITE")
-                )
+                await ctx.connection.send_line(colorize('"I have a task for you..."', "WHITE"))
                 await ctx.connection.send_line("")
                 await ctx.connection.send_line(
                     colorize(
@@ -312,9 +302,7 @@ class AcceptCurseCommand(Command):
 
                 # Must be in Cthaeh's clearing
                 if character.current_room_id != CTHAEH_ROOM:
-                    await ctx.connection.send_line(
-                        colorize("The Cthaeh is not here.", "YELLOW")
-                    )
+                    await ctx.connection.send_line(colorize("The Cthaeh is not here.", "YELLOW"))
                     return
 
                 # Check if already cursed
@@ -345,9 +333,7 @@ class AcceptCurseCommand(Command):
                     )
                 )
                 await ctx.connection.send_line("")
-                await ctx.connection.send_line(
-                    colorize('"It is done. You are mine now."', "WHITE")
-                )
+                await ctx.connection.send_line(colorize('"It is done. You are mine now."', "WHITE"))
                 await ctx.connection.send_line("")
                 await ctx.connection.send_line(
                     colorize(
@@ -359,12 +345,8 @@ class AcceptCurseCommand(Command):
                 await ctx.connection.send_line(
                     colorize("You feel stronger. Faster. More dangerous.", "GREEN")
                 )
-                await ctx.connection.send_line(
-                    colorize("  +15% damage in combat", "GREEN")
-                )
-                await ctx.connection.send_line(
-                    colorize("  +10% critical chance", "GREEN")
-                )
+                await ctx.connection.send_line(colorize("  +15% damage in combat", "GREEN"))
+                await ctx.connection.send_line(colorize("  +10% critical chance", "GREEN"))
                 await ctx.connection.send_line(
                     colorize("  +3 to Strength, Dexterity, Constitution", "GREEN")
                 )
@@ -388,9 +370,7 @@ class AcceptCurseCommand(Command):
 
         except Exception as e:
             logger.error("accept_curse_failed", error=str(e), exc_info=True)
-            await ctx.connection.send_line(
-                colorize("Something went wrong...", "RED")
-            )
+            await ctx.connection.send_line(colorize("Something went wrong...", "RED"))
 
 
 class CurseCommand(Command):
@@ -443,9 +423,7 @@ class CurseCommand(Command):
 
         except Exception as e:
             logger.error("curse_status_failed", error=str(e), exc_info=True)
-            await ctx.connection.send_line(
-                colorize("Could not retrieve curse status.", "RED")
-            )
+            await ctx.connection.send_line(colorize("Could not retrieve curse status.", "RED"))
 
 
 class LeaveFaeCommand(Command):

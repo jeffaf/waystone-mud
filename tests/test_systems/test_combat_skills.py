@@ -24,9 +24,11 @@ try:
         is_skill_on_cooldown,
         set_skill_cooldown,
     )
+
     SKILLS_IMPLEMENTED = True
 except ImportError:
     SKILLS_IMPLEMENTED = False
+
     # Define placeholder functions for TDD
     async def execute_bash(combat, attacker, target):
         raise NotImplementedError("execute_bash not yet implemented")
@@ -227,7 +229,7 @@ class TestBashSkill:
         target.effects = {}
 
         # Mock random to guarantee hit
-        with patch('random.randint', return_value=20):
+        with patch("random.randint", return_value=20):
             combat.participants = [attacker, target]
             success, msg = await execute_bash(combat, attacker, target)
 
@@ -349,7 +351,7 @@ class TestKickSkill:
         target.effects = {}
 
         # Mock high roll to guarantee hit
-        with patch('random.randint', return_value=15):
+        with patch("random.randint", return_value=15):
             combat.participants = [attacker, target]
             success, msg = await execute_kick(combat, attacker, target)
 
@@ -388,7 +390,7 @@ class TestKickSkill:
         target.effects = {}
 
         # Guarantee hit
-        with patch('random.randint', return_value=20):
+        with patch("random.randint", return_value=20):
             combat.participants = [attacker, target]
             success, msg = await execute_kick(combat, attacker, target)
 
@@ -508,7 +510,7 @@ class TestDisarmSkill:
         target.effects = {}
 
         # Guarantee success with high roll
-        with patch('random.randint', return_value=20):
+        with patch("random.randint", return_value=20):
             combat.participants = [attacker, target]
             success, msg = await execute_disarm(combat, attacker, target)
 
@@ -546,7 +548,7 @@ class TestDisarmSkill:
         target._entity_ref.current_hp = 100
         target.effects = {}
 
-        with patch('random.randint', return_value=20):
+        with patch("random.randint", return_value=20):
             combat.participants = [attacker, target]
             success, msg = await execute_disarm(combat, attacker, target)
 
@@ -624,7 +626,7 @@ class TestTripSkill:
         target._entity_ref.current_hp = 100
         target.effects = {}
 
-        with patch('random.randint', return_value=15):
+        with patch("random.randint", return_value=15):
             combat.participants = [attacker, target]
             success, msg = await execute_trip(combat, attacker, target)
 
@@ -661,7 +663,7 @@ class TestTripSkill:
         target._entity_ref.current_hp = 100
         target.effects = {}
 
-        with patch('random.randint', return_value=20):
+        with patch("random.randint", return_value=20):
             combat.participants = [attacker, target]
             success, msg = await execute_trip(combat, attacker, target)
 

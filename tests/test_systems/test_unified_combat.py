@@ -111,13 +111,13 @@ class TestCombatMechanics:
     def test_roll_initiative(self):
         """Test initiative includes DEX modifier."""
         # With +2 DEX mod, initiative should be d20+2
-        with patch('waystone.game.systems.unified_combat.roll_d20', return_value=15):
+        with patch("waystone.game.systems.unified_combat.roll_d20", return_value=15):
             result = roll_initiative(dex_modifier=2)
             assert result == 17
 
     def test_roll_initiative_negative_modifier(self):
         """Test initiative with negative DEX modifier."""
-        with patch('waystone.game.systems.unified_combat.roll_d20', return_value=10):
+        with patch("waystone.game.systems.unified_combat.roll_d20", return_value=10):
             result = roll_initiative(dex_modifier=-2)
             assert result == 8
 
@@ -146,8 +146,10 @@ class TestRollToHit:
         attacker = CombatParticipant("a", "Attacker", is_npc=False)
         defender = CombatParticipant("d", "Defender", is_npc=False)
 
-        with patch('waystone.game.systems.unified_combat.roll_d20', return_value=20):
-            with patch('waystone.game.systems.unified_combat.get_participant_attribute', return_value=10):
+        with patch("waystone.game.systems.unified_combat.roll_d20", return_value=20):
+            with patch(
+                "waystone.game.systems.unified_combat.get_participant_attribute", return_value=10
+            ):
                 hit, is_crit, roll = await roll_to_hit(attacker, defender)
                 assert hit is True
                 assert is_crit is True
@@ -159,7 +161,7 @@ class TestRollToHit:
         attacker = CombatParticipant("a", "Attacker", is_npc=False)
         defender = CombatParticipant("d", "Defender", is_npc=False)
 
-        with patch('waystone.game.systems.unified_combat.roll_d20', return_value=1):
+        with patch("waystone.game.systems.unified_combat.roll_d20", return_value=1):
             hit, is_crit, roll = await roll_to_hit(attacker, defender)
             assert hit is False
             assert is_crit is False
@@ -172,8 +174,10 @@ class TestRollToHit:
         defender = CombatParticipant("d", "Defender", is_npc=False)
 
         # Roll 12 with DEX 10 (+0) = 12 attack vs 10+0=10 defense = hit
-        with patch('waystone.game.systems.unified_combat.roll_d20', return_value=12):
-            with patch('waystone.game.systems.unified_combat.get_participant_attribute', return_value=10):
+        with patch("waystone.game.systems.unified_combat.roll_d20", return_value=12):
+            with patch(
+                "waystone.game.systems.unified_combat.get_participant_attribute", return_value=10
+            ):
                 hit, is_crit, roll = await roll_to_hit(attacker, defender)
                 assert hit is True
                 assert is_crit is False
@@ -185,8 +189,10 @@ class TestRollToHit:
         defender = CombatParticipant("d", "Defender", is_npc=False)
 
         # Roll 8 with DEX 10 (+0) = 8 attack vs 10+0=10 defense = miss
-        with patch('waystone.game.systems.unified_combat.roll_d20', return_value=8):
-            with patch('waystone.game.systems.unified_combat.get_participant_attribute', return_value=10):
+        with patch("waystone.game.systems.unified_combat.roll_d20", return_value=8):
+            with patch(
+                "waystone.game.systems.unified_combat.get_participant_attribute", return_value=10
+            ):
                 hit, is_crit, roll = await roll_to_hit(attacker, defender)
                 assert hit is False
                 assert is_crit is False
@@ -199,8 +205,10 @@ class TestRollToHit:
         defender.is_defending = True
 
         # Roll 12 with DEX 10 = 12 attack vs 10+0+5=15 defense = miss
-        with patch('waystone.game.systems.unified_combat.roll_d20', return_value=12):
-            with patch('waystone.game.systems.unified_combat.get_participant_attribute', return_value=10):
+        with patch("waystone.game.systems.unified_combat.roll_d20", return_value=12):
+            with patch(
+                "waystone.game.systems.unified_combat.get_participant_attribute", return_value=10
+            ):
                 hit, is_crit, roll = await roll_to_hit(attacker, defender)
                 assert hit is False
 
@@ -216,8 +224,11 @@ class TestRollToHit:
                 return 14  # +2 modifier
             return 10  # +0 modifier for defender
 
-        with patch('waystone.game.systems.unified_combat.roll_d20', return_value=10):
-            with patch('waystone.game.systems.unified_combat.get_participant_attribute', side_effect=mock_get_attribute):
+        with patch("waystone.game.systems.unified_combat.roll_d20", return_value=10):
+            with patch(
+                "waystone.game.systems.unified_combat.get_participant_attribute",
+                side_effect=mock_get_attribute,
+            ):
                 hit, is_crit, roll = await roll_to_hit(attacker, defender)
                 assert hit is True
 
@@ -230,7 +241,9 @@ class TestCalculateDamage:
         """Base damage is 1d6 + STR mod, minimum 1."""
         attacker = CombatParticipant("a", "Attacker", is_npc=False)
 
-        with patch('waystone.game.systems.unified_combat.get_participant_attribute', return_value=10):
+        with patch(
+            "waystone.game.systems.unified_combat.get_participant_attribute", return_value=10
+        ):
             damages = []
             for _ in range(100):
                 damage = await calculate_damage(attacker, is_critical=False)
@@ -245,7 +258,9 @@ class TestCalculateDamage:
         """Critical hit rolls 2d6 instead of 1d6."""
         attacker = CombatParticipant("a", "Attacker", is_npc=False)
 
-        with patch('waystone.game.systems.unified_combat.get_participant_attribute', return_value=10):
+        with patch(
+            "waystone.game.systems.unified_combat.get_participant_attribute", return_value=10
+        ):
             damages = []
             for _ in range(100):
                 damage = await calculate_damage(attacker, is_critical=True)
@@ -262,7 +277,9 @@ class TestCalculateDamage:
         attacker = CombatParticipant("a", "Attacker", is_npc=False)
 
         # STR 16 = +3 modifier, so damage is 1d6+3 = 4-9
-        with patch('waystone.game.systems.unified_combat.get_participant_attribute', return_value=16):
+        with patch(
+            "waystone.game.systems.unified_combat.get_participant_attribute", return_value=16
+        ):
             damages = []
             for _ in range(100):
                 damage = await calculate_damage(attacker, is_critical=False)
@@ -277,7 +294,9 @@ class TestCalculateDamage:
         attacker = CombatParticipant("a", "Attacker", is_npc=False)
 
         # STR 4 = -3 modifier, so 1d6-3 could be negative
-        with patch('waystone.game.systems.unified_combat.get_participant_attribute', return_value=4):
+        with patch(
+            "waystone.game.systems.unified_combat.get_participant_attribute", return_value=4
+        ):
             for _ in range(50):
                 damage = await calculate_damage(attacker, is_critical=False)
                 assert damage >= 1
@@ -288,7 +307,9 @@ class TestCalculateDamage:
         attacker = CombatParticipant("a", "Attacker", is_npc=False)
 
         # STR 14 = +2 modifier, so crit damage is 2d6+2 = 4-14
-        with patch('waystone.game.systems.unified_combat.get_participant_attribute', return_value=14):
+        with patch(
+            "waystone.game.systems.unified_combat.get_participant_attribute", return_value=14
+        ):
             damages = []
             for _ in range(100):
                 damage = await calculate_damage(attacker, is_critical=True)
@@ -401,10 +422,7 @@ class TestCombatClass:
         combat = Combat("test_room", mock_engine)
 
         p = await combat.add_participant(
-            entity_id="char-123",
-            entity_name="TestPlayer",
-            is_npc=False,
-            target_id="npc-456"
+            entity_id="char-123", entity_name="TestPlayer", is_npc=False, target_id="npc-456"
         )
 
         assert len(combat.participants) == 1
@@ -418,7 +436,7 @@ class TestCombatClass:
         combat = Combat("test_room", mock_engine)
 
         # _roll_initiative uses random.randint(1, 20) directly
-        with patch('random.randint', return_value=15):
+        with patch("random.randint", return_value=15):
             p = await combat.add_participant(
                 entity_id="char-123",
                 entity_name="TestPlayer",
@@ -468,7 +486,7 @@ class TestCombatClass:
         p3.initiative = 15
 
         # Mock the round loop to prevent actual execution
-        with patch.object(combat, '_combat_round_loop', new_callable=AsyncMock):
+        with patch.object(combat, "_combat_round_loop", new_callable=AsyncMock):
             await combat.start()
 
         # Should be sorted high to low: p2(20), p3(15), p1(10)
@@ -482,7 +500,7 @@ class TestCombatClass:
         combat = Combat("test_room", mock_engine)
         await combat.add_participant("char-123", "Player", is_npc=False)
 
-        with patch.object(combat, '_combat_round_loop', new_callable=AsyncMock):
+        with patch.object(combat, "_combat_round_loop", new_callable=AsyncMock):
             await combat.start()
 
         assert combat.state == CombatState.ACTIVE
@@ -494,7 +512,7 @@ class TestCombatClass:
         await combat.add_participant("char-123", "Player", is_npc=False)
 
         # Mock the round loop to not actually run
-        with patch.object(combat, '_combat_round_loop', new_callable=AsyncMock):
+        with patch.object(combat, "_combat_round_loop", new_callable=AsyncMock):
             await combat.start()
 
         assert combat.round_task is not None
@@ -550,7 +568,7 @@ class TestCombatClass:
         combat.state = CombatState.ACTIVE
 
         # Mock auto_action to prevent actual combat
-        with patch.object(combat, '_auto_action', new_callable=AsyncMock):
+        with patch.object(combat, "_auto_action", new_callable=AsyncMock):
             await combat._execute_round()
 
         # Note: _execute_round doesn't increment, _combat_round_loop does
@@ -661,8 +679,8 @@ class TestCombatRoundLoop:
             combat.round_number += 1
 
         # _should_continue_combat returns False to end after first round
-        with patch.object(combat, '_execute_round', side_effect=mock_execute_round):
-            with patch.object(combat, '_should_continue_combat', return_value=False):
+        with patch.object(combat, "_execute_round", side_effect=mock_execute_round):
+            with patch.object(combat, "_should_continue_combat", return_value=False):
                 await combat._combat_round_loop()
 
         assert combat.round_number >= 1
@@ -674,8 +692,8 @@ class TestCombatRoundLoop:
         combat.state = CombatState.ACTIVE
         await combat.add_participant("char-123", "Player", is_npc=False)
 
-        with patch.object(combat, '_execute_round', new_callable=AsyncMock):
-            with patch.object(combat, '_should_continue_combat', return_value=False):
+        with patch.object(combat, "_execute_round", new_callable=AsyncMock):
+            with patch.object(combat, "_should_continue_combat", return_value=False):
                 await combat._combat_round_loop()
 
         # Should have called broadcast_to_room for round start
@@ -687,8 +705,8 @@ class TestCombatRoundLoop:
         combat = Combat("test_room", mock_engine)
         combat.state = CombatState.ACTIVE
 
-        with patch.object(combat, '_execute_round', new_callable=AsyncMock):
-            with patch.object(combat, '_should_continue_combat', return_value=False):
+        with patch.object(combat, "_execute_round", new_callable=AsyncMock):
+            with patch.object(combat, "_should_continue_combat", return_value=False):
                 await combat._combat_round_loop()
 
         assert combat.state == CombatState.ENDED
@@ -715,7 +733,7 @@ class TestCombatEndConditions:
         combat.participants = [p1, n1]
 
         # Mock _is_dead_sync to return False (all alive)
-        with patch.object(combat, '_is_dead_sync', return_value=False):
+        with patch.object(combat, "_is_dead_sync", return_value=False):
             assert combat._should_continue_combat() is True
 
     def test_should_not_continue_only_one_participant(self, mock_engine):
@@ -725,7 +743,7 @@ class TestCombatEndConditions:
         p1 = CombatParticipant("char-1", "Player", is_npc=False)
         combat.participants = [p1]
 
-        with patch.object(combat, '_is_dead_sync', return_value=False):
+        with patch.object(combat, "_is_dead_sync", return_value=False):
             assert combat._should_continue_combat() is False
 
     def test_should_not_continue_all_fled(self, mock_engine):
@@ -737,7 +755,7 @@ class TestCombatEndConditions:
 
         combat.participants = [p1, p2]
 
-        with patch.object(combat, '_is_dead_sync', return_value=False):
+        with patch.object(combat, "_is_dead_sync", return_value=False):
             assert combat._should_continue_combat() is False
 
     def test_should_not_continue_only_one_side_remains(self, mock_engine):
@@ -750,7 +768,7 @@ class TestCombatEndConditions:
 
         combat.participants = [p1, p2]
 
-        with patch.object(combat, '_is_dead_sync', return_value=False):
+        with patch.object(combat, "_is_dead_sync", return_value=False):
             assert combat._should_continue_combat() is False
 
 
@@ -773,8 +791,10 @@ class TestFleeMechanics:
         combat.participants = [participant]
 
         # Mock DEX 10, roll 20 (guaranteed success)
-        with patch('waystone.game.systems.unified_combat.get_participant_attribute', return_value=10):
-            with patch('waystone.game.systems.unified_combat.roll_d20', return_value=20):
+        with patch(
+            "waystone.game.systems.unified_combat.get_participant_attribute", return_value=10
+        ):
+            with patch("waystone.game.systems.unified_combat.roll_d20", return_value=20):
                 success = await combat.attempt_flee(participant)
 
         assert success is True
@@ -788,8 +808,10 @@ class TestFleeMechanics:
         combat.participants = [participant]
 
         # Mock DEX 10, roll 1 (guaranteed failure)
-        with patch('waystone.game.systems.unified_combat.get_participant_attribute', return_value=10):
-            with patch('waystone.game.systems.unified_combat.roll_d20', return_value=1):
+        with patch(
+            "waystone.game.systems.unified_combat.get_participant_attribute", return_value=10
+        ):
+            with patch("waystone.game.systems.unified_combat.roll_d20", return_value=1):
                 success = await combat.attempt_flee(participant)
 
         assert success is False
@@ -805,8 +827,10 @@ class TestFleeMechanics:
 
         before_time = datetime.now()
 
-        with patch('waystone.game.systems.unified_combat.get_participant_attribute', return_value=10):
-            with patch('waystone.game.systems.unified_combat.roll_d20', return_value=1):
+        with patch(
+            "waystone.game.systems.unified_combat.get_participant_attribute", return_value=10
+        ):
+            with patch("waystone.game.systems.unified_combat.roll_d20", return_value=1):
                 await combat.attempt_flee(participant)
 
         assert participant.wait_state_until is not None

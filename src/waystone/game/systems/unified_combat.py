@@ -172,7 +172,9 @@ async def apply_damage_to_participant(participant: CombatParticipant, damage: in
     return 0
 
 
-async def roll_to_hit(attacker: CombatParticipant, defender: CombatParticipant) -> tuple[bool, bool, int]:
+async def roll_to_hit(
+    attacker: CombatParticipant, defender: CombatParticipant
+) -> tuple[bool, bool, int]:
     """Roll to-hit check. Returns (hit, is_critical, raw_roll)."""
     raw_roll = roll_d20()
 
@@ -977,7 +979,9 @@ class Combat:
         )
         return True
 
-    async def _execute_attack(self, attacker: CombatParticipant, defender: CombatParticipant) -> None:
+    async def _execute_attack(
+        self, attacker: CombatParticipant, defender: CombatParticipant
+    ) -> None:
         """Execute attack from attacker to defender."""
         hit, is_crit, roll = await roll_to_hit(attacker, defender)
 

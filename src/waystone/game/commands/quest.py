@@ -36,9 +36,7 @@ class QuestLogCommand(Command):
 
             if not active_quests:
                 await ctx.connection.send_line(colorize("\nYou have no active quests.", "YELLOW"))
-                await ctx.connection.send_line(
-                    "Speak with NPCs marked with [!] to find quests."
-                )
+                await ctx.connection.send_line("Speak with NPCs marked with [!] to find quests.")
                 return
 
             await ctx.connection.send_line(colorize("\n╔═══ Active Quests ═══╗", "CYAN"))
@@ -50,9 +48,7 @@ class QuestLogCommand(Command):
 
                 # Quest header
                 await ctx.connection.send_line("")
-                await ctx.connection.send_line(
-                    colorize(f"[{template.title}]", "BOLD")
-                )
+                await ctx.connection.send_line(colorize(f"[{template.title}]", "BOLD"))
                 await ctx.connection.send_line(
                     colorize(f"Level {template.level_requirement} Quest", "DIM")
                 )
@@ -79,9 +75,7 @@ class QuestLogCommand(Command):
 
         except Exception as e:
             logger.error("questlog_command_failed", error=str(e), exc_info=True)
-            await ctx.connection.send_line(
-                colorize("Failed to display quest log.", "RED")
-            )
+            await ctx.connection.send_line(colorize("Failed to display quest log.", "RED"))
 
 
 class QuestInfoCommand(Command):
@@ -113,9 +107,7 @@ Examples:
             return
 
         if len(ctx.args) < 1:
-            await ctx.connection.send_line(
-                colorize("Usage: questinfo <quest name>", "YELLOW")
-            )
+            await ctx.connection.send_line(colorize("Usage: questinfo <quest name>", "YELLOW"))
             return
 
         # Get quest name from args
@@ -181,9 +173,7 @@ Examples:
                 )
             if matching_template.rewards.items:
                 for item_id in matching_template.rewards.items:
-                    await ctx.connection.send_line(
-                        f"  {colorize(f'Item: {item_id}', 'GREEN')}"
-                    )
+                    await ctx.connection.send_line(f"  {colorize(f'Item: {item_id}', 'GREEN')}")
 
             # Check if completable
             if matching_template.all_objectives_complete(matching_quest.progress):
@@ -196,9 +186,7 @@ Examples:
 
         except Exception as e:
             logger.error("questinfo_command_failed", error=str(e), exc_info=True)
-            await ctx.connection.send_line(
-                colorize("Failed to display quest information.", "RED")
-            )
+            await ctx.connection.send_line(colorize("Failed to display quest information.", "RED"))
 
 
 class QuestAbandonCommand(Command):
@@ -228,9 +216,7 @@ Examples:
             return
 
         if len(ctx.args) < 1:
-            await ctx.connection.send_line(
-                colorize("Usage: abandon <quest name>", "YELLOW")
-            )
+            await ctx.connection.send_line(colorize("Usage: abandon <quest name>", "YELLOW"))
             return
 
         # Get quest name from args
@@ -264,15 +250,11 @@ Examples:
 
             if success:
                 await ctx.connection.send_line(colorize(f"\n{message}", "YELLOW"))
-                await ctx.connection.send_line(
-                    "Your progress on this quest has been lost."
-                )
+                await ctx.connection.send_line("Your progress on this quest has been lost.")
 
                 # Check if repeatable
                 if matching_template.repeatable:
-                    await ctx.connection.send_line(
-                        "You can re-accept this quest at any time."
-                    )
+                    await ctx.connection.send_line("You can re-accept this quest at any time.")
                 else:
                     await ctx.connection.send_line(
                         "You can re-accept this quest, but you'll start from the beginning."
@@ -282,6 +264,4 @@ Examples:
 
         except Exception as e:
             logger.error("abandon_command_failed", error=str(e), exc_info=True)
-            await ctx.connection.send_line(
-                colorize("Failed to abandon quest.", "RED")
-            )
+            await ctx.connection.send_line(colorize("Failed to abandon quest.", "RED"))

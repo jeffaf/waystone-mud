@@ -69,7 +69,9 @@ class HelpCommand(Command):
             await ctx.connection.send_line(colorize("\n Communication:", "YELLOW"))
             await ctx.connection.send_line("  say '<message>, emote :<action>")
             await ctx.connection.send_line("  chat <message>, tell <player> <message>")
-            await ctx.connection.send_line("  emotes - List social emotes (laugh, fart, dance, etc.)")
+            await ctx.connection.send_line(
+                "  emotes - List social emotes (laugh, fart, dance, etc.)"
+            )
 
             await ctx.connection.send_line(colorize("\n Information:", "YELLOW"))
             await ctx.connection.send_line("  score, who, time, help [command]")

@@ -588,8 +588,6 @@ def format_quest_objectives(template: QuestTemplate, progress: dict[str, Any]) -
             lines.append(f"  {complete_marker} {type_str} {obj.target_name}")
         else:
             # Counted objective
-            lines.append(
-                f"  {complete_marker} {type_str} {obj.target_name}: {current}/{required}"
-            )
+            lines.append(f"  {complete_marker} {type_str} {obj.target_name}: {current}/{required}")
 
     return lines
