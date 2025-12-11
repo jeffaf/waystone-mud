@@ -114,6 +114,11 @@ def find_npc_by_name(room_id: str, name: str) -> NPCInstance | None:
     """
     Find an NPC in a room by name (partial match).
 
+    Supports N.keyword syntax for targeting specific NPCs:
+    - "rat" - first rat
+    - "2.rat" - second rat
+    - "3.rat" - third rat
+
     Args:
         room_id: Room to search
         name: Name to search for (case insensitive)
@@ -121,11 +126,26 @@ def find_npc_by_name(room_id: str, name: str) -> NPCInstance | None:
     Returns:
         Matching NPC instance or None
     """
-    name_lower = name.lower()
+    # Parse N.keyword syntax (e.g., "2.rat")
+    target_index = 1  # Default to first match
+    search_name = name
+
+    if "." in name:
+        parts = name.split(".", 1)
+        if parts[0].isdigit():
+            target_index = int(parts[0])
+            search_name = parts[1]
+            if target_index < 1:
+                target_index = 1
+
+    name_lower = search_name.lower()
+    match_count = 0
 
     for npc in get_npcs_in_room(room_id):
         if name_lower in npc.name.lower():
-            return npc
+            match_count += 1
+            if match_count == target_index:
+                return npc
 
     return None
 

@@ -206,6 +206,11 @@ def find_npc_by_keywords(room_id: str, search_term: str) -> NPCInstance | None:
     Uses fuzzy matching against NPC keywords field.
     More flexible than exact name matching.
 
+    Supports N.keyword syntax for targeting specific NPCs:
+    - "rat" - first rat
+    - "2.rat" - second rat
+    - "3.rat" - third rat
+
     Args:
         room_id: Room to search
         search_term: Player's search input
@@ -213,22 +218,43 @@ def find_npc_by_keywords(room_id: str, search_term: str) -> NPCInstance | None:
     Returns:
         Matching NPC or None
     """
-    search_lower = search_term.lower()
+    # Parse N.keyword syntax (e.g., "2.rat")
+    target_index = 1  # Default to first match
+    search_name = search_term
+
+    if "." in search_term:
+        parts = search_term.split(".", 1)
+        if parts[0].isdigit():
+            target_index = int(parts[0])
+            search_name = parts[1]
+            if target_index < 1:
+                target_index = 1
+
+    search_lower = search_name.lower()
+    match_count = 0
 
     for npc in get_npcs_in_room(room_id):
+        matched = False
+
         # Check keywords first (best match)
         if npc.keywords:
             for keyword in npc.keywords:
                 if keyword.lower() == search_lower:
-                    return npc  # Exact keyword match
+                    matched = True
+                    break
 
         # Fall back to name matching
-        if search_lower in npc.name.lower():
-            return npc
+        if not matched and search_lower in npc.name.lower():
+            matched = True
 
         # Check short description
-        if search_lower in npc.short_description.lower():
-            return npc
+        if not matched and search_lower in npc.short_description.lower():
+            matched = True
+
+        if matched:
+            match_count += 1
+            if match_count == target_index:
+                return npc
 
     return None
 
