@@ -8,9 +8,9 @@ from sqlalchemy import select
 
 from waystone.database.engine import get_session
 from waystone.database.models import Character
+from waystone.game.systems import unified_combat
 from waystone.game.systems.combat import Combat, CombatState
 from waystone.game.systems.npc_combat import find_npc_by_name, get_npcs_in_room
-from waystone.game.systems import unified_combat
 from waystone.network import colorize
 
 from .base import Command, CommandContext
@@ -493,26 +493,15 @@ class BashCommand(Command):
                 )
                 return
 
-            # Find target
-            target_name = " ".join(ctx.args).lower()
-            target = None
-
-            # Check if target ID is provided (for NPCs)
-            for p in combat.participants:
-                if p.entity_name.lower() == target_name and not p.fled:
-                    target = p
-                    break
+            # Find target by keyword
+            target_name = " ".join(ctx.args)
+            target = combat.find_participant_by_keyword(
+                target_name, exclude_id=participant.entity_id
+            )
 
             if not target:
                 await ctx.connection.send_line(
                     colorize(f"You don't see '{target_name}' in this combat.", "RED")
-                )
-                return
-
-            # Can't target self
-            if target.entity_id == participant.entity_id:
-                await ctx.connection.send_line(
-                    colorize("You can't bash yourself!", "RED")
                 )
                 return
 
@@ -580,25 +569,15 @@ class KickCommand(Command):
                 )
                 return
 
-            # Find target
-            target_name = " ".join(ctx.args).lower()
-            target = None
-
-            for p in combat.participants:
-                if p.entity_name.lower() == target_name and not p.fled:
-                    target = p
-                    break
+            # Find target by keyword
+            target_name = " ".join(ctx.args)
+            target = combat.find_participant_by_keyword(
+                target_name, exclude_id=participant.entity_id
+            )
 
             if not target:
                 await ctx.connection.send_line(
                     colorize(f"You don't see '{target_name}' in this combat.", "RED")
-                )
-                return
-
-            # Can't target self
-            if target.entity_id == participant.entity_id:
-                await ctx.connection.send_line(
-                    colorize("You can't kick yourself!", "RED")
                 )
                 return
 
@@ -666,25 +645,15 @@ class DisarmCommand(Command):
                 )
                 return
 
-            # Find target
-            target_name = " ".join(ctx.args).lower()
-            target = None
-
-            for p in combat.participants:
-                if p.entity_name.lower() == target_name and not p.fled:
-                    target = p
-                    break
+            # Find target by keyword
+            target_name = " ".join(ctx.args)
+            target = combat.find_participant_by_keyword(
+                target_name, exclude_id=participant.entity_id
+            )
 
             if not target:
                 await ctx.connection.send_line(
                     colorize(f"You don't see '{target_name}' in this combat.", "RED")
-                )
-                return
-
-            # Can't target self
-            if target.entity_id == participant.entity_id:
-                await ctx.connection.send_line(
-                    colorize("You can't disarm yourself!", "RED")
                 )
                 return
 
@@ -752,25 +721,15 @@ class TripCommand(Command):
                 )
                 return
 
-            # Find target
-            target_name = " ".join(ctx.args).lower()
-            target = None
-
-            for p in combat.participants:
-                if p.entity_name.lower() == target_name and not p.fled:
-                    target = p
-                    break
+            # Find target by keyword
+            target_name = " ".join(ctx.args)
+            target = combat.find_participant_by_keyword(
+                target_name, exclude_id=participant.entity_id
+            )
 
             if not target:
                 await ctx.connection.send_line(
                     colorize(f"You don't see '{target_name}' in this combat.", "RED")
-                )
-                return
-
-            # Can't target self
-            if target.entity_id == participant.entity_id:
-                await ctx.connection.send_line(
-                    colorize("You can't trip yourself!", "RED")
                 )
                 return
 

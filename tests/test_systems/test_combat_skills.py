@@ -4,26 +4,22 @@ This test suite is written in TDD (Test-Driven Development) style.
 Phase 3 of unified combat system - combat skills implementation.
 """
 
-import asyncio
 from datetime import datetime, timedelta
-from unittest.mock import AsyncMock, MagicMock, patch
-from uuid import uuid4
+from unittest.mock import MagicMock, patch
 
 import pytest
 
 from waystone.game.systems.unified_combat import (
     Combat,
     CombatParticipant,
-    CombatState,
-    calculate_attribute_modifier,
 )
 
 # Import skill functions (to be implemented)
 try:
     from waystone.game.systems.unified_combat import (
         execute_bash,
-        execute_kick,
         execute_disarm,
+        execute_kick,
         execute_trip,
         is_skill_on_cooldown,
         set_skill_cooldown,
@@ -138,7 +134,6 @@ class TestCooldownHelpers:
         if SKILLS_IMPLEMENTED:
             before = datetime.now()
             set_skill_cooldown(p, "bash", 15)
-            after = datetime.now()
 
             assert "bash" in p.skill_cooldowns
             # Cooldown should be approximately 15 seconds from now
@@ -274,7 +269,6 @@ class TestBashSkill:
         before = datetime.now()
         combat.participants = [attacker, target]
         await execute_bash(combat, attacker, target)
-        after = datetime.now()
 
         # Attacker should have wait_state set
         assert attacker.wait_state_until is not None

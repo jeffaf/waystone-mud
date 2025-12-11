@@ -399,7 +399,7 @@ class GameEngine:
             while not connection.is_closed:
                 try:
                     # Show prompt
-                    prompt = self._get_prompt(session)
+                    prompt = await self._get_prompt(session)
                     await connection.send(prompt)
 
                     # Read input
@@ -457,9 +457,12 @@ class GameEngine:
                 session_id=str(session.id),
             )
 
-    def _get_prompt(self, session: Session) -> str:
+    async def _get_prompt(self, session: Session) -> str:
         """
         Get the appropriate prompt for a session.
+
+        For playing characters, shows HP and XP info like classic MUDs:
+        <45/60hp 150xp> >
 
         Args:
             session: The session to get a prompt for
@@ -467,7 +470,36 @@ class GameEngine:
         Returns:
             Formatted prompt string
         """
-        if session.state == SessionState.PLAYING:
+        if session.state == SessionState.PLAYING and session.character_id:
+            # Fetch character stats for prompt
+            try:
+                from uuid import UUID
+
+                from sqlalchemy import select
+
+                from waystone.database.engine import get_session as get_db_session
+                from waystone.database.models import Character
+
+                async with get_db_session() as db_session:
+                    result = await db_session.execute(
+                        select(Character).where(Character.id == UUID(session.character_id))
+                    )
+                    character = result.scalar_one_or_none()
+
+                    if character:
+                        hp_color = "GREEN"
+                        hp_pct = (character.current_hp / character.max_hp) * 100 if character.max_hp > 0 else 0
+                        if hp_pct < 25:
+                            hp_color = "RED"
+                        elif hp_pct < 50:
+                            hp_color = "YELLOW"
+
+                        hp_str = colorize(f"{character.current_hp}/{character.max_hp}hp", hp_color)
+                        xp_str = colorize(f"{character.experience}xp", "CYAN")
+                        return f"<{hp_str} {xp_str}> "
+            except Exception:
+                # Fall back to simple prompt on error
+                pass
             return colorize("> ", "GREEN")
         elif session.state == SessionState.AUTHENTICATING:
             return colorize("(Character Select) > ", "CYAN")

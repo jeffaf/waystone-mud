@@ -67,6 +67,7 @@ ignore = [
     "SIM102",  # nested if statements - sometimes clearer
     "SIM105",  # contextlib.suppress - explicit try/except often clearer
     "SIM108",  # ternary operator - readability preference
+    "SIM117",  # nested with statements - common in test mocking
     "ARG001",  # unused function argument - common in interfaces
     "ARG002",  # unused method argument - common in interfaces
     "ARG005",  # unused lambda argument - common in signal handlers

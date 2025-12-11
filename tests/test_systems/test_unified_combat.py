@@ -8,7 +8,6 @@ defined as the expected interface that the implementation should provide.
 import asyncio
 from datetime import datetime, timedelta
 from unittest.mock import AsyncMock, MagicMock, patch
-from uuid import uuid4
 
 import pytest
 
@@ -18,20 +17,20 @@ try:
         Combat,
         CombatParticipant,
         CombatState,
-        get_combat_for_room,
-        create_combat,
-        cleanup_ended_combats,
         _active_combats,
+        apply_damage_to_participant,
         # Import all combat mechanics functions
         calculate_attribute_modifier,
+        calculate_damage,
+        cleanup_ended_combats,
+        create_combat,
+        get_combat_for_room,
+        get_damage_message,
+        get_participant_attribute,
+        get_participant_hp,
         roll_d20,
         roll_initiative,
-        get_damage_message,
         roll_to_hit,
-        calculate_damage,
-        get_participant_hp,
-        get_participant_attribute,
-        apply_damage_to_participant,
     )
 except ImportError as e:
     pytest.skip(f"unified_combat module not fully implemented: {e}", allow_module_level=True)
@@ -549,8 +548,6 @@ class TestCombatClass:
         """Test that _execute_round increments round number."""
         combat = Combat("test_room", mock_engine)
         combat.state = CombatState.ACTIVE
-
-        initial_round = combat.round_number
 
         # Mock auto_action to prevent actual combat
         with patch.object(combat, '_auto_action', new_callable=AsyncMock):

@@ -24,7 +24,6 @@ from waystone.network import colorize
 
 if TYPE_CHECKING:
     from waystone.game.engine import GameEngine
-    from waystone.game.systems.npc_combat import NPCInstance
 
 logger = structlog.get_logger(__name__)
 
@@ -62,7 +61,7 @@ def get_damage_message(damage: int) -> str:
         return "ANNIHILATE"
 
 
-def is_skill_on_cooldown(participant: CombatParticipant, skill_name: str) -> bool:
+def is_skill_on_cooldown(participant: "CombatParticipant", skill_name: str) -> bool:
     """Check if a skill is on cooldown for a participant.
 
     Args:
@@ -79,7 +78,7 @@ def is_skill_on_cooldown(participant: CombatParticipant, skill_name: str) -> boo
     return datetime.now() < cooldown_expires
 
 
-def set_skill_cooldown(participant: CombatParticipant, skill_name: str, seconds: int) -> None:
+def set_skill_cooldown(participant: "CombatParticipant", skill_name: str, seconds: int) -> None:
     """Set a skill cooldown for a participant.
 
     Args:
@@ -264,7 +263,7 @@ async def execute_bash(
         damage = max(1, damage)  # Minimum 1
 
         # Apply damage
-        new_hp = await apply_damage_to_participant(target, damage)
+        await apply_damage_to_participant(target, damage)
 
         # Apply knockdown effect - target loses next turn
         target.effects["knocked_down"] = True
@@ -336,7 +335,7 @@ async def execute_kick(
         damage = max(1, damage)
 
         # Apply damage
-        new_hp = await apply_damage_to_participant(target, damage)
+        await apply_damage_to_participant(target, damage)
 
         # Apply wait state to attacker (1 round)
         attacker.wait_state_until = datetime.now() + timedelta(seconds=combat.ROUND_INTERVAL)
@@ -618,6 +617,68 @@ class Combat:
     def is_character_in_combat(self, entity_id: str) -> bool:
         """Check if a character is in this combat."""
         return self.get_participant(entity_id) is not None
+
+    def find_participant_by_keyword(
+        self, keyword: str, exclude_id: str | None = None
+    ) -> CombatParticipant | None:
+        """Find a participant by keyword match.
+
+        Matches against:
+        - NPC keywords (if available)
+        - Entity name (partial match)
+
+        Supports N.keyword syntax for targeting specific participants:
+        - "rat" - first rat
+        - "2.rat" - second rat
+
+        Args:
+            keyword: Search keyword (may include N. prefix)
+            exclude_id: Entity ID to exclude from search (usually self)
+
+        Returns:
+            Matching participant or None
+        """
+        # Parse N.keyword syntax (e.g., "2.rat")
+        target_index = 1
+        search_term = keyword.lower()
+
+        if "." in keyword:
+            parts = keyword.split(".", 1)
+            if parts[0].isdigit():
+                target_index = int(parts[0])
+                search_term = parts[1].lower()
+                if target_index < 1:
+                    target_index = 1
+
+        match_count = 0
+
+        for participant in self.participants:
+            if participant.fled:
+                continue
+            if exclude_id and participant.entity_id == exclude_id:
+                continue
+
+            matched = False
+
+            # For NPCs, check keywords from entity_ref
+            if participant.is_npc and participant._entity_ref:
+                npc = participant._entity_ref
+                if hasattr(npc, "keywords") and npc.keywords:
+                    for kw in npc.keywords:
+                        if kw.lower() == search_term:
+                            matched = True
+                            break
+
+            # Fall back to name matching (partial)
+            if not matched and search_term in participant.entity_name.lower():
+                matched = True
+
+            if matched:
+                match_count += 1
+                if match_count == target_index:
+                    return participant
+
+        return None
 
     async def start(self) -> None:
         """Start combat by sorting participants and beginning the round loop.
@@ -972,9 +1033,10 @@ class Combat:
         - Killer gets bonus XP (40% base)
         - Other attackers share remaining XP based on damage dealt
         """
-        from waystone.game.systems.experience import award_xp
-        from waystone.database.engine import get_session
         from uuid import UUID
+
+        from waystone.database.engine import get_session
+        from waystone.game.systems.experience import award_xp
 
         npc = npc_victim._entity_ref
         if not npc:
