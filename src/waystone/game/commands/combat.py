@@ -1,5 +1,6 @@
 """Combat commands for Waystone MUD."""
 
+from datetime import datetime
 from uuid import UUID
 
 import structlog
@@ -410,4 +411,349 @@ class CombatStatusCommand(Command):
             logger.error("combat_status_failed", error=str(e), exc_info=True)
             await ctx.connection.send_line(
                 colorize("Failed to get combat status. Please try again.", "RED")
+            )
+
+
+class BashCommand(Command):
+    """Bash skill - knockdown attack."""
+
+    name = "bash"
+    aliases = []
+    help_text = "bash <target> - Powerful knockdown attack (2-round lag, 15s cooldown)"
+    min_args = 1
+    requires_character = True
+
+    async def execute(self, ctx: CommandContext) -> None:
+        """Execute the bash command."""
+        if not ctx.session.character_id:
+            await ctx.connection.send_line(
+                colorize("You must be playing a character to use bash.", "RED")
+            )
+            return
+
+        if len(ctx.args) < 1:
+            await ctx.connection.send_line(colorize("Usage: bash <target>", "YELLOW"))
+            return
+
+        try:
+            # Check if in unified combat
+            combat = unified_combat.get_combat_for_entity(ctx.session.character_id)
+
+            if not combat:
+                await ctx.connection.send_line(
+                    colorize("You must be in combat to use bash!", "RED")
+                )
+                return
+
+            # Get participant
+            participant = combat.get_participant(ctx.session.character_id)
+            if not participant:
+                await ctx.connection.send_line(
+                    colorize("You are not in this combat!", "RED")
+                )
+                return
+
+            # Check if on cooldown
+            if unified_combat.is_skill_on_cooldown(participant, "bash"):
+                await ctx.connection.send_line(
+                    colorize("Bash is still on cooldown!", "RED")
+                )
+                return
+
+            # Check if in wait state
+            if participant.wait_state_until and datetime.now() < participant.wait_state_until:
+                await ctx.connection.send_line(
+                    colorize("You are still recovering from your last action!", "RED")
+                )
+                return
+
+            # Find target
+            target_name = " ".join(ctx.args).lower()
+            target = None
+
+            # Check if target ID is provided (for NPCs)
+            for p in combat.participants:
+                if p.entity_name.lower() == target_name and not p.fled:
+                    target = p
+                    break
+
+            if not target:
+                await ctx.connection.send_line(
+                    colorize(f"You don't see '{target_name}' in this combat.", "RED")
+                )
+                return
+
+            # Can't target self
+            if target.entity_id == participant.entity_id:
+                await ctx.connection.send_line(
+                    colorize("You can't bash yourself!", "RED")
+                )
+                return
+
+            # Execute bash
+            success, msg = await unified_combat.execute_bash(combat, participant, target)
+            # Message is broadcast by execute_bash
+
+        except Exception as e:
+            logger.error("bash_command_failed", error=str(e), exc_info=True)
+            await ctx.connection.send_line(
+                colorize("Bash failed. Please try again.", "RED")
+            )
+
+
+class KickCommand(Command):
+    """Kick skill - quick damage attack."""
+
+    name = "kick"
+    aliases = []
+    help_text = "kick <target> - Quick damage attack (1-round lag, 10s cooldown)"
+    min_args = 1
+    requires_character = True
+
+    async def execute(self, ctx: CommandContext) -> None:
+        """Execute the kick command."""
+        if not ctx.session.character_id:
+            await ctx.connection.send_line(
+                colorize("You must be playing a character to use kick.", "RED")
+            )
+            return
+
+        if len(ctx.args) < 1:
+            await ctx.connection.send_line(colorize("Usage: kick <target>", "YELLOW"))
+            return
+
+        try:
+            # Check if in unified combat
+            combat = unified_combat.get_combat_for_entity(ctx.session.character_id)
+
+            if not combat:
+                await ctx.connection.send_line(
+                    colorize("You must be in combat to use kick!", "RED")
+                )
+                return
+
+            # Get participant
+            participant = combat.get_participant(ctx.session.character_id)
+            if not participant:
+                await ctx.connection.send_line(
+                    colorize("You are not in this combat!", "RED")
+                )
+                return
+
+            # Check if on cooldown
+            if unified_combat.is_skill_on_cooldown(participant, "kick"):
+                await ctx.connection.send_line(
+                    colorize("Kick is still on cooldown!", "RED")
+                )
+                return
+
+            # Check if in wait state
+            if participant.wait_state_until and datetime.now() < participant.wait_state_until:
+                await ctx.connection.send_line(
+                    colorize("You are still recovering from your last action!", "RED")
+                )
+                return
+
+            # Find target
+            target_name = " ".join(ctx.args).lower()
+            target = None
+
+            for p in combat.participants:
+                if p.entity_name.lower() == target_name and not p.fled:
+                    target = p
+                    break
+
+            if not target:
+                await ctx.connection.send_line(
+                    colorize(f"You don't see '{target_name}' in this combat.", "RED")
+                )
+                return
+
+            # Can't target self
+            if target.entity_id == participant.entity_id:
+                await ctx.connection.send_line(
+                    colorize("You can't kick yourself!", "RED")
+                )
+                return
+
+            # Execute kick
+            success, msg = await unified_combat.execute_kick(combat, participant, target)
+            # Message is broadcast by execute_kick
+
+        except Exception as e:
+            logger.error("kick_command_failed", error=str(e), exc_info=True)
+            await ctx.connection.send_line(
+                colorize("Kick failed. Please try again.", "RED")
+            )
+
+
+class DisarmCommand(Command):
+    """Disarm skill - remove target's weapon."""
+
+    name = "disarm"
+    aliases = []
+    help_text = "disarm <target> - Remove target's weapon (2-round lag, 30s cooldown)"
+    min_args = 1
+    requires_character = True
+
+    async def execute(self, ctx: CommandContext) -> None:
+        """Execute the disarm command."""
+        if not ctx.session.character_id:
+            await ctx.connection.send_line(
+                colorize("You must be playing a character to use disarm.", "RED")
+            )
+            return
+
+        if len(ctx.args) < 1:
+            await ctx.connection.send_line(colorize("Usage: disarm <target>", "YELLOW"))
+            return
+
+        try:
+            # Check if in unified combat
+            combat = unified_combat.get_combat_for_entity(ctx.session.character_id)
+
+            if not combat:
+                await ctx.connection.send_line(
+                    colorize("You must be in combat to use disarm!", "RED")
+                )
+                return
+
+            # Get participant
+            participant = combat.get_participant(ctx.session.character_id)
+            if not participant:
+                await ctx.connection.send_line(
+                    colorize("You are not in this combat!", "RED")
+                )
+                return
+
+            # Check if on cooldown
+            if unified_combat.is_skill_on_cooldown(participant, "disarm"):
+                await ctx.connection.send_line(
+                    colorize("Disarm is still on cooldown!", "RED")
+                )
+                return
+
+            # Check if in wait state
+            if participant.wait_state_until and datetime.now() < participant.wait_state_until:
+                await ctx.connection.send_line(
+                    colorize("You are still recovering from your last action!", "RED")
+                )
+                return
+
+            # Find target
+            target_name = " ".join(ctx.args).lower()
+            target = None
+
+            for p in combat.participants:
+                if p.entity_name.lower() == target_name and not p.fled:
+                    target = p
+                    break
+
+            if not target:
+                await ctx.connection.send_line(
+                    colorize(f"You don't see '{target_name}' in this combat.", "RED")
+                )
+                return
+
+            # Can't target self
+            if target.entity_id == participant.entity_id:
+                await ctx.connection.send_line(
+                    colorize("You can't disarm yourself!", "RED")
+                )
+                return
+
+            # Execute disarm
+            success, msg = await unified_combat.execute_disarm(combat, participant, target)
+            # Message is broadcast by execute_disarm
+
+        except Exception as e:
+            logger.error("disarm_command_failed", error=str(e), exc_info=True)
+            await ctx.connection.send_line(
+                colorize("Disarm failed. Please try again.", "RED")
+            )
+
+
+class TripCommand(Command):
+    """Trip skill - knock target prone."""
+
+    name = "trip"
+    aliases = []
+    help_text = "trip <target> - Knock target prone (-2 hit, 1-round lag, 12s cooldown)"
+    min_args = 1
+    requires_character = True
+
+    async def execute(self, ctx: CommandContext) -> None:
+        """Execute the trip command."""
+        if not ctx.session.character_id:
+            await ctx.connection.send_line(
+                colorize("You must be playing a character to use trip.", "RED")
+            )
+            return
+
+        if len(ctx.args) < 1:
+            await ctx.connection.send_line(colorize("Usage: trip <target>", "YELLOW"))
+            return
+
+        try:
+            # Check if in unified combat
+            combat = unified_combat.get_combat_for_entity(ctx.session.character_id)
+
+            if not combat:
+                await ctx.connection.send_line(
+                    colorize("You must be in combat to use trip!", "RED")
+                )
+                return
+
+            # Get participant
+            participant = combat.get_participant(ctx.session.character_id)
+            if not participant:
+                await ctx.connection.send_line(
+                    colorize("You are not in this combat!", "RED")
+                )
+                return
+
+            # Check if on cooldown
+            if unified_combat.is_skill_on_cooldown(participant, "trip"):
+                await ctx.connection.send_line(
+                    colorize("Trip is still on cooldown!", "RED")
+                )
+                return
+
+            # Check if in wait state
+            if participant.wait_state_until and datetime.now() < participant.wait_state_until:
+                await ctx.connection.send_line(
+                    colorize("You are still recovering from your last action!", "RED")
+                )
+                return
+
+            # Find target
+            target_name = " ".join(ctx.args).lower()
+            target = None
+
+            for p in combat.participants:
+                if p.entity_name.lower() == target_name and not p.fled:
+                    target = p
+                    break
+
+            if not target:
+                await ctx.connection.send_line(
+                    colorize(f"You don't see '{target_name}' in this combat.", "RED")
+                )
+                return
+
+            # Can't target self
+            if target.entity_id == participant.entity_id:
+                await ctx.connection.send_line(
+                    colorize("You can't trip yourself!", "RED")
+                )
+                return
+
+            # Execute trip
+            success, msg = await unified_combat.execute_trip(combat, participant, target)
+            # Message is broadcast by execute_trip
+
+        except Exception as e:
+            logger.error("trip_command_failed", error=str(e), exc_info=True)
+            await ctx.connection.send_line(
+                colorize("Trip failed. Please try again.", "RED")
             )

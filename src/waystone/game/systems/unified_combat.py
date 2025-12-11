@@ -62,6 +62,34 @@ def get_damage_message(damage: int) -> str:
         return "ANNIHILATE"
 
 
+def is_skill_on_cooldown(participant: CombatParticipant, skill_name: str) -> bool:
+    """Check if a skill is on cooldown for a participant.
+
+    Args:
+        participant: The combat participant
+        skill_name: Name of the skill to check
+
+    Returns:
+        True if skill is on cooldown, False if ready to use
+    """
+    if skill_name not in participant.skill_cooldowns:
+        return False
+
+    cooldown_expires = participant.skill_cooldowns[skill_name]
+    return datetime.now() < cooldown_expires
+
+
+def set_skill_cooldown(participant: CombatParticipant, skill_name: str, seconds: int) -> None:
+    """Set a skill cooldown for a participant.
+
+    Args:
+        participant: The combat participant
+        skill_name: Name of the skill
+        seconds: Cooldown duration in seconds
+    """
+    participant.skill_cooldowns[skill_name] = datetime.now() + timedelta(seconds=seconds)
+
+
 class CombatState(Enum):
     """Combat state machine states."""
 
@@ -88,6 +116,8 @@ class CombatParticipant:
         is_defending: True if entity is in defensive stance
         fled: True if entity successfully fled from combat
         damage_dealt: Total damage dealt (used for XP sharing calculations)
+        skill_cooldowns: Dict of skill_name -> expiration datetime
+        effects: Dict of effect_name -> effect_value (knockdown, prone, disarmed, etc.)
         _entity_ref: Cached reference to Character or NPCInstance (internal)
     """
 
@@ -100,6 +130,8 @@ class CombatParticipant:
     is_defending: bool = False
     fled: bool = False
     damage_dealt: int = 0  # Track for XP sharing
+    skill_cooldowns: dict[str, datetime] = field(default_factory=dict)  # Skill cooldowns
+    effects: dict[str, Any] = field(default_factory=dict)  # Combat effects
 
     # Cached entity reference (set after creation)
     _entity_ref: Any = field(default=None, repr=False)
@@ -164,7 +196,10 @@ async def roll_to_hit(attacker: CombatParticipant, defender: CombatParticipant) 
     if defender.is_defending:
         defense_value += 5
 
-    total_attack = raw_roll + attack_modifier
+    # Check for prone effect on attacker (-2 to hit)
+    prone_penalty = attacker.effects.get("prone", 0)
+
+    total_attack = raw_roll + attack_modifier + prone_penalty
     hit = total_attack >= defense_value
 
     return (hit, False, raw_roll)
@@ -184,6 +219,265 @@ async def calculate_damage(attacker: CombatParticipant, is_critical: bool) -> in
 
     total_damage = base_damage + str_modifier
     return max(1, total_damage)  # Minimum 1 damage
+
+
+# ============================================================================
+# Combat Skills (Phase 3)
+# ============================================================================
+
+
+async def execute_bash(
+    combat: "Combat", attacker: CombatParticipant, target: CombatParticipant
+) -> tuple[bool, str]:
+    """Execute bash skill - knockdown attack.
+
+    Roll: d20 + STR vs target AC
+    Effect: If hit, target knocked down, loses next turn (wait_state)
+    Damage: 1d4 + STR bonus
+    User gets 2-round wait state (skill lag)
+    Cooldown: 15 seconds
+
+    Args:
+        combat: The combat instance
+        attacker: The attacking participant
+        target: The target participant
+
+    Returns:
+        (success, message) tuple
+    """
+    # Get attacker STR for roll
+    attacker_str = await get_participant_attribute(attacker, "strength")
+    str_modifier = calculate_attribute_modifier(attacker_str)
+
+    # Get target DEX for AC
+    target_dex = await get_participant_attribute(target, "dexterity")
+    target_ac = 10 + calculate_attribute_modifier(target_dex)
+
+    # Roll to hit: d20 + STR
+    roll = roll_d20()
+    total = roll + str_modifier
+
+    if total >= target_ac:
+        # Hit! Calculate damage: 1d4 + STR
+        base_damage = random.randint(1, 4)
+        damage = base_damage + str_modifier
+        damage = max(1, damage)  # Minimum 1
+
+        # Apply damage
+        new_hp = await apply_damage_to_participant(target, damage)
+
+        # Apply knockdown effect - target loses next turn
+        target.effects["knocked_down"] = True
+        target.wait_state_until = datetime.now() + timedelta(seconds=combat.ROUND_INTERVAL)
+
+        # Apply wait state to attacker (2 rounds)
+        attacker.wait_state_until = datetime.now() + timedelta(seconds=combat.ROUND_INTERVAL * 2)
+
+        # Set cooldown (15 seconds)
+        set_skill_cooldown(attacker, "bash", 15)
+
+        # Broadcast message
+        damage_verb = get_damage_message(damage)
+        msg = (
+            f"{attacker.entity_name}'s powerful bash {damage_verb}s {target.entity_name} for {damage} damage! "
+            f"{target.entity_name} is knocked down and stunned!"
+        )
+        combat.engine.broadcast_to_room(combat.room_id, colorize(msg, "RED"))
+
+        return (True, msg)
+    else:
+        # Miss
+        # Still apply wait state to attacker (2 rounds)
+        attacker.wait_state_until = datetime.now() + timedelta(seconds=combat.ROUND_INTERVAL * 2)
+
+        # Set cooldown even on miss (15 seconds)
+        set_skill_cooldown(attacker, "bash", 15)
+
+        msg = f"{attacker.entity_name}'s bash misses {target.entity_name}!"
+        combat.engine.broadcast_to_room(combat.room_id, colorize(msg, "CYAN"))
+
+        return (False, msg)
+
+
+async def execute_kick(
+    combat: "Combat", attacker: CombatParticipant, target: CombatParticipant
+) -> tuple[bool, str]:
+    """Execute kick skill - quick damage skill.
+
+    Roll: d20 + DEX vs target AC
+    Damage: 1d6 + DEX bonus
+    User gets 1-round wait state
+    Cooldown: 10 seconds
+
+    Args:
+        combat: The combat instance
+        attacker: The attacking participant
+        target: The target participant
+
+    Returns:
+        (success, message) tuple
+    """
+    # Get attacker DEX for roll
+    attacker_dex = await get_participant_attribute(attacker, "dexterity")
+    dex_modifier = calculate_attribute_modifier(attacker_dex)
+
+    # Get target DEX for AC
+    target_dex = await get_participant_attribute(target, "dexterity")
+    target_ac = 10 + calculate_attribute_modifier(target_dex)
+
+    # Roll to hit: d20 + DEX
+    roll = roll_d20()
+    total = roll + dex_modifier
+
+    if total >= target_ac:
+        # Hit! Calculate damage: 1d6 + DEX
+        base_damage = random.randint(1, 6)
+        damage = base_damage + dex_modifier
+        damage = max(1, damage)
+
+        # Apply damage
+        new_hp = await apply_damage_to_participant(target, damage)
+
+        # Apply wait state to attacker (1 round)
+        attacker.wait_state_until = datetime.now() + timedelta(seconds=combat.ROUND_INTERVAL)
+
+        # Set cooldown (10 seconds)
+        set_skill_cooldown(attacker, "kick", 10)
+
+        # Broadcast message
+        damage_verb = get_damage_message(damage)
+        msg = f"{attacker.entity_name}'s kick {damage_verb}s {target.entity_name} for {damage} damage!"
+        combat.engine.broadcast_to_room(combat.room_id, colorize(msg, "YELLOW"))
+
+        return (True, msg)
+    else:
+        # Miss
+        # Still apply wait state (1 round)
+        attacker.wait_state_until = datetime.now() + timedelta(seconds=combat.ROUND_INTERVAL)
+
+        # Set cooldown even on miss (10 seconds)
+        set_skill_cooldown(attacker, "kick", 10)
+
+        msg = f"{attacker.entity_name}'s kick misses {target.entity_name}!"
+        combat.engine.broadcast_to_room(combat.room_id, colorize(msg, "CYAN"))
+
+        return (False, msg)
+
+
+async def execute_disarm(
+    combat: "Combat", attacker: CombatParticipant, target: CombatParticipant
+) -> tuple[bool, str]:
+    """Execute disarm skill - remove target's weapon.
+
+    Roll: d20 + DEX vs target DEX + 10
+    Effect: Target drops weapon (if has one)
+    User gets 2-round wait state
+    Cooldown: 30 seconds
+
+    Args:
+        combat: The combat instance
+        attacker: The attacking participant
+        target: The target participant
+
+    Returns:
+        (success, message) tuple
+    """
+    # Get attacker DEX for roll
+    attacker_dex = await get_participant_attribute(attacker, "dexterity")
+    dex_modifier = calculate_attribute_modifier(attacker_dex)
+
+    # Get target DEX for defense
+    target_dex = await get_participant_attribute(target, "dexterity")
+    target_dc = target_dex + 10  # Full DEX value + 10
+
+    # Roll: d20 + DEX
+    roll = roll_d20()
+    total = roll + dex_modifier
+
+    if total >= target_dc:
+        # Success! Apply disarmed effect
+        target.effects["disarmed"] = True
+
+        # Apply wait state to attacker (2 rounds)
+        attacker.wait_state_until = datetime.now() + timedelta(seconds=combat.ROUND_INTERVAL * 2)
+
+        # Set cooldown (30 seconds)
+        set_skill_cooldown(attacker, "disarm", 30)
+
+        msg = f"{attacker.entity_name} disarms {target.entity_name}! Their weapon clatters to the ground!"
+        combat.engine.broadcast_to_room(combat.room_id, colorize(msg, "YELLOW"))
+
+        return (True, msg)
+    else:
+        # Failed
+        # Still apply wait state (2 rounds)
+        attacker.wait_state_until = datetime.now() + timedelta(seconds=combat.ROUND_INTERVAL * 2)
+
+        # Set cooldown even on failure (30 seconds)
+        set_skill_cooldown(attacker, "disarm", 30)
+
+        msg = f"{attacker.entity_name}'s disarm attempt fails against {target.entity_name}!"
+        combat.engine.broadcast_to_room(combat.room_id, colorize(msg, "CYAN"))
+
+        return (False, msg)
+
+
+async def execute_trip(
+    combat: "Combat", attacker: CombatParticipant, target: CombatParticipant
+) -> tuple[bool, str]:
+    """Execute trip skill - knock target prone.
+
+    Roll: d20 + DEX vs target DEX + 8
+    Effect: Target falls, -2 to hit next round
+    User gets 1-round wait state
+    Cooldown: 12 seconds
+
+    Args:
+        combat: The combat instance
+        attacker: The attacking participant
+        target: The target participant
+
+    Returns:
+        (success, message) tuple
+    """
+    # Get attacker DEX for roll
+    attacker_dex = await get_participant_attribute(attacker, "dexterity")
+    dex_modifier = calculate_attribute_modifier(attacker_dex)
+
+    # Get target DEX for defense
+    target_dex = await get_participant_attribute(target, "dexterity")
+    target_dc = target_dex + 8  # Full DEX value + 8
+
+    # Roll: d20 + DEX
+    roll = roll_d20()
+    total = roll + dex_modifier
+
+    if total >= target_dc:
+        # Success! Apply prone effect (-2 to hit)
+        target.effects["prone"] = -2
+
+        # Apply wait state to attacker (1 round)
+        attacker.wait_state_until = datetime.now() + timedelta(seconds=combat.ROUND_INTERVAL)
+
+        # Set cooldown (12 seconds)
+        set_skill_cooldown(attacker, "trip", 12)
+
+        msg = f"{attacker.entity_name} trips {target.entity_name}! They fall to the ground!"
+        combat.engine.broadcast_to_room(combat.room_id, colorize(msg, "YELLOW"))
+
+        return (True, msg)
+    else:
+        # Failed
+        # Still apply wait state (1 round)
+        attacker.wait_state_until = datetime.now() + timedelta(seconds=combat.ROUND_INTERVAL)
+
+        # Set cooldown even on failure (12 seconds)
+        set_skill_cooldown(attacker, "trip", 12)
+
+        msg = f"{attacker.entity_name}'s trip attempt fails against {target.entity_name}!"
+        combat.engine.broadcast_to_room(combat.room_id, colorize(msg, "CYAN"))
+
+        return (False, msg)
 
 
 class Combat:
@@ -480,9 +774,17 @@ class Combat:
             # Execute auto action for this participant
             await self._auto_action(participant)
 
-        # Reset defending flags at end of round
+        # Reset defending flags and clear temporary effects at end of round
         for participant in self.participants:
             participant.is_defending = False
+
+            # Clear knocked_down effect (only lasts 1 turn)
+            if "knocked_down" in participant.effects:
+                del participant.effects["knocked_down"]
+
+            # Clear prone effect (only lasts 1 round)
+            if "prone" in participant.effects:
+                del participant.effects["prone"]
 
     def _check_combat_continues(self) -> bool:
         """Check if combat should continue.
