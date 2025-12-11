@@ -1,10 +1,58 @@
 """Shared fixtures for all tests."""
 
+import os
+
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
 from waystone.database.models import Base, Character, CharacterBackground, User
+
+
+# CRITICAL: Set test database URL BEFORE any waystone imports can cache it
+# This prevents tests from using/modifying the production database
+@pytest.fixture(scope="session", autouse=True)
+def use_test_database(tmp_path_factory):
+    """Force all tests to use a temporary database instead of production.
+
+    This fixture runs automatically at the start of the test session and
+    ensures that get_session() calls use a test database, not production.
+    The test database is deleted after all tests complete.
+    """
+    # Create a temp directory for the test database
+    test_db_dir = tmp_path_factory.mktemp("waystone_test")
+    test_db_path = test_db_dir / "test_waystone.db"
+
+    # Set environment variable before settings are loaded
+    os.environ["DATABASE_URL"] = f"sqlite+aiosqlite:///{test_db_path}"
+
+    # Reset the cached engine/session factory if they exist
+    import waystone.database.engine as engine_module
+    engine_module._engine = None
+    engine_module._async_session_factory = None
+
+    # Also clear any cached settings
+    from waystone.config import get_settings
+    get_settings.cache_clear()
+
+    yield
+
+    # Cleanup after all tests
+    if engine_module._engine is not None:
+        import asyncio
+        try:
+            loop = asyncio.get_event_loop()
+            if loop.is_running():
+                loop.create_task(engine_module._engine.dispose())
+            else:
+                loop.run_until_complete(engine_module._engine.dispose())
+        except RuntimeError:
+            pass
+
+    engine_module._engine = None
+    engine_module._async_session_factory = None
+
+    # The temp directory is automatically cleaned up by pytest
 
 
 @pytest.fixture
