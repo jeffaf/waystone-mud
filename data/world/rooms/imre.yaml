@@ -41,6 +41,8 @@ rooms:
       west: imre_training_yard
       southwest: imre_back_alley
       south: imre_inn_waystone
+      northwest: imre_devi_shop
+      southeast: imre_blacksmith
     properties:
       outdoor: true
       lit: true
@@ -76,7 +78,7 @@ rooms:
       are steep but fair, and she has a reputation for both discretion and
       ruthlessness when collecting debts.
     exits:
-      east: imre_main_square
+      southeast: imre_main_square
     properties:
       outdoor: false
       lit: true
@@ -198,3 +200,40 @@ rooms:
       outdoor: true
       lit: true
       safe_zone: false
+
+  - id: imre_blacksmith
+    name: "Tiernan's Smithy"
+    area: imre
+    description: |
+      The heat from the forge hits you as you enter this busy smithy. The
+      rhythmic clang of hammer on steel fills the air, and the smell of hot
+      metal and coal smoke is thick. Tiernan, a broad-shouldered man with
+      arms like tree trunks, works at the anvil while his apprentices tend
+      the bellows. Weapons and armor of various quality hang on the walls,
+      from simple daggers to finely crafted swords. A sign declares: "Quality
+      steel for those who can afford it. Cheap steel for those who can't."
+    exits:
+      northwest: imre_main_square
+      east: imre_apothecary
+    properties:
+      outdoor: false
+      lit: true
+      safe_zone: true
+
+  - id: imre_apothecary
+    name: "The Bitter Roots"
+    area: imre
+    description: |
+      Dried herbs hang from the ceiling in dense bundles, filling the air
+      with a complex mixture of scents - some pleasant, others decidedly not.
+      Shelves line the walls, crowded with jars, bottles, and boxes labeled
+      in neat handwriting. An elderly woman with sharp eyes tends the counter,
+      measuring powders on a delicate scale. She sells remedies for common
+      ailments, poisons for those who know how to ask, and the occasional
+      alchemical curiosity. A faded sign warns: "You break it, you drink it."
+    exits:
+      west: imre_blacksmith
+    properties:
+      outdoor: false
+      lit: true
+      safe_zone: true
