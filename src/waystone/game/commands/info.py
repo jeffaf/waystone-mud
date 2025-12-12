@@ -8,6 +8,7 @@ from sqlalchemy import select
 
 from waystone.database.engine import get_session
 from waystone.database.models import Character
+from waystone.game.systems.cthaeh import load_cthaeh_status
 from waystone.game.systems.economy import format_money
 from waystone.game.systems.experience import xp_progress
 from waystone.network import SessionState, colorize
@@ -250,6 +251,14 @@ class ScoreCommand(Command):
                     await ctx.connection.send_line(
                         f"  {attr_name:13} {colorize(str(attr_value), 'BOLD')} "
                         f"({colorize(mod_str, 'GREEN')})"
+                    )
+
+                # Check Cthaeh curse status
+                cthaeh_status = load_cthaeh_status(character)
+                if cthaeh_status.cursed:
+                    await ctx.connection.send_line(colorize("\nAfflictions:", "RED"))
+                    await ctx.connection.send_line(
+                        colorize("  🌳 The Cthaeh's Shadow", "MAGENTA")
                     )
 
                 # Get room name
