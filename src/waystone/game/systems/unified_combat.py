@@ -159,6 +159,32 @@ async def get_participant_attribute(participant: CombatParticipant, attr: str) -
     return 10  # Default
 
 
+def get_position_defense_penalty(participant: CombatParticipant) -> int:
+    """Get defense penalty based on position (resting/sleeping).
+
+    Resting players are easier to hit (-2 to defense).
+    Sleeping players are much easier to hit (-4 to defense).
+    NPCs don't have position, so no penalty.
+
+    Args:
+        participant: The combat participant
+
+    Returns:
+        Defense penalty (negative number to subtract from AC)
+    """
+    if participant.is_npc:
+        return 0
+
+    if participant._entity_ref:
+        position = getattr(participant._entity_ref, "position", "standing")
+        if position == "resting":
+            return -2  # Easier to hit when resting
+        elif position == "sleeping":
+            return -4  # Much easier to hit when sleeping
+
+    return 0
+
+
 async def apply_damage_to_participant(participant: CombatParticipant, damage: int) -> int:
     """Apply damage to participant. Returns new HP.
 
@@ -225,6 +251,9 @@ async def roll_to_hit(
     # Defending stance adds +5
     if defender.is_defending:
         defense_value += 5
+
+    # Position penalty (resting/sleeping makes you easier to hit)
+    defense_value += get_position_defense_penalty(defender)
 
     # Check for prone effect on attacker (-2 to hit)
     prone_penalty = attacker.effects.get("prone", 0)
@@ -618,6 +647,10 @@ class Combat:
             return
 
         self.participants = [p for p in self.participants if p.entity_id != entity_id]
+
+        # Record combat end time for players (used for recall cooldown)
+        if not participant.is_npc:
+            record_combat_end(entity_id)
 
         logger.info(
             "participant_removed_from_unified_combat",
@@ -1249,6 +1282,10 @@ class Combat:
 # Global registry of active combats by room
 _active_combats: dict[str, Combat] = {}
 
+# Track when entities left combat (entity_id -> datetime when combat ended)
+# Used for recall cooldown (30 seconds after combat)
+_entity_combat_end_times: dict[str, datetime] = {}
+
 
 def get_combat_for_room(room_id: str) -> Combat | None:
     """Get active combat in a room.
@@ -1330,3 +1367,56 @@ def cleanup_ended_combats() -> int:
         )
 
     return len(to_remove)
+
+
+# Combat cooldown tracking constants
+COMBAT_COOLDOWN_SECONDS = 30  # Cooldown after leaving combat
+
+
+def record_combat_end(entity_id: str) -> None:
+    """Record that an entity has left combat.
+
+    Args:
+        entity_id: The entity that left combat
+    """
+    _entity_combat_end_times[entity_id] = datetime.now()
+
+
+def get_combat_cooldown_remaining(entity_id: str) -> int:
+    """Get remaining combat cooldown for an entity.
+
+    Args:
+        entity_id: The entity to check
+
+    Returns:
+        Seconds remaining in cooldown, or 0 if no cooldown
+    """
+    if entity_id not in _entity_combat_end_times:
+        return 0
+
+    combat_end = _entity_combat_end_times[entity_id]
+    cooldown_expires = combat_end + timedelta(seconds=COMBAT_COOLDOWN_SECONDS)
+    remaining = (cooldown_expires - datetime.now()).total_seconds()
+
+    return max(0, int(remaining))
+
+
+def is_in_combat_cooldown(entity_id: str) -> bool:
+    """Check if an entity is in post-combat cooldown.
+
+    Args:
+        entity_id: The entity to check
+
+    Returns:
+        True if entity cannot recall yet, False if they can
+    """
+    return get_combat_cooldown_remaining(entity_id) > 0
+
+
+def clear_combat_cooldown(entity_id: str) -> None:
+    """Clear combat cooldown for an entity (used when they die, etc).
+
+    Args:
+        entity_id: The entity to clear cooldown for
+    """
+    _entity_combat_end_times.pop(entity_id, None)

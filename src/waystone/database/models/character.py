@@ -252,6 +252,16 @@ class Character(Base, TimestampMixin):
         comment="Cthaeh curse/pact data",
     )
 
+    # Character position: standing, resting, sleeping
+    # Affects regeneration rate and combat vulnerability
+    position: Mapped[str] = mapped_column(
+        String(20),
+        nullable=False,
+        default="standing",
+        server_default="standing",
+        comment="Character position (standing, resting, sleeping)",
+    )
+
     # Relationships
     user: Mapped["User"] = relationship(
         "User",

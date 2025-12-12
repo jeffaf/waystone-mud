@@ -227,6 +227,11 @@ class GameEngine:
             WestCommand,
         )
         from waystone.game.commands.npc import ConsiderCommand
+        from waystone.game.commands.position import (
+            RecallCommand,
+            RestCommand,
+            StandCommand,
+        )
         from waystone.game.commands.social import (
             EmoteCommands,
             EmotesCommand,
@@ -358,6 +363,11 @@ class GameEngine:
         registry.register(AcceptCurseCommand())
         registry.register(CurseCommand())
         registry.register(LeaveFaeCommand())
+
+        # Position commands
+        registry.register(RestCommand())
+        registry.register(StandCommand())
+        registry.register(RecallCommand())
 
         logger.info(
             "commands_registered",

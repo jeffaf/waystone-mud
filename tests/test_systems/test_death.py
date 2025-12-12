@@ -231,7 +231,7 @@ class TestHandlePlayerDeath:
         engine = MagicMock()
         engine.world = {
             "dark_forest": MagicMock(),
-            "university_main_hall": MagicMock(),
+            "university_courtyard": MagicMock(),
         }
         engine.character_to_session = {}
         engine.broadcast_to_room = MagicMock()
@@ -286,7 +286,7 @@ class TestHandlePlayerDeath:
         engine = MagicMock()
         engine.world = {
             "dangerous_place": old_room,
-            "university_main_hall": new_room,
+            "university_courtyard": new_room,
         }
         engine.character_to_session = {}
         engine.broadcast_to_room = MagicMock()
@@ -300,7 +300,7 @@ class TestHandlePlayerDeath:
         )
 
         # Verify respawn location
-        assert mock_character.current_room_id == "university_main_hall"
+        assert mock_character.current_room_id == "university_courtyard"
         assert mock_character.current_hp == 1
 
         # Verify room tracking updated

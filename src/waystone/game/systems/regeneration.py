@@ -138,7 +138,13 @@ def calculate_regen_amount(character: Character) -> int:
 
     total_regen = base_regen + con_bonus
 
-    # TODO: Apply position multipliers when rest/sleep system exists
+    # Apply position multipliers
+    position = getattr(character, "position", "standing")
+    if position == "resting":
+        total_regen = int(total_regen * RESTING_REGEN_MULTIPLIER)
+    elif position == "sleeping":
+        total_regen = int(total_regen * SLEEPING_REGEN_MULTIPLIER)
+
     # TODO: Apply weakened status penalty when status system exists
 
     # Minimum of 1 HP if damaged
@@ -172,7 +178,7 @@ async def regenerate_npcs(engine: "GameEngine") -> int:
                 continue
 
             # Skip if in combat
-            combat = get_combat_for_entity(npc.instance_id)
+            combat = get_combat_for_entity(npc.id)
             if combat:
                 continue
 

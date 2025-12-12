@@ -26,7 +26,7 @@ logger = structlog.get_logger(__name__)
 PLAYER_DEATH_XP_PENALTY = 0.1  # Lose 10% of current level's XP
 PLAYER_DEATH_WEAKENED_DURATION = 300  # 5 minutes in seconds
 PLAYER_DEATH_STAT_PENALTY = 0.2  # 20% stat reduction while weakened
-PLAYER_RESPAWN_ROOM = "university_main_hall"  # Safe respawn location
+PLAYER_RESPAWN_ROOM = "university_courtyard"  # Safe respawn location
 
 
 @dataclass

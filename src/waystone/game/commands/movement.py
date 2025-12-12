@@ -61,6 +61,19 @@ class MoveCommand(Command):
                     await ctx.connection.send_line(colorize("Character not found.", "RED"))
                     return
 
+                # Check if resting or sleeping
+                position = getattr(character, "position", "standing")
+                if position == "resting":
+                    await ctx.connection.send_line(
+                        colorize("You can't move while resting. Type 'stand' first.", "YELLOW")
+                    )
+                    return
+                if position == "sleeping":
+                    await ctx.connection.send_line(
+                        colorize("You can't move while sleeping. Type 'wake' or 'stand' first.", "YELLOW")
+                    )
+                    return
+
                 # Get current room
                 current_room = ctx.engine.world.get(character.current_room_id)
                 if not current_room:
