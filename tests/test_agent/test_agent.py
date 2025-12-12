@@ -56,7 +56,7 @@ class TestAgentConfig:
         """Test default configuration values."""
         config = AgentConfig()
         assert config.host == "localhost"
-        assert config.port == 4000
+        assert config.port == 1337
         assert config.use_haiku is True
         assert config.use_ollama is False
         assert config.action_delay == 2.0
@@ -139,7 +139,7 @@ class TestMUDAgent:
         """Create a test configuration with rules-only."""
         return AgentConfig(
             host="localhost",
-            port=4000,
+            port=1337,
             use_haiku=False,
             use_ollama=False,  # Use rules-only
         )

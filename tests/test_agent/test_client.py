@@ -43,7 +43,7 @@ class TestMUDClient:
     @pytest.fixture
     def client(self):
         """Create a client instance."""
-        return MUDClient(host="localhost", port=4000)
+        return MUDClient(host="localhost", port=1337)
 
     def test_initial_state(self, client):
         """Test initial client state."""
@@ -90,7 +90,7 @@ A large plaza with a fountain in the center."""
     def test_host_port_config(self, client):
         """Test host and port configuration."""
         assert client.host == "localhost"
-        assert client.port == 4000
+        assert client.port == 1337
 
         custom = MUDClient(host="example.com", port=5000)
         assert custom.host == "example.com"

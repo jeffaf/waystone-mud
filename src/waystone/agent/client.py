@@ -55,7 +55,7 @@ class MUDClient:
     def __init__(
         self,
         host: str = "localhost",
-        port: int = 4000,
+        port: int = 1337,
         on_message: Callable[[GameMessage], None] | None = None,
     ) -> None:
         """

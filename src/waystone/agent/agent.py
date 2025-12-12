@@ -58,7 +58,7 @@ class AgentConfig:
     """Configuration for the MUD agent."""
 
     host: str = "localhost"
-    port: int = 4000
+    port: int = 1337
     username: str = ""
     password: str = ""
     character_name: str = ""
@@ -700,7 +700,7 @@ async def run_agent_cli() -> None:
 
     argparser = argparse.ArgumentParser(description="Waystone MUD AI Agent")
     argparser.add_argument("--host", default="localhost", help="Server host")
-    argparser.add_argument("--port", type=int, default=4000, help="Server port")
+    argparser.add_argument("--port", type=int, default=1337, help="Server port")
     argparser.add_argument("--username", "-u", required=True, help="Account username")
     argparser.add_argument("--password", "-p", required=True, help="Account password")
     argparser.add_argument("--character", "-c", required=True, help="Character name")

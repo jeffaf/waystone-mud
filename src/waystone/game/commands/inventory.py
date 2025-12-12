@@ -43,7 +43,7 @@ class InventoryCommand(Command):
                     .where(Character.id == UUID(ctx.session.character_id))
                     .options(joinedload(Character.items).joinedload(ItemInstance.template))
                 )
-                character = result.scalar_one_or_none()
+                character = result.unique().scalar_one_or_none()
 
                 if not character:
                     await ctx.connection.send_line(colorize("Character not found.", "RED"))
@@ -123,7 +123,7 @@ class GetCommand(Command):
                     .where(Character.id == UUID(ctx.session.character_id))
                     .options(joinedload(Character.items).joinedload(ItemInstance.template))
                 )
-                character = result.scalar_one_or_none()
+                character = result.unique().scalar_one_or_none()
 
                 if not character:
                     await ctx.connection.send_line(colorize("Character not found.", "RED"))
@@ -226,7 +226,7 @@ class DropCommand(Command):
                     .where(Character.id == UUID(ctx.session.character_id))
                     .options(joinedload(Character.items).joinedload(ItemInstance.template))
                 )
-                character = result.scalar_one_or_none()
+                character = result.unique().scalar_one_or_none()
 
                 if not character:
                     await ctx.connection.send_line(colorize("Character not found.", "RED"))
@@ -315,7 +315,7 @@ class ExamineCommand(Command):
                     .where(Character.id == UUID(ctx.session.character_id))
                     .options(joinedload(Character.items).joinedload(ItemInstance.template))
                 )
-                character = result.scalar_one_or_none()
+                character = result.unique().scalar_one_or_none()
 
                 if not character:
                     await ctx.connection.send_line(colorize("Character not found.", "RED"))
@@ -445,7 +445,7 @@ class GiveCommand(Command):
                     .where(Character.id == UUID(ctx.session.character_id))
                     .options(joinedload(Character.items).joinedload(ItemInstance.template))
                 )
-                character = result.scalar_one_or_none()
+                character = result.unique().scalar_one_or_none()
 
                 if not character:
                     await ctx.connection.send_line(colorize("Character not found.", "RED"))
@@ -596,7 +596,7 @@ class EquipCommand(Command):
                     .where(Character.id == UUID(ctx.session.character_id))
                     .options(joinedload(Character.items).joinedload(ItemInstance.template))
                 )
-                character = result.scalar_one_or_none()
+                character = result.unique().scalar_one_or_none()
 
                 if not character:
                     await ctx.connection.send_line(colorize("Character not found.", "RED"))
@@ -709,7 +709,7 @@ class UnequipCommand(Command):
                 result = await session.execute(
                     select(Character).where(Character.id == UUID(ctx.session.character_id))
                 )
-                character = result.scalar_one_or_none()
+                character = result.unique().scalar_one_or_none()
 
                 if not character:
                     await ctx.connection.send_line(colorize("Character not found.", "RED"))
@@ -795,7 +795,7 @@ class EquipmentCommand(Command):
                 result = await session.execute(
                     select(Character).where(Character.id == UUID(ctx.session.character_id))
                 )
-                character = result.scalar_one_or_none()
+                character = result.unique().scalar_one_or_none()
 
                 if not character:
                     await ctx.connection.send_line(colorize("Character not found.", "RED"))

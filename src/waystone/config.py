@@ -20,7 +20,7 @@ class Settings(BaseSettings):
 
     # Server Settings
     host: str = Field(default="0.0.0.0", description="Server bind address")
-    telnet_port: int = Field(default=4000, description="Telnet server port")
+    telnet_port: int = Field(default=1337, description="Telnet server port")
     websocket_port: int = Field(default=4001, description="WebSocket server port")
     debug: bool = Field(default=False, description="Enable debug mode")
 
