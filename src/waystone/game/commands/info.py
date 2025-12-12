@@ -11,6 +11,11 @@ from waystone.database.models import Character
 from waystone.game.systems.cthaeh import load_cthaeh_status
 from waystone.game.systems.economy import format_money
 from waystone.game.systems.experience import xp_progress
+from waystone.game.systems.university import (
+    ArcanumRank,
+    get_university_status,
+    rank_to_display,
+)
 from waystone.network import SessionState, colorize
 
 from .base import Command, CommandContext, get_registry
@@ -252,6 +257,18 @@ class ScoreCommand(Command):
                         f"  {attr_name:13} {colorize(str(attr_value), 'BOLD')} "
                         f"({colorize(mod_str, 'GREEN')})"
                     )
+
+                # Check University rank
+                university_status = get_university_status(character.id)
+                if university_status.arcanum_rank != ArcanumRank.NONE:
+                    await ctx.connection.send_line(colorize("\nUniversity:", "YELLOW"))
+                    await ctx.connection.send_line(
+                        f"  Rank: {colorize(rank_to_display(university_status.arcanum_rank), 'CYAN')}"
+                    )
+                    if university_status.tuition_paid:
+                        await ctx.connection.send_line(
+                            colorize("  Tuition: Paid", "GREEN")
+                        )
 
                 # Check Cthaeh curse status
                 cthaeh_status = load_cthaeh_status(character)
