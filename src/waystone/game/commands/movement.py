@@ -192,6 +192,35 @@ class MoveCommand(Command):
                 )
                 await ctx.connection.send_line(destination_room.format_description())
 
+                # Show NPCs in room
+                from waystone.game.systems.npc_combat import get_npcs_in_room
+
+                npcs = get_npcs_in_room(destination_id)
+                if npcs:
+                    await ctx.connection.send_line("")
+                    npc_groups = group_npcs_by_template(npcs)
+                    for _template_id, npc_list in npc_groups.items():
+                        representative_npc = npc_list[0]
+                        count = len(npc_list)
+                        presence_text = format_npc_room_presence(representative_npc, count)
+                        npc_color = get_npc_color(representative_npc)
+                        await ctx.connection.send_line(colorize(presence_text, npc_color))
+
+                # Show other players in room
+                other_players = [
+                    pid for pid in destination_room.players if pid != ctx.session.character_id
+                ]
+                if other_players:
+                    await ctx.connection.send_line("")
+                    other_result = await session.execute(
+                        select(Character).where(
+                            Character.id.in_([UUID(pid) for pid in other_players])
+                        )
+                    )
+                    other_chars = other_result.scalars().all()
+                    for char in other_chars:
+                        await ctx.connection.send_line(colorize(f"{char.name} is here.", "CYAN"))
+
                 logger.info(
                     "character_moved",
                     character_name=character.name,

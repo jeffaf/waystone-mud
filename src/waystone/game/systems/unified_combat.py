@@ -1172,6 +1172,10 @@ class Combat:
         if not npc:
             return
 
+        # Skip if NPC is dead
+        if not npc.is_alive or npc.current_hp <= 0:
+            return
+
         # Check wimpy - flee if HP < 20%
         hp_percent = npc.current_hp / npc.max_hp if npc.max_hp > 0 else 0
         if hp_percent < 0.2 and npc.behavior != "training_dummy":

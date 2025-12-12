@@ -32,6 +32,10 @@ merchants:
       mana_potion: 15
       antidote: 10
       healing_salve: 8
+      sympathy_candle: -1  # unlimited sympathy candles
+      sympathy_torch: 10
+      iron_drab: -1  # unlimited iron drabs for sympathy practice
+      copper_wire: -1
 
   # University bookshop
   - npc_id: bookshop_university

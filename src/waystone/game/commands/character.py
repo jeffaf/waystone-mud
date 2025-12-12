@@ -296,6 +296,13 @@ class PlayCommand(Command):
             await ctx.connection.send_line(colorize("You must be logged in to play.", "RED"))
             return
 
+        # Check if already playing a character
+        if ctx.session.character_id:
+            await ctx.connection.send_line(
+                colorize("You are already playing a character. Use 'quit' to leave first.", "YELLOW")
+            )
+            return
+
         if len(ctx.args) < 1:
             await ctx.connection.send_line(colorize("Usage: play <name>", "YELLOW"))
             return
