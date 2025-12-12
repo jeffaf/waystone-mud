@@ -325,6 +325,24 @@ class SouthwestCommand(MoveCommand):
     direction = "southwest"
 
 
+class OutCommand(MoveCommand):
+    """Move out."""
+
+    name = "out"
+    aliases = ["o", "leave"]
+    help_text = "out (o) - Move out/exit"
+    direction = "out"
+
+
+class InCommand(MoveCommand):
+    """Move in/enter."""
+
+    name = "in"
+    aliases = ["enter"]
+    help_text = "in - Move in/enter"
+    direction = "in"
+
+
 class GoCommand(Command):
     """Alternative movement syntax using 'go <direction>'."""
 
@@ -355,6 +373,8 @@ class GoCommand(Command):
             "northwest": NorthwestCommand(),
             "southeast": SoutheastCommand(),
             "southwest": SouthwestCommand(),
+            "out": OutCommand(),
+            "in": InCommand(),
         }
 
         move_cmd = move_commands.get(direction)

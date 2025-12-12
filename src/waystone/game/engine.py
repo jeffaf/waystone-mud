@@ -216,10 +216,12 @@ class GameEngine:
             EastCommand,
             ExitsCommand,
             GoCommand,
+            InCommand,
             LookCommand,
             NorthCommand,
             NortheastCommand,
             NorthwestCommand,
+            OutCommand,
             SouthCommand,
             SoutheastCommand,
             SouthwestCommand,
@@ -285,6 +287,8 @@ class GameEngine:
         registry.register(NorthwestCommand())
         registry.register(SoutheastCommand())
         registry.register(SouthwestCommand())
+        registry.register(OutCommand())
+        registry.register(InCommand())
         registry.register(GoCommand())
         registry.register(LookCommand())
         registry.register(ExitsCommand())
