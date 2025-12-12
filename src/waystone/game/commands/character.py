@@ -9,6 +9,12 @@ from sqlalchemy import select
 from waystone.config import get_settings
 from waystone.database.engine import get_session
 from waystone.database.models import Character, CharacterBackground
+from waystone.game.systems.npc_combat import get_npcs_in_room
+from waystone.game.systems.npc_display import (
+    format_npc_room_presence,
+    get_npc_color,
+    group_npcs_by_template,
+)
 from waystone.network import SessionState, colorize
 
 from .base import Command, CommandContext
@@ -362,6 +368,35 @@ class PlayCommand(Command):
                 # Show current room
                 if room:
                     await ctx.connection.send_line(room.format_description())
+
+                    # Show NPCs in room
+                    npcs = get_npcs_in_room(character.current_room_id)
+                    if npcs:
+                        await ctx.connection.send_line("")
+                        npc_groups = group_npcs_by_template(npcs)
+                        for _template_id, npc_list in npc_groups.items():
+                            representative_npc = npc_list[0]
+                            count = len(npc_list)
+                            presence_text = format_npc_room_presence(representative_npc, count)
+                            npc_color = get_npc_color(representative_npc)
+                            await ctx.connection.send_line(colorize(presence_text, npc_color))
+
+                    # Show other players in room
+                    other_players = [
+                        pid for pid in room.players if pid != char_id_str
+                    ]
+                    if other_players:
+                        await ctx.connection.send_line("")
+                        other_result = await session.execute(
+                            select(Character).where(
+                                Character.id.in_([UUID(pid) for pid in other_players])
+                            )
+                        )
+                        other_chars = other_result.scalars().all()
+                        for char in other_chars:
+                            await ctx.connection.send_line(
+                                colorize(f"{char.name} is here.", "CYAN")
+                            )
 
                 logger.info(
                     "character_entered_world",
