@@ -266,17 +266,13 @@ class ScoreCommand(Command):
                         f"  Rank: {colorize(rank_to_display(university_status.arcanum_rank), 'CYAN')}"
                     )
                     if university_status.tuition_paid:
-                        await ctx.connection.send_line(
-                            colorize("  Tuition: Paid", "GREEN")
-                        )
+                        await ctx.connection.send_line(colorize("  Tuition: Paid", "GREEN"))
 
                 # Check Cthaeh curse status
                 cthaeh_status = load_cthaeh_status(character)
                 if cthaeh_status.cursed:
                     await ctx.connection.send_line(colorize("\nAfflictions:", "RED"))
-                    await ctx.connection.send_line(
-                        colorize("  🌳 The Cthaeh's Shadow", "MAGENTA")
-                    )
+                    await ctx.connection.send_line(colorize("  🌳 The Cthaeh's Shadow", "MAGENTA"))
 
                 # Get room name
                 room = ctx.engine.world.get(character.current_room_id)

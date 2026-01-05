@@ -27,30 +27,30 @@ CHARACTER_NAME_PATTERN = re.compile(r"^[A-Z][a-zA-Z]{1,29}$")
 # Each background gets thematically appropriate gear
 STARTER_ITEMS_BY_BACKGROUND: dict[CharacterBackground, list[str]] = {
     CharacterBackground.SCHOLAR: [
-        "wooden_staff",      # Walking stick / defensive weapon
-        "bread",             # Basic provisions
+        "wooden_staff",  # Walking stick / defensive weapon
+        "bread",  # Basic provisions
     ],
     CharacterBackground.MERCHANT: [
-        "steel_dagger",      # Self-defense weapon
-        "bread",             # Basic provisions
+        "steel_dagger",  # Self-defense weapon
+        "bread",  # Basic provisions
     ],
     CharacterBackground.PERFORMER: [
-        "steel_dagger",      # Quick, light weapon
-        "bread",             # Basic provisions
+        "steel_dagger",  # Quick, light weapon
+        "bread",  # Basic provisions
     ],
     CharacterBackground.WAYFARER: [
-        "iron_sword",        # Road warrior weapon
-        "leather_armor",     # Basic protection
-        "bread",             # Basic provisions
+        "iron_sword",  # Road warrior weapon
+        "leather_armor",  # Basic protection
+        "bread",  # Basic provisions
     ],
     CharacterBackground.NOBLE: [
-        "iron_sword",        # Trained with weapons
-        "leather_armor",     # Quality gear
-        "health_potion",     # Emergency supplies
+        "iron_sword",  # Trained with weapons
+        "leather_armor",  # Quality gear
+        "health_potion",  # Emergency supplies
     ],
     CharacterBackground.COMMONER: [
-        "wooden_staff",      # Simple tool/weapon
-        "bread",             # Basic provisions
+        "wooden_staff",  # Simple tool/weapon
+        "bread",  # Basic provisions
     ],
 }
 
@@ -360,7 +360,9 @@ class PlayCommand(Command):
         # Check if already playing a character
         if ctx.session.character_id:
             await ctx.connection.send_line(
-                colorize("You are already playing a character. Use 'quit' to leave first.", "YELLOW")
+                colorize(
+                    "You are already playing a character. Use 'quit' to leave first.", "YELLOW"
+                )
             )
             return
 
@@ -432,9 +434,7 @@ class PlayCommand(Command):
                             await ctx.connection.send_line(colorize(text, color))
 
                     # Show other players in room
-                    other_players = [
-                        pid for pid in room.players if pid != char_id_str
-                    ]
+                    other_players = [pid for pid in room.players if pid != char_id_str]
                     if other_players:
                         await ctx.connection.send_line("")
                         other_result = await session.execute(

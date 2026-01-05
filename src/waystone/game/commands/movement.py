@@ -10,10 +10,7 @@ from waystone.database.engine import get_session
 from waystone.database.models import Character
 from waystone.game.systems.experience import XP_EXPLORATION_NEW_ROOM, award_xp
 from waystone.game.systems.npc_display import (
-    format_npc_room_presence,
     format_npcs_for_room,
-    get_npc_color,
-    group_npcs_by_template,
 )
 from waystone.game.systems.university import can_access_room, get_university_status, rank_to_display
 from waystone.network import colorize
@@ -71,7 +68,9 @@ class MoveCommand(Command):
                     return
                 if position == "sleeping":
                     await ctx.connection.send_line(
-                        colorize("You can't move while sleeping. Type 'wake' or 'stand' first.", "YELLOW")
+                        colorize(
+                            "You can't move while sleeping. Type 'wake' or 'stand' first.", "YELLOW"
+                        )
                     )
                     return
 
@@ -209,7 +208,9 @@ class MoveCommand(Command):
                 if corpses:
                     await ctx.connection.send_line("")
                     for corpse in corpses:
-                        await ctx.connection.send_line(colorize(format_corpse_for_room(corpse), "MAGENTA"))
+                        await ctx.connection.send_line(
+                            colorize(format_corpse_for_room(corpse), "MAGENTA")
+                        )
 
                 # Show other players in room
                 other_players = [
@@ -446,7 +447,9 @@ class LookCommand(Command):
                 if corpses:
                     await ctx.connection.send_line("")
                     for corpse in corpses:
-                        await ctx.connection.send_line(colorize(format_corpse_for_room(corpse), "MAGENTA"))
+                        await ctx.connection.send_line(
+                            colorize(format_corpse_for_room(corpse), "MAGENTA")
+                        )
 
                 # Show other players in room
                 other_players = [pid for pid in room.players if pid != ctx.session.character_id]

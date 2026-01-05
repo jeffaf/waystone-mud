@@ -5,14 +5,14 @@ Corpses act as containers that hold the deceased's inventory and generated loot.
 """
 
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
 import structlog
 
 from waystone.database.engine import get_session
-from waystone.database.models import ItemInstance, ItemTemplate, ItemType, ItemSlot
+from waystone.database.models import ItemInstance
 from waystone.network import colorize
 
 if TYPE_CHECKING:

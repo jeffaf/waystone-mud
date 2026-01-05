@@ -377,21 +377,24 @@ def get_university_status(character_id: UUID) -> UniversityStatus:
     if character_id not in _university_status_cache:
         # Try to load from database synchronously
         from sqlalchemy import select
+
         from waystone.database.engine import get_sync_session
         from waystone.database.models import Character
 
         try:
             with get_sync_session() as session:
-                result = session.execute(
-                    select(Character).where(Character.id == character_id)
-                )
+                result = session.execute(select(Character).where(Character.id == character_id))
                 character = result.scalar_one_or_none()
                 if character:
                     _university_status_cache[character_id] = load_university_status(character)
                 else:
-                    _university_status_cache[character_id] = UniversityStatus(character_id=character_id)
+                    _university_status_cache[character_id] = UniversityStatus(
+                        character_id=character_id
+                    )
         except Exception as e:
-            logger.warning("failed_to_load_university_status", character_id=str(character_id), error=str(e))
+            logger.warning(
+                "failed_to_load_university_status", character_id=str(character_id), error=str(e)
+            )
             _university_status_cache[character_id] = UniversityStatus(character_id=character_id)
 
     return _university_status_cache[character_id]

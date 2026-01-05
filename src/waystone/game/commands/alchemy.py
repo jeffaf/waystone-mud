@@ -12,9 +12,6 @@ from waystone.game.systems.magic.alchemy import (
     calculate_success_chance,
     check_medica_location,
     check_tools,
-    format_recipe_detail,
-    format_recipe_list,
-    get_available_recipes,
     get_character_alchemy_skill,
     get_recipe,
     load_alchemy_recipes,
@@ -112,9 +109,7 @@ Example:
                             "hard": "ORANGE",
                             "master": "RED",
                         }.get(difficulty, "WHITE")
-                        await ctx.connection.send_line(
-                            colorize(f"  [{difficulty.upper()}]", color)
-                        )
+                        await ctx.connection.send_line(colorize(f"  [{difficulty.upper()}]", color))
                         for recipe in sorted(recipe_list, key=lambda r: r.skill_required):
                             status = ""
                             if recipe.skill_required > skill_level:
@@ -136,17 +131,13 @@ Example:
 
         except Exception as e:
             logger.error("brew_list_failed", error=str(e), exc_info=True)
-            await ctx.connection.send_line(
-                colorize("Failed to list recipes.", "RED")
-            )
+            await ctx.connection.send_line(colorize("Failed to list recipes.", "RED"))
 
     async def _show_recipe_info(self, ctx: CommandContext, recipe_id: str) -> None:
         """Show detailed recipe information."""
         recipe = get_recipe(recipe_id)
         if not recipe:
-            await ctx.connection.send_line(
-                colorize(f"Unknown recipe: {recipe_id}", "RED")
-            )
+            await ctx.connection.send_line(colorize(f"Unknown recipe: {recipe_id}", "RED"))
             await ctx.connection.send_line("Use 'brew list' to see available recipes.")
             return
 
@@ -161,7 +152,6 @@ Example:
                     await ctx.connection.send_line(colorize("Character not found.", "RED"))
                     return
 
-                skill_level = get_character_alchemy_skill(character)
                 has_alembic, has_mortar = await check_tools(character.id, session)
 
                 # Get current room for medica check
@@ -172,9 +162,7 @@ Example:
                     character, recipe, has_alembic, has_mortar, in_medica
                 )
 
-                await ctx.connection.send_line(
-                    colorize(f"\n╔═══ {recipe.name} ═══╗", "CYAN")
-                )
+                await ctx.connection.send_line(colorize(f"\n╔═══ {recipe.name} ═══╗", "CYAN"))
                 await ctx.connection.send_line(f"  {recipe.description}")
                 await ctx.connection.send_line("")
 
@@ -187,12 +175,8 @@ Example:
                 await ctx.connection.send_line(
                     f"  Difficulty: {colorize(recipe.difficulty.title(), difficulty_color)}"
                 )
-                await ctx.connection.send_line(
-                    f"  Skill Required: {recipe.skill_required}"
-                )
-                await ctx.connection.send_line(
-                    f"  Base Success: {recipe.base_success_chance}%"
-                )
+                await ctx.connection.send_line(f"  Skill Required: {recipe.skill_required}")
+                await ctx.connection.send_line(f"  Base Success: {recipe.base_success_chance}%")
                 await ctx.connection.send_line(
                     f"  Your Success Chance: {colorize(f'{success_chance}%', 'GREEN')}"
                 )
@@ -234,21 +218,19 @@ Example:
                         colorize("  ⚠️ WARNING: Creating this item is illegal!", "RED")
                     )
 
-                await ctx.connection.send_line(colorize("\n╚" + "═" * (len(recipe.name) + 8) + "╝", "CYAN"))
+                await ctx.connection.send_line(
+                    colorize("\n╚" + "═" * (len(recipe.name) + 8) + "╝", "CYAN")
+                )
 
         except Exception as e:
             logger.error("brew_info_failed", error=str(e), exc_info=True)
-            await ctx.connection.send_line(
-                colorize("Failed to get recipe info.", "RED")
-            )
+            await ctx.connection.send_line(colorize("Failed to get recipe info.", "RED"))
 
     async def _brew_recipe(self, ctx: CommandContext, recipe_id: str) -> None:
         """Attempt to brew a recipe."""
         recipe = get_recipe(recipe_id)
         if not recipe:
-            await ctx.connection.send_line(
-                colorize(f"Unknown recipe: {recipe_id}", "RED")
-            )
+            await ctx.connection.send_line(colorize(f"Unknown recipe: {recipe_id}", "RED"))
             await ctx.connection.send_line("Use 'brew list' to see available recipes.")
             return
 
@@ -273,9 +255,7 @@ Example:
                 )
 
                 if brew_result.success:
-                    await ctx.connection.send_line(
-                        colorize(f"\n✨ {brew_result.message}", "GREEN")
-                    )
+                    await ctx.connection.send_line(colorize(f"\n✨ {brew_result.message}", "GREEN"))
                 else:
                     if brew_result.mishap:
                         await ctx.connection.send_line(
@@ -312,9 +292,7 @@ Example:
 
         except Exception as e:
             logger.error("brew_failed", error=str(e), exc_info=True)
-            await ctx.connection.send_line(
-                colorize("Brewing failed due to an error.", "RED")
-            )
+            await ctx.connection.send_line(colorize("Brewing failed due to an error.", "RED"))
 
 
 class RecipesCommand(Command):

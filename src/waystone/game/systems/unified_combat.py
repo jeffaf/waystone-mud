@@ -1044,7 +1044,9 @@ class Combat:
                         destination_room.add_player(participant.entity_id)
 
                         # Notify new room
-                        arrive_msg = colorize(f"{participant.entity_name} arrives in a panic!", "CYAN")
+                        arrive_msg = colorize(
+                            f"{participant.entity_name} arrives in a panic!", "CYAN"
+                        )
                         self.engine.broadcast_to_room(
                             destination_id, arrive_msg, exclude=UUID(participant.entity_id)
                         )
@@ -1055,7 +1057,9 @@ class Combat:
                             await player_session.connection.send_line(
                                 colorize(f"\nYou flee {direction}!\n", "YELLOW")
                             )
-                            await player_session.connection.send_line(destination_room.format_description())
+                            await player_session.connection.send_line(
+                                destination_room.format_description()
+                            )
 
                         logger.info(
                             "participant_fled",

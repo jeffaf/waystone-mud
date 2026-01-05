@@ -169,6 +169,10 @@ class GameEngine:
 
     def _register_commands(self) -> None:
         """Register all game commands with the command registry."""
+        from waystone.game.commands.alchemy import (
+            BrewCommand,
+            RecipesCommand,
+        )
         from waystone.game.commands.auth import (
             LoginCommand,
             LogoutCommand,
@@ -274,10 +278,6 @@ class GameEngine:
             RankCommand,
             TuitionCommand,
             WorkCommand,
-        )
-        from waystone.game.commands.alchemy import (
-            BrewCommand,
-            RecipesCommand,
         )
 
         registry = get_registry()
@@ -758,9 +758,9 @@ class GameEngine:
                         )
 
                 # Check for NPC respawns every tick
+                from waystone.game.systems.corpse import check_corpse_decay
                 from waystone.game.systems.death import check_respawns
                 from waystone.game.systems.npc_combat import check_npc_respawns
-                from waystone.game.systems.corpse import check_corpse_decay
 
                 try:
                     # Check death system respawns

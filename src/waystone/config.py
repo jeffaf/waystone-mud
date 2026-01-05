@@ -38,7 +38,9 @@ class Settings(BaseSettings):
         alias="SESSION_SECRET",
     )
     session_timeout_minutes: int = Field(
-        default=480, description="Session timeout in minutes (default 8 hours)", alias="SESSION_TIMEOUT_MINUTES"
+        default=480,
+        description="Session timeout in minutes (default 8 hours)",
+        alias="SESSION_TIMEOUT_MINUTES",
     )
 
     # Game Settings

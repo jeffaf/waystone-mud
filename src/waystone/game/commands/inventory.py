@@ -154,7 +154,9 @@ class GetCommand(Command):
 
                 # Handle getting from corpse
                 if from_corpse:
-                    corpse = find_corpse_by_name(character.current_room_id, corpse_search or "corpse")
+                    corpse = find_corpse_by_name(
+                        character.current_room_id, corpse_search or "corpse"
+                    )
                     if not corpse:
                         await ctx.connection.send_line(
                             colorize("You don't see any corpse here.", "YELLOW")
@@ -175,7 +177,10 @@ class GetCommand(Command):
 
                         for item_instance in taken_items:
                             await ctx.connection.send_line(
-                                colorize(f"You take {item_instance.template.name} from the {corpse.name}.", "GREEN")
+                                colorize(
+                                    f"You take {item_instance.template.name} from the {corpse.name}.",
+                                    "GREEN",
+                                )
                             )
 
                         ctx.engine.broadcast_to_room(
@@ -214,11 +219,16 @@ class GetCommand(Command):
 
                     if taken:
                         await ctx.connection.send_line(
-                            colorize(f"You take {target_item.template.name} from the {corpse.name}.", "GREEN")
+                            colorize(
+                                f"You take {target_item.template.name} from the {corpse.name}.",
+                                "GREEN",
+                            )
                         )
                         ctx.engine.broadcast_to_room(
                             character.current_room_id,
-                            colorize(f"{character.name} takes something from the {corpse.name}.", "CYAN"),
+                            colorize(
+                                f"{character.name} takes something from the {corpse.name}.", "CYAN"
+                            ),
                             exclude=ctx.session.id,
                         )
                         logger.info(

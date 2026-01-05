@@ -52,9 +52,7 @@ Type 'rest' to begin resting. Type 'stand' to stop.
         # Check if in combat
         combat = get_combat_for_entity(ctx.session.character_id)
         if combat:
-            await ctx.connection.send_line(
-                colorize("You cannot rest while in combat!", "RED")
-            )
+            await ctx.connection.send_line(colorize("You cannot rest while in combat!", "RED"))
             return
 
         try:
@@ -71,9 +69,7 @@ Type 'rest' to begin resting. Type 'stand' to stop.
 
                 # Check if already resting
                 if character.position == POSITION_RESTING:
-                    await ctx.connection.send_line(
-                        colorize("You are already resting.", "YELLOW")
-                    )
+                    await ctx.connection.send_line(colorize("You are already resting.", "YELLOW"))
                     return
 
                 # Check if sleeping
@@ -91,9 +87,7 @@ Type 'rest' to begin resting. Type 'stand' to stop.
                 )
                 await session.commit()
 
-                await ctx.connection.send_line(
-                    colorize("You sit down and begin resting.", "GREEN")
-                )
+                await ctx.connection.send_line(colorize("You sit down and begin resting.", "GREEN"))
                 await ctx.connection.send_line(
                     "You will regenerate health twice as fast, but are vulnerable to attack."
                 )
@@ -116,9 +110,7 @@ Type 'rest' to begin resting. Type 'stand' to stop.
 
         except Exception as e:
             logger.error("rest_command_failed", error=str(e), exc_info=True)
-            await ctx.connection.send_line(
-                colorize("Failed to rest. Please try again.", "RED")
-            )
+            await ctx.connection.send_line(colorize("Failed to rest. Please try again.", "RED"))
 
 
 class StandCommand(Command):
@@ -156,9 +148,7 @@ regeneration from resting/sleeping.
 
                 # Check if already standing
                 if character.position == POSITION_STANDING:
-                    await ctx.connection.send_line(
-                        colorize("You are already standing.", "YELLOW")
-                    )
+                    await ctx.connection.send_line(colorize("You are already standing.", "YELLOW"))
                     return
 
                 old_position = character.position
@@ -172,14 +162,10 @@ regeneration from resting/sleeping.
                 await session.commit()
 
                 if old_position == POSITION_SLEEPING:
-                    await ctx.connection.send_line(
-                        colorize("You wake up and stand.", "GREEN")
-                    )
+                    await ctx.connection.send_line(colorize("You wake up and stand.", "GREEN"))
                     room_msg = f"{character.name} wakes up and stands."
                 else:
-                    await ctx.connection.send_line(
-                        colorize("You stand up.", "GREEN")
-                    )
+                    await ctx.connection.send_line(colorize("You stand up.", "GREEN"))
                     room_msg = f"{character.name} stands up."
 
                 # Notify room
@@ -200,9 +186,7 @@ regeneration from resting/sleeping.
 
         except Exception as e:
             logger.error("stand_command_failed", error=str(e), exc_info=True)
-            await ctx.connection.send_line(
-                colorize("Failed to stand. Please try again.", "RED")
-            )
+            await ctx.connection.send_line(colorize("Failed to stand. Please try again.", "RED"))
 
 
 class RecallCommand(Command):
@@ -234,9 +218,7 @@ Restrictions:
         # Check if in combat
         combat = get_combat_for_entity(ctx.session.character_id)
         if combat:
-            await ctx.connection.send_line(
-                colorize("You cannot recall while in combat!", "RED")
-            )
+            await ctx.connection.send_line(colorize("You cannot recall while in combat!", "RED"))
             return
 
         # Check combat cooldown
@@ -335,6 +317,4 @@ Restrictions:
 
         except Exception as e:
             logger.error("recall_command_failed", error=str(e), exc_info=True)
-            await ctx.connection.send_line(
-                colorize("Failed to recall. Please try again.", "RED")
-            )
+            await ctx.connection.send_line(colorize("Failed to recall. Please try again.", "RED"))

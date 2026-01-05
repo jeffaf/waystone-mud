@@ -6,8 +6,7 @@ the Kingkiller Chronicle universe.
 
 import pathlib
 import random
-from dataclasses import dataclass, field
-from typing import Any
+from dataclasses import dataclass
 from uuid import UUID
 
 import structlog
@@ -390,9 +389,7 @@ async def brew_potion(
     in_medica = check_medica_location(room_id)
 
     # Calculate success chance
-    success_chance = calculate_success_chance(
-        character, recipe, has_alembic, has_mortar, in_medica
-    )
+    success_chance = calculate_success_chance(character, recipe, has_alembic, has_mortar, in_medica)
 
     # Roll for success
     roll = random.randint(1, 100)
@@ -467,13 +464,6 @@ def format_recipe_list(recipes: list[AlchemyRecipe], skill_level: int) -> list[s
     """
     lines = []
     for recipe in sorted(recipes, key=lambda r: r.skill_required):
-        difficulty_color = {
-            "easy": "GREEN",
-            "medium": "YELLOW",
-            "hard": "ORANGE",
-            "master": "RED",
-        }.get(recipe.difficulty, "WHITE")
-
         status = ""
         if recipe.skill_required > skill_level:
             status = " [LOCKED]"
@@ -482,9 +472,7 @@ def format_recipe_list(recipes: list[AlchemyRecipe], skill_level: int) -> list[s
         elif recipe.dangerous:
             status = " [DANGEROUS]"
 
-        lines.append(
-            f"  {recipe.id}: {recipe.name} ({recipe.difficulty}){status}"
-        )
+        lines.append(f"  {recipe.id}: {recipe.name} ({recipe.difficulty}){status}")
 
     return lines
 
