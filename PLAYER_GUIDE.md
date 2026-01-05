@@ -7,9 +7,9 @@ Welcome to the Four Corners! This guide will help you navigate the world of the 
 ### Connecting
 
 ```bash
-telnet localhost 4000
+telnet localhost 1337
 # or
-telnet your-server-address 4000
+telnet your-server-address 1337
 ```
 
 ### Creating an Account

@@ -12,7 +12,7 @@ uv sync
 uv run python -m waystone
 
 # Connect (in another terminal)
-telnet localhost 4000
+telnet localhost 1337
 ```
 
 ## Development
@@ -130,7 +130,7 @@ ExecStart=/home/waystone/.local/bin/uv run python -m waystone
 Restart=always
 RestartSec=5
 Environment=WAYSTONE_HOST=0.0.0.0
-Environment=WAYSTONE_PORT=4000
+Environment=WAYSTONE_PORT=1337
 
 [Install]
 WantedBy=multi-user.target
@@ -150,7 +150,7 @@ systemctl status waystone
 ```bash
 # Allow SSH and MUD port
 ufw allow 22/tcp
-ufw allow 4000/tcp
+ufw allow 1337/tcp
 ufw enable
 ```
 
@@ -158,7 +158,7 @@ ufw enable
 
 ```bash
 # From your local machine
-telnet <droplet-ip> 4000
+telnet <droplet-ip> 1337
 ```
 
 ### Maintenance Commands
@@ -187,7 +187,7 @@ mud.yourdomain.com -> <droplet-ip>
 
 Then connect with:
 ```bash
-telnet mud.yourdomain.com 4000
+telnet mud.yourdomain.com 1337
 ```
 
 ## Configuration
@@ -197,7 +197,7 @@ Environment variables:
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `WAYSTONE_HOST` | `0.0.0.0` | Server bind address |
-| `WAYSTONE_PORT` | `4000` | Server port |
+| `WAYSTONE_PORT` | `1337` | Server port |
 | `WAYSTONE_DB_URL` | `sqlite:///data/waystone.db` | Database connection string |
 | `WAYSTONE_LOG_LEVEL` | `INFO` | Logging level |
 

@@ -31,7 +31,7 @@ The bot uses Claude Haiku (or optionally Ollama) to decide what commands to send
 
 3. **Game Account**: Register an account and create a character via telnet first:
    ```bash
-   telnet localhost 4000
+   telnet localhost 1337
    # Then: register <username> <password> <email>
    # Then: create <character_name>
    ```
@@ -53,7 +53,7 @@ uv run python -m waystone.agent.agent \
 | Option | Short | Default | Description |
 |--------|-------|---------|-------------|
 | `--host` | | `localhost` | Server hostname |
-| `--port` | | `4000` | Server port |
+| `--port` | | `1337` | Server port |
 | `--username` | `-u` | (required) | Account username |
 | `--password` | `-p` | (required) | Account password |
 | `--character` | `-c` | (required) | Character name to play |

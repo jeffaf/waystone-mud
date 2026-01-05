@@ -1743,7 +1743,7 @@ class Settings(BaseSettings):
 
     # Network
     telnet_host: str = "0.0.0.0"
-    telnet_port: int = 4000
+    telnet_port: int = 1337
     websocket_host: str = "0.0.0.0"
     websocket_port: int = 8765
     max_connections: int = 100
@@ -1784,7 +1784,7 @@ DEBUG=False
 LOG_LEVEL=INFO
 
 # Network
-TELNET_PORT=4000
+TELNET_PORT=1337
 WEBSOCKET_PORT=8765
 
 # Database
@@ -1904,11 +1904,11 @@ RUN useradd -m -u 1000 muduser && chown -R muduser:muduser /app
 USER muduser
 
 # Expose ports
-EXPOSE 4000 8765
+EXPOSE 1337 8765
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD python -c "import socket; s = socket.socket(); s.connect(('localhost', 4000)); s.close()"
+    CMD python -c "import socket; s = socket.socket(); s.connect(('localhost', 1337)); s.close()"
 
 # Start application
 CMD ["python", "-m", "src.main"]
@@ -1950,7 +1950,7 @@ services:
   mud:
     build: .
     ports:
-      - "4000:4000"
+      - "1337:1337"
       - "8765:8765"
     environment:
       DEBUG: "True"
@@ -2095,7 +2095,7 @@ jobs:
 
       - name: Test Telnet connection
         run: |
-          timeout 5 telnet localhost 4000 || exit 0
+          timeout 5 telnet localhost 1337 || exit 0
 
       - name: Check logs
         if: failure()
@@ -2344,7 +2344,7 @@ async def test_player_registration_and_login():
     """Test complete player registration and login flow."""
     async with TelnetClient() as client:
         # Connect
-        await client.connect('localhost', 4000)
+        await client.connect('localhost', 1337)
 
         # Receive welcome message
         welcome = await client.receive()
@@ -2384,7 +2384,7 @@ async def test_concurrent_connections():
     # Create 100 connections
     for i in range(100):
         client = TelnetClient()
-        await client.connect('localhost', 4000)
+        await client.connect('localhost', 1337)
         clients.append(client)
 
     # All should receive welcome message
@@ -2584,7 +2584,7 @@ def test_command_response_time():
 
 #### Acceptance Criteria
 
-- [ ] Player can connect via Telnet client (e.g., `telnet localhost 4000`)
+- [ ] Player can connect via Telnet client (e.g., `telnet localhost 1337`)
 - [ ] Player can register a new account
 - [ ] Player can log in with correct credentials
 - [ ] Player can create a character with custom name and background
@@ -3902,7 +3902,7 @@ uv sync
 uv run python -m waystone.server
 
 # Connect (in another terminal)
-telnet localhost 4000
+telnet localhost 1337
 ```
 
 **Database:** SQLite file at `./data/waystone.db` (auto-created)
@@ -3927,7 +3927,7 @@ OS: Ubuntu 22.04 or Oracle Linux 8
 **Step 3: Configure Firewall (Ingress Rules)**
 ```
 Port 22   - SSH
-Port 4000 - Telnet (MUD)
+Port 1337 - Telnet (MUD)
 Port 4001 - WebSocket (optional)
 ```
 
@@ -3971,7 +3971,7 @@ sudo systemctl start waystone
 
 **Step 5: Connect and Play**
 ```bash
-telnet <your-vm-ip> 4000
+telnet <your-vm-ip> 1337
 ```
 
 #### Cost Comparison
