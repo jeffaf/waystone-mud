@@ -1,0 +1,363 @@
+---
+# Alchemy ingredients and tools for Waystone MUD
+# Used in potion brewing and other alchemical crafting
+
+items:
+  # ===================
+  # ALCHEMY TOOLS
+  # ===================
+
+  - id: alembic
+    name: "Alembic"
+    description: "A glass apparatus used for distilling alchemical solutions. Essential equipment for any aspiring alchemist. The University's Medica provides access to superior equipment, but a personal alembic allows practice anywhere."
+    type: misc
+    slot: none
+    weight: 3.0
+    value: 75
+    stackable: false
+    unique: false
+    quest_item: false
+    properties:
+      alchemy_tool: true
+      quality: "standard"
+
+  - id: mortar_pestle
+    name: "Mortar and Pestle"
+    description: "A stone bowl and grinding tool used to crush herbs and other ingredients into fine powders. A fundamental tool of the alchemist's trade."
+    type: misc
+    slot: none
+    weight: 2.0
+    value: 25
+    stackable: false
+    unique: false
+    quest_item: false
+    properties:
+      alchemy_tool: true
+      quality: "standard"
+
+  # ===================
+  # COMMON INGREDIENTS
+  # ===================
+
+  - id: willow_bark
+    name: "Willow Bark"
+    description: "Dried bark from the willow tree, known for its pain-relieving properties. A common ingredient in healing remedies."
+    type: misc
+    slot: none
+    weight: 0.1
+    value: 5
+    stackable: true
+    unique: false
+    quest_item: false
+    properties:
+      ingredient: true
+      category: "herb"
+
+  - id: honey
+    name: "Honey"
+    description: "Golden honey harvested from local apiaries. Used as a sweetener and preservative in many alchemical preparations."
+    type: misc
+    slot: none
+    weight: 0.2
+    value: 8
+    stackable: true
+    unique: false
+    quest_item: false
+    properties:
+      ingredient: true
+      category: "natural"
+
+  - id: clean_water
+    name: "Clean Water"
+    description: "Pure water, carefully filtered and boiled. Many alchemical preparations require uncontaminated water as a base."
+    type: misc
+    slot: none
+    weight: 0.5
+    value: 2
+    stackable: true
+    unique: false
+    quest_item: false
+    properties:
+      ingredient: true
+      category: "liquid"
+
+  - id: ramston_steel
+    name: "Ramston Steel Filings"
+    description: "Fine filings of ramston steel, known for its unique metallurgical properties. Used in healing preparations to promote tissue regeneration."
+    type: misc
+    slot: none
+    weight: 0.1
+    value: 15
+    stackable: true
+    unique: false
+    quest_item: false
+    properties:
+      ingredient: true
+      category: "metal"
+
+  - id: nightshade
+    name: "Nightshade"
+    description: "A deadly purple-berried plant. Handle with extreme care. Used in poisons and, paradoxically, certain medicines in tiny doses."
+    type: misc
+    slot: none
+    weight: 0.1
+    value: 20
+    stackable: true
+    unique: false
+    quest_item: false
+    properties:
+      ingredient: true
+      category: "herb"
+      dangerous: true
+
+  - id: sulfur
+    name: "Sulfur"
+    description: "Yellow crystalline powder with a distinctive smell. Used in both alchemical and artificery applications."
+    type: misc
+    slot: none
+    weight: 0.2
+    value: 12
+    stackable: true
+    unique: false
+    quest_item: false
+    properties:
+      ingredient: true
+      category: "mineral"
+
+  - id: mercury
+    name: "Mercury"
+    description: "Liquid silver metal, sealed in a small glass vial. Highly toxic but essential for certain advanced preparations. Handle with extreme care."
+    type: misc
+    slot: none
+    weight: 0.3
+    value: 50
+    stackable: true
+    unique: false
+    quest_item: false
+    properties:
+      ingredient: true
+      category: "metal"
+      dangerous: true
+
+  - id: arrowroot
+    name: "Arrowroot"
+    description: "A starchy root with mild healing properties. Often used as a thickening agent in salves and poultices."
+    type: misc
+    slot: none
+    weight: 0.1
+    value: 6
+    stackable: true
+    unique: false
+    quest_item: false
+    properties:
+      ingredient: true
+      category: "herb"
+
+  - id: charcoal
+    name: "Charcoal"
+    description: "Pure charcoal made from hardwood. Used for filtering and as a component in various preparations."
+    type: misc
+    slot: none
+    weight: 0.2
+    value: 3
+    stackable: true
+    unique: false
+    quest_item: false
+    properties:
+      ingredient: true
+      category: "mineral"
+
+  - id: lavender
+    name: "Lavender"
+    description: "Fragrant purple flowers known for their calming properties. Used in sleep aids and relaxation tonics."
+    type: misc
+    slot: none
+    weight: 0.1
+    value: 7
+    stackable: true
+    unique: false
+    quest_item: false
+    properties:
+      ingredient: true
+      category: "herb"
+
+  - id: ginger_root
+    name: "Ginger Root"
+    description: "A pungent root with warming properties. Commonly used in tonics and to settle the stomach."
+    type: misc
+    slot: none
+    weight: 0.1
+    value: 6
+    stackable: true
+    unique: false
+    quest_item: false
+    properties:
+      ingredient: true
+      category: "herb"
+
+  - id: spirit_of_wine
+    name: "Spirit of Wine"
+    description: "Highly distilled alcohol, nearly pure. Used as a solvent and preservative in many alchemical preparations."
+    type: misc
+    slot: none
+    weight: 0.3
+    value: 15
+    stackable: true
+    unique: false
+    quest_item: false
+    properties:
+      ingredient: true
+      category: "liquid"
+
+  # ===================
+  # RARE INGREDIENTS
+  # ===================
+
+  - id: denner_resin
+    name: "Denner Resin"
+    description: "A powerful narcotic resin from the denner tree. Highly addictive and strictly controlled. Creates an intense euphoria but destroys the mind with prolonged use."
+    type: misc
+    slot: none
+    weight: 0.1
+    value: 100
+    stackable: true
+    unique: false
+    quest_item: false
+    properties:
+      ingredient: true
+      category: "resin"
+      dangerous: true
+      controlled: true
+
+  - id: nahlrout_herb
+    name: "Nahlrout"
+    description: "A rare herb that induces berserk rage when properly prepared. The user gains immense strength but loses all reason. Dangerous and restricted."
+    type: misc
+    slot: none
+    weight: 0.1
+    value: 75
+    stackable: true
+    unique: false
+    quest_item: false
+    properties:
+      ingredient: true
+      category: "herb"
+      dangerous: true
+      rare: true
+
+  - id: mhenka_flower
+    name: "Mhenka Flower"
+    description: "A rare white flower that only blooms at night. Known for its restorative properties and used in the most potent healing preparations."
+    type: misc
+    slot: none
+    weight: 0.1
+    value: 60
+    stackable: true
+    unique: false
+    quest_item: false
+    properties:
+      ingredient: true
+      category: "herb"
+      rare: true
+
+  # ===================
+  # CRAFTED POTIONS
+  # ===================
+
+  - id: healing_salve
+    name: "Healing Salve"
+    description: "A thick greenish ointment that promotes healing when applied to wounds. Heals over time rather than instantly."
+    type: consumable
+    slot: none
+    weight: 0.3
+    value: 35
+    stackable: true
+    unique: false
+    quest_item: false
+    properties:
+      effect: "heal_over_time:50"
+      duration: 60
+
+  - id: nahlrout_potion
+    name: "Nahlrout Potion"
+    description: "A dangerous concoction that induces berserk rage. The drinker gains +5 Strength but suffers -3 Intelligence and cannot flee combat."
+    type: consumable
+    slot: none
+    weight: 0.3
+    value: 100
+    stackable: true
+    unique: false
+    quest_item: false
+    properties:
+      effect: "buff:strength:5,debuff:intelligence:3,no_flee"
+      duration: 120
+      dangerous: true
+
+  - id: regim_potion
+    name: "Regim"
+    description: "A stimulant that wards off sleep and sharpens focus. Commonly used by students during examinations. Overuse leads to exhaustion."
+    type: consumable
+    slot: none
+    weight: 0.3
+    value: 45
+    stackable: true
+    unique: false
+    quest_item: false
+    properties:
+      effect: "buff:focus:2,no_sleep"
+      duration: 300
+
+  - id: plum_bob
+    name: "Plum Bob"
+    description: "A deadly poison with a deceptively sweet taste. Causes severe internal damage. Possession is illegal in most civilized areas."
+    type: consumable
+    slot: none
+    weight: 0.2
+    value: 80
+    stackable: true
+    unique: false
+    quest_item: false
+    properties:
+      effect: "poison:30"
+      dangerous: true
+      illegal: true
+
+  - id: antidote_potion
+    name: "Antidote"
+    description: "A bitter-tasting remedy that neutralizes most common poisons. Every traveler would be wise to carry one."
+    type: consumable
+    slot: none
+    weight: 0.3
+    value: 40
+    stackable: true
+    unique: false
+    quest_item: false
+    properties:
+      effect: "cure_poison"
+
+  - id: calming_draught
+    name: "Calming Draught"
+    description: "A lavender-scented liquid that soothes anxiety and promotes restful sleep. Popular among nervous students before admissions."
+    type: consumable
+    slot: none
+    weight: 0.3
+    value: 25
+    stackable: true
+    unique: false
+    quest_item: false
+    properties:
+      effect: "buff:willpower:2,calm"
+      duration: 180
+
+  - id: energy_tonic
+    name: "Energy Tonic"
+    description: "A warming tonic that restores energy and reduces fatigue. Tastes of ginger and honey."
+    type: consumable
+    slot: none
+    weight: 0.3
+    value: 30
+    stackable: true
+    unique: false
+    quest_item: false
+    properties:
+      effect: "restore_stamina:30"

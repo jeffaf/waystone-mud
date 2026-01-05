@@ -22,14 +22,21 @@ async def test_engine() -> AsyncGenerator[GameEngine, None]:
 
     engine = GameEngine()
 
-    # Create minimal test world
+    # Create minimal test world with exits for flee testing
     engine.world = {
         "combat_room": Room(
             id="combat_room",
             name="Combat Arena",
             area="test",
             description="A room for testing combat.",
-            exits={},
+            exits={"north": "escape_room"},
+        ),
+        "escape_room": Room(
+            id="escape_room",
+            name="Escape Room",
+            area="test",
+            description="A safe room to flee to.",
+            exits={"south": "combat_room"},
         ),
     }
 
@@ -379,9 +386,12 @@ async def test_attempt_flee_success(
     # Attempt to flee (may succeed or fail due to randomness)
     success, message = await combat.attempt_flee(fleeing_id)
 
-    # Should return success (whether flee succeeded or failed)
+    # Should return success (whether flee action was taken)
+    # When flee succeeds, message is empty (sent directly to player)
+    # When flee fails, message contains failure text
     assert success is True
-    assert len(message) > 0
+    # Message can be empty on successful flee (sent via send_line) or contain failure text
+    assert isinstance(message, str)
 
     # If flee succeeded, participant count should decrease
     # (can't assert this due to randomness, but we can check combat didn't crash)

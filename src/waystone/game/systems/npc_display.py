@@ -206,10 +206,11 @@ def find_npc_by_keywords(room_id: str, search_term: str) -> NPCInstance | None:
     Uses fuzzy matching against NPC keywords field.
     More flexible than exact name matching.
 
-    Supports N.keyword syntax for targeting specific NPCs:
+    Supports multiple targeting syntaxes:
     - "rat" - first rat
-    - "2.rat" - second rat
-    - "3.rat" - third rat
+    - "2.rat" - second rat (N.keyword syntax)
+    - "1" - first NPC in room (plain number)
+    - "2" - second NPC in room
 
     Args:
         room_id: Room to search
@@ -218,6 +219,17 @@ def find_npc_by_keywords(room_id: str, search_term: str) -> NPCInstance | None:
     Returns:
         Matching NPC or None
     """
+    npcs = get_npcs_in_room(room_id)
+    if not npcs:
+        return None
+
+    # Check for plain numeric targeting (e.g., "1", "2")
+    if search_term.isdigit():
+        target_index = int(search_term)
+        if 1 <= target_index <= len(npcs):
+            return npcs[target_index - 1]  # Convert to 0-indexed
+        return None
+
     # Parse N.keyword syntax (e.g., "2.rat")
     target_index = 1  # Default to first match
     search_name = search_term
@@ -233,7 +245,7 @@ def find_npc_by_keywords(room_id: str, search_term: str) -> NPCInstance | None:
     search_lower = search_name.lower()
     match_count = 0
 
-    for npc in get_npcs_in_room(room_id):
+    for npc in npcs:
         matched = False
 
         # Check keywords first (best match)
@@ -337,3 +349,35 @@ def _number_to_word(num: int) -> str:
         10: "ten",
     }
     return number_words.get(num, str(num))
+
+
+def format_npc_numbered(npc: NPCInstance, index: int) -> str:
+    """
+    Format NPC presence line with a numeric index for targeting.
+
+    Args:
+        npc: NPC instance to format
+        index: 1-based index for targeting (e.g., "examine 1")
+
+    Returns:
+        Formatted presence string with number prefix
+    """
+    return f"[{index}] {npc.long_description}"
+
+
+def format_npcs_for_room(npcs: list[NPCInstance]) -> list[tuple[str, str]]:
+    """
+    Format all NPCs in a room with numbered targeting.
+
+    Args:
+        npcs: List of NPCs in the room
+
+    Returns:
+        List of (formatted_text, color) tuples for display
+    """
+    result = []
+    for i, npc in enumerate(npcs, 1):
+        text = format_npc_numbered(npc, i)
+        color = get_npc_color(npc)
+        result.append((text, color))
+    return result

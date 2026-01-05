@@ -10,8 +10,9 @@ from sqlalchemy import select
 
 from waystone.database.engine import get_session
 from waystone.database.models import Character
+from waystone.game.systems.corpse import create_corpse
 from waystone.game.systems.experience import XP_COMBAT_KILL_BASE, award_xp
-from waystone.game.systems.loot import drop_loot_to_room, generate_loot
+from waystone.game.systems.loot import generate_loot
 from waystone.network import colorize
 
 if TYPE_CHECKING:
@@ -149,30 +150,17 @@ async def handle_npc_death(
                 exc_info=True,
             )
 
-    # Generate and drop loot
+    # Generate loot and create corpse
+    loot_items = []
     if loot_table_id:
         try:
             loot_items = await generate_loot(loot_table_id)
-
-            if loot_items:
-                dropped_items = await drop_loot_to_room(room_id, loot_items)
-
-                # Broadcast loot message
-                loot_names = [f"{qty}x {item_id}" for item_id, qty in loot_items]
-                loot_msg = colorize(
-                    f"\n{npc_name} drops: {', '.join(loot_names)}",
-                    "YELLOW",
-                )
-                engine.broadcast_to_room(room_id, loot_msg)
-
-                logger.info(
-                    "npc_death_loot_dropped",
-                    npc_id=npc_id,
-                    room_id=room_id,
-                    loot_count=len(dropped_items),
-                    loot_items=loot_items,
-                )
-
+            logger.info(
+                "npc_death_loot_generated",
+                npc_id=npc_id,
+                loot_table_id=loot_table_id,
+                loot_items=loot_items,
+            )
         except Exception as e:
             logger.error(
                 "npc_death_loot_generation_failed",
@@ -181,6 +169,46 @@ async def handle_npc_death(
                 error=str(e),
                 exc_info=True,
             )
+
+    # Create corpse with loot
+    try:
+        corpse = await create_corpse(
+            name=npc_name,
+            room_id=room_id,
+            original_entity_id=npc_id,
+            is_player=False,
+            loot_items=loot_items if loot_items else None,
+        )
+
+        # Broadcast corpse message
+        if loot_items:
+            loot_names = [f"{qty}x {item_id}" for item_id, qty in loot_items]
+            corpse_msg = colorize(
+                f"\n{npc_name} falls dead, leaving behind a corpse. ({', '.join(loot_names)})",
+                "YELLOW",
+            )
+        else:
+            corpse_msg = colorize(
+                f"\n{npc_name} falls dead, leaving behind a corpse.",
+                "YELLOW",
+            )
+        engine.broadcast_to_room(room_id, corpse_msg)
+
+        logger.info(
+            "npc_death_corpse_created",
+            npc_id=npc_id,
+            corpse_id=corpse.corpse_id,
+            room_id=room_id,
+            loot_count=len(loot_items) if loot_items else 0,
+        )
+
+    except Exception as e:
+        logger.error(
+            "npc_death_corpse_creation_failed",
+            npc_id=npc_id,
+            error=str(e),
+            exc_info=True,
+        )
 
     # Schedule respawn if applicable
     if respawn_time > 0:

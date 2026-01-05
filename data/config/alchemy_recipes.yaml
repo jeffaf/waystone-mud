@@ -1,0 +1,204 @@
+---
+# Alchemy Recipes for Waystone MUD
+# Each recipe defines ingredients, skill requirements, and outputs
+
+recipes:
+  # ===================
+  # APPRENTICE RECIPES (Alchemy 0-19)
+  # ===================
+
+  - id: health_potion
+    name: "Health Potion"
+    description: "A basic healing potion that restores health instantly."
+    difficulty: easy
+    skill_required: 0
+    base_success_chance: 80
+    ingredients:
+      - item: willow_bark
+        quantity: 2
+      - item: honey
+        quantity: 1
+      - item: clean_water
+        quantity: 1
+    output:
+      item: health_potion
+      quantity: 1
+    xp_reward: 15
+    fail_xp: 5
+
+  - id: energy_tonic
+    name: "Energy Tonic"
+    description: "A warming tonic that restores energy."
+    difficulty: easy
+    skill_required: 5
+    base_success_chance: 75
+    ingredients:
+      - item: ginger_root
+        quantity: 2
+      - item: honey
+        quantity: 1
+      - item: clean_water
+        quantity: 1
+    output:
+      item: energy_tonic
+      quantity: 1
+    xp_reward: 20
+    fail_xp: 5
+
+  # ===================
+  # JOURNEYMAN RECIPES (Alchemy 20-39)
+  # ===================
+
+  - id: healing_salve
+    name: "Healing Salve"
+    description: "A potent salve that heals wounds over time."
+    difficulty: medium
+    skill_required: 20
+    base_success_chance: 65
+    ingredients:
+      - item: willow_bark
+        quantity: 2
+      - item: honey
+        quantity: 1
+      - item: ramston_steel
+        quantity: 1
+    output:
+      item: healing_salve
+      quantity: 1
+    xp_reward: 35
+    fail_xp: 10
+
+  - id: antidote
+    name: "Antidote"
+    description: "A remedy that neutralizes most common poisons."
+    difficulty: medium
+    skill_required: 25
+    base_success_chance: 60
+    ingredients:
+      - item: charcoal
+        quantity: 2
+      - item: arrowroot
+        quantity: 2
+      - item: clean_water
+        quantity: 1
+    output:
+      item: antidote_potion
+      quantity: 1
+    xp_reward: 40
+    fail_xp: 12
+
+  - id: calming_draught
+    name: "Calming Draught"
+    description: "A soothing draught that calms nerves and aids sleep."
+    difficulty: medium
+    skill_required: 30
+    base_success_chance: 60
+    ingredients:
+      - item: lavender
+        quantity: 3
+      - item: honey
+        quantity: 1
+      - item: spirit_of_wine
+        quantity: 1
+    output:
+      item: calming_draught
+      quantity: 1
+    xp_reward: 35
+    fail_xp: 10
+
+  # ===================
+  # EXPERT RECIPES (Alchemy 40-59)
+  # ===================
+
+  - id: regim
+    name: "Regim"
+    description: "A stimulant that wards off sleep and sharpens focus."
+    difficulty: hard
+    skill_required: 40
+    base_success_chance: 50
+    ingredients:
+      - item: ginger_root
+        quantity: 2
+      - item: arrowroot
+        quantity: 1
+      - item: spirit_of_wine
+        quantity: 2
+    output:
+      item: regim_potion
+      quantity: 1
+    xp_reward: 50
+    fail_xp: 15
+
+  - id: plum_bob
+    name: "Plum Bob"
+    description: "A deadly poison. Creating this is illegal in most areas."
+    difficulty: hard
+    skill_required: 45
+    base_success_chance: 45
+    ingredients:
+      - item: nightshade
+        quantity: 2
+      - item: sulfur
+        quantity: 1
+      - item: spirit_of_wine
+        quantity: 1
+    output:
+      item: plum_bob
+      quantity: 1
+    xp_reward: 55
+    fail_xp: 15
+    illegal: true
+
+  # ===================
+  # MASTER RECIPES (Alchemy 60+)
+  # ===================
+
+  - id: nahlrout_potion
+    name: "Nahlrout Potion"
+    description: "A dangerous concoction inducing berserk rage."
+    difficulty: master
+    skill_required: 60
+    base_success_chance: 35
+    ingredients:
+      - item: nahlrout_herb
+        quantity: 2
+      - item: mercury
+        quantity: 1
+      - item: spirit_of_wine
+        quantity: 2
+    output:
+      item: nahlrout_potion
+      quantity: 1
+    xp_reward: 75
+    fail_xp: 20
+    dangerous: true
+
+  - id: mana_potion
+    name: "Mana Potion"
+    description: "A potion that restores magical energy."
+    difficulty: master
+    skill_required: 55
+    base_success_chance: 40
+    ingredients:
+      - item: mhenka_flower
+        quantity: 1
+      - item: ramston_steel
+        quantity: 1
+      - item: clean_water
+        quantity: 2
+    output:
+      item: mana_potion
+      quantity: 1
+    xp_reward: 65
+    fail_xp: 18
+
+# Success chance formula:
+# final_chance = base_success_chance + (alchemy_skill - skill_required) * 1.5
+# Capped at 95% maximum success rate
+# Tools bonus: +5% with alembic, +3% with mortar_pestle
+# Medica access: +10% bonus
+
+# On failure:
+# - Ingredients are consumed
+# - Small XP is still awarded
+# - 10% chance of dangerous ingredient mishap (for dangerous recipes)

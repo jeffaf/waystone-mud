@@ -973,13 +973,18 @@ class Combat:
 
         Flee check: d20 + DEX mod >= 10 (~60% success for DEX 10).
         On failure, sets 1-second wait state.
+        On success, moves player to a random adjacent room.
         """
+        # Only players can flee to other rooms (NPCs just disengage)
+        if participant.is_npc:
+            participant.fled = True
+            msg = colorize(f"{participant.entity_name} flees from combat!", "YELLOW")
+            self.engine.broadcast_to_room(self.room_id, msg)
+            return True
+
         dex = 10  # Default
         if participant._entity_ref:
-            if participant.is_npc:
-                dex = participant._entity_ref.attributes.get("dexterity", 10)
-            else:
-                dex = getattr(participant._entity_ref, "dexterity", 10)
+            dex = getattr(participant._entity_ref, "dexterity", 10)
 
         dex_modifier = calculate_attribute_modifier(dex)
         roll = roll_d20()
@@ -988,16 +993,84 @@ class Combat:
         success = total >= 10
 
         if success:
+            # Get current room and find a random exit
+            room = self.engine.world.get(self.room_id)
+            if not room or not room.exits:
+                # No exits - flee fails
+                msg = colorize(f"{participant.entity_name} has nowhere to flee!", "RED")
+                self.engine.broadcast_to_room(self.room_id, msg)
+                return False
+
+            # Pick a random exit
+            direction = random.choice(list(room.exits.keys()))
+            destination_id = room.exits[direction]
+            destination_room = self.engine.world.get(destination_id)
+
+            if not destination_room:
+                msg = colorize(f"{participant.entity_name} has nowhere to flee!", "RED")
+                self.engine.broadcast_to_room(self.room_id, msg)
+                return False
+
             participant.fled = True
-            msg = colorize(f"{participant.entity_name} flees from combat!", "YELLOW")
+
+            # Broadcast flee message to old room
+            msg = colorize(f"{participant.entity_name} flees {direction}!", "YELLOW")
             self.engine.broadcast_to_room(self.room_id, msg)
-            logger.info(
-                "participant_fled",
-                entity_id=participant.entity_id,
-                entity_name=participant.entity_name,
-                roll=roll,
-                total=total,
-            )
+
+            # Move the player
+            from uuid import UUID
+
+            from sqlalchemy import select
+
+            from waystone.database.engine import get_session
+            from waystone.database.models import Character
+
+            try:
+                async with get_session() as session:
+                    result = await session.execute(
+                        select(Character).where(Character.id == UUID(participant.entity_id))
+                    )
+                    character = result.scalar_one_or_none()
+
+                    if character:
+                        # Remove from old room
+                        room.remove_player(participant.entity_id)
+
+                        # Update character location
+                        character.current_room_id = destination_id
+                        await session.commit()
+
+                        # Add to new room
+                        destination_room.add_player(participant.entity_id)
+
+                        # Notify new room
+                        arrive_msg = colorize(f"{participant.entity_name} arrives in a panic!", "CYAN")
+                        self.engine.broadcast_to_room(
+                            destination_id, arrive_msg, exclude=UUID(participant.entity_id)
+                        )
+
+                        # Show new room to the fleeing player
+                        player_session = self.engine.character_to_session.get(participant.entity_id)
+                        if player_session:
+                            await player_session.connection.send_line(
+                                colorize(f"\nYou flee {direction}!\n", "YELLOW")
+                            )
+                            await player_session.connection.send_line(destination_room.format_description())
+
+                        logger.info(
+                            "participant_fled",
+                            entity_id=participant.entity_id,
+                            entity_name=participant.entity_name,
+                            from_room=self.room_id,
+                            to_room=destination_id,
+                            direction=direction,
+                            roll=roll,
+                            total=total,
+                        )
+            except Exception as e:
+                logger.error("flee_movement_failed", error=str(e), exc_info=True)
+                # Still mark as fled even if movement fails
+                pass
         else:
             # Failed flee attempt - 1 second wait state
             participant.wait_state_until = datetime.now() + timedelta(seconds=1)

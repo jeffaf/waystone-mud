@@ -28,13 +28,33 @@ merchants:
   - npc_id: apothecary_imre
     gold: 750
     items:
+      # Finished potions
       health_potion: 20
       mana_potion: 15
       antidote: 10
       healing_salve: 8
-      sympathy_candle: -1  # unlimited sympathy candles
+      # Alchemy tools
+      alembic: 3
+      mortar_pestle: 5
+      # Common ingredients
+      willow_bark: -1  # unlimited
+      honey: -1
+      clean_water: -1
+      arrowroot: -1
+      charcoal: -1
+      lavender: -1
+      ginger_root: -1
+      spirit_of_wine: 20
+      # Uncommon ingredients
+      ramston_steel: 10
+      sulfur: 15
+      # Rare/dangerous ingredients (limited stock)
+      nightshade: 5
+      mercury: 3
+      # Sympathy supplies
+      sympathy_candle: -1
       sympathy_torch: 10
-      iron_drab: -1  # unlimited iron drabs for sympathy practice
+      iron_drab: -1
       copper_wire: -1
 
   # University bookshop

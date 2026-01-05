@@ -109,3 +109,111 @@ loot_tables:
         chance: 0.5
         min_quantity: 1
         max_quantity: 1
+
+  # Tarbean street thug loot
+  - id: street_thug_loot
+    gold_min: 1
+    gold_max: 8
+    entries:
+      - item_id: dagger
+        chance: 0.4
+        min_quantity: 1
+        max_quantity: 1
+      - item_id: bread
+        chance: 0.3
+        min_quantity: 1
+        max_quantity: 1
+
+  # Tarbean dockworker loot
+  - id: dockworker_loot
+    gold_min: 2
+    gold_max: 10
+    entries:
+      - item_id: rope
+        chance: 0.3
+        min_quantity: 1
+        max_quantity: 1
+      - item_id: bread
+        chance: 0.4
+        min_quantity: 1
+        max_quantity: 2
+
+  # Tarbean gang member loot
+  - id: gang_member_loot
+    gold_min: 5
+    gold_max: 25
+    entries:
+      - item_id: dagger
+        chance: 0.5
+        min_quantity: 1
+        max_quantity: 1
+      - item_id: leather_armor
+        chance: 0.2
+        min_quantity: 1
+        max_quantity: 1
+      - item_id: health_potion
+        chance: 0.15
+        min_quantity: 1
+        max_quantity: 1
+
+  # City guard loot (rarely dropped - they're law enforcement)
+  - id: city_guard_loot
+    gold_min: 10
+    gold_max: 30
+    entries:
+      - item_id: iron_sword
+        chance: 0.1
+        min_quantity: 1
+        max_quantity: 1
+      - item_id: iron_helm
+        chance: 0.1
+        min_quantity: 1
+        max_quantity: 1
+      - item_id: health_potion
+        chance: 0.2
+        min_quantity: 1
+        max_quantity: 1
+
+  # Highway robber loot
+  - id: highway_robber_loot
+    gold_min: 10
+    gold_max: 50
+    entries:
+      - item_id: rapier
+        chance: 0.3
+        min_quantity: 1
+        max_quantity: 1
+      - item_id: leather_armor
+        chance: 0.25
+        min_quantity: 1
+        max_quantity: 1
+      - item_id: bread
+        chance: 0.5
+        min_quantity: 1
+        max_quantity: 2
+      - item_id: health_potion
+        chance: 0.2
+        min_quantity: 1
+        max_quantity: 1
+
+  # Sithe (fae hunters) loot - rare and valuable
+  - id: sithe_loot
+    gold_min: 0
+    gold_max: 0
+    entries:
+      - item_id: legendary_sword
+        chance: 0.05
+        min_quantity: 1
+        max_quantity: 1
+      - item_id: enchanted_armor
+        chance: 0.05
+        min_quantity: 1
+        max_quantity: 1
+      - item_id: rare_gem
+        chance: 0.2
+        min_quantity: 1
+        max_quantity: 2
+      - item_id: mana_potion
+        chance: 0.4
+        min_quantity: 1
+        max_quantity: 2

@@ -780,7 +780,11 @@ class TestFleeMechanics:
         """Create mock game engine."""
         engine = MagicMock()
         engine.broadcast_to_room = MagicMock()
-        engine.world = {"test_room": MagicMock(exits={"north": "other_room"})}
+        engine.character_to_session = {}
+        # Need both source and destination rooms for flee to work
+        test_room_mock = MagicMock(exits={"north": "other_room"})
+        other_room_mock = MagicMock(exits={"south": "test_room"})
+        engine.world = {"test_room": test_room_mock, "other_room": other_room_mock}
         return engine
 
     @pytest.mark.asyncio

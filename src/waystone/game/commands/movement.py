@@ -11,6 +11,7 @@ from waystone.database.models import Character
 from waystone.game.systems.experience import XP_EXPLORATION_NEW_ROOM, award_xp
 from waystone.game.systems.npc_display import (
     format_npc_room_presence,
+    format_npcs_for_room,
     get_npc_color,
     group_npcs_by_template,
 )
@@ -192,19 +193,23 @@ class MoveCommand(Command):
                 )
                 await ctx.connection.send_line(destination_room.format_description())
 
-                # Show NPCs in room
+                # Show NPCs in room with numbered targeting
                 from waystone.game.systems.npc_combat import get_npcs_in_room
 
                 npcs = get_npcs_in_room(destination_id)
                 if npcs:
                     await ctx.connection.send_line("")
-                    npc_groups = group_npcs_by_template(npcs)
-                    for _template_id, npc_list in npc_groups.items():
-                        representative_npc = npc_list[0]
-                        count = len(npc_list)
-                        presence_text = format_npc_room_presence(representative_npc, count)
-                        npc_color = get_npc_color(representative_npc)
-                        await ctx.connection.send_line(colorize(presence_text, npc_color))
+                    for text, color in format_npcs_for_room(npcs):
+                        await ctx.connection.send_line(colorize(text, color))
+
+                # Show corpses in room
+                from waystone.game.systems.corpse import format_corpse_for_room, get_corpses_in_room
+
+                corpses = get_corpses_in_room(destination_id)
+                if corpses:
+                    await ctx.connection.send_line("")
+                    for corpse in corpses:
+                        await ctx.connection.send_line(colorize(format_corpse_for_room(corpse), "MAGENTA"))
 
                 # Show other players in room
                 other_players = [
@@ -424,27 +429,24 @@ class LookCommand(Command):
                 # Show room description
                 await ctx.connection.send_line(room.format_description())
 
-                # Show NPCs in room (using NPC instances for HP tracking)
+                # Show NPCs in room with numbered targeting
                 from waystone.game.systems.npc_combat import get_npcs_in_room
 
                 npcs = get_npcs_in_room(character.current_room_id)
                 if npcs:
                     await ctx.connection.send_line("")
-                    # Group NPCs by template for clean display
-                    npc_groups = group_npcs_by_template(npcs)
+                    # Display each NPC with a number for targeting
+                    for text, color in format_npcs_for_room(npcs):
+                        await ctx.connection.send_line(colorize(text, color))
 
-                    for _template_id, npc_list in npc_groups.items():
-                        # Use first NPC as representative for the group
-                        representative_npc = npc_list[0]
-                        count = len(npc_list)
+                # Show corpses in room
+                from waystone.game.systems.corpse import format_corpse_for_room, get_corpses_in_room
 
-                        # Format presence text with count
-                        presence_text = format_npc_room_presence(representative_npc, count)
-
-                        # Color code by behavior
-                        npc_color = get_npc_color(representative_npc)
-
-                        await ctx.connection.send_line(colorize(presence_text, npc_color))
+                corpses = get_corpses_in_room(character.current_room_id)
+                if corpses:
+                    await ctx.connection.send_line("")
+                    for corpse in corpses:
+                        await ctx.connection.send_line(colorize(format_corpse_for_room(corpse), "MAGENTA"))
 
                 # Show other players in room
                 other_players = [pid for pid in room.players if pid != ctx.session.character_id]

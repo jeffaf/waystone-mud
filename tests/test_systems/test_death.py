@@ -71,11 +71,17 @@ class TestHandleNPCDeath:
     """Test NPC death handling."""
 
     @pytest.mark.asyncio
-    async def test_handle_npc_death_without_killer(self):
+    @patch("waystone.game.systems.death.create_corpse")
+    async def test_handle_npc_death_without_killer(self, mock_create_corpse):
         """Test NPC death with no killer (environmental death)."""
         engine = MagicMock()
         engine.character_to_session = {}
         engine.broadcast_to_room = MagicMock()
+
+        # Mock corpse creation
+        mock_corpse = MagicMock()
+        mock_corpse.corpse_id = "corpse_wolf_1"
+        mock_create_corpse.return_value = mock_corpse
 
         await handle_npc_death(
             npc_id="wolf_1",
@@ -88,8 +94,12 @@ class TestHandleNPCDeath:
             respawn_time=0,
         )
 
-        # Should not crash, no XP awarded, no loot
-        engine.broadcast_to_room.assert_not_called()
+        # Should create corpse and broadcast death message (no XP awarded since no killer)
+        mock_create_corpse.assert_called_once()
+        engine.broadcast_to_room.assert_called_once()
+        # Verify corpse message contains the NPC name
+        call_args = engine.broadcast_to_room.call_args
+        assert "grey wolf" in call_args[0][1]
 
     @pytest.mark.asyncio
     @patch("waystone.game.systems.death.award_xp")
@@ -134,13 +144,16 @@ class TestHandleNPCDeath:
         assert call_args[1]["amount"] == 100
 
     @pytest.mark.asyncio
+    @patch("waystone.game.systems.death.create_corpse")
     @patch("waystone.game.systems.death.generate_loot")
-    @patch("waystone.game.systems.death.drop_loot_to_room")
-    async def test_handle_npc_death_with_loot(self, mock_drop_loot, mock_gen_loot):
+    async def test_handle_npc_death_with_loot(self, mock_gen_loot, mock_create_corpse):
         """Test NPC death generates and drops loot."""
         # Setup mocks
         mock_gen_loot.return_value = [("dagger", 1), ("gold", 15)]
-        mock_drop_loot.return_value = [MagicMock()]
+
+        mock_corpse = MagicMock()
+        mock_corpse.corpse_id = "corpse_bandit_1"
+        mock_create_corpse.return_value = mock_corpse
 
         engine = MagicMock()
         engine.character_to_session = {}
@@ -157,9 +170,13 @@ class TestHandleNPCDeath:
             respawn_time=0,
         )
 
-        # Verify loot generation and drop
+        # Verify loot generation
         mock_gen_loot.assert_called_once_with("bandit_loot")
-        mock_drop_loot.assert_called_once()
+        # Verify corpse created with loot items
+        mock_create_corpse.assert_called_once()
+        call_kwargs = mock_create_corpse.call_args[1]
+        assert call_kwargs["loot_items"] == [("dagger", 1), ("gold", 15)]
+        # Verify broadcast was sent (corpse message with loot)
         engine.broadcast_to_room.assert_called()
 
     @pytest.mark.asyncio

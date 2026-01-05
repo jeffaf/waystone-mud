@@ -162,6 +162,66 @@ items:
       effect_type: "instant"
       use_message: "You tear off pieces of bread and eat them. It's simple but satisfying."
 
+  - id: ale
+    name: "Mug of Ale"
+    description: "A frothy mug of brown ale brewed somewhere in Imre. It has a pleasant, malty smell and goes down smooth. The kind of drink that warms your belly and loosens your tongue after a long day."
+    type: consumable
+    slot: none
+    weight: 1.0
+    value: 2
+    stackable: true
+    unique: false
+    quest_item: false
+    properties:
+      effect: "restore:5"
+      effect_type: "instant"
+      use_message: "You take a long pull of the ale. It's cool and refreshing with a pleasant bitterness."
+
+  - id: wine
+    name: "Glass of Wine"
+    description: "A glass of red wine, likely from the Vintish region. It has a deep color and fruity aroma. More refined than ale, this is the drink favored by nobles and those with coin to spare."
+    type: consumable
+    slot: none
+    weight: 0.5
+    value: 5
+    stackable: true
+    unique: false
+    quest_item: false
+    properties:
+      effect: "restore:8"
+      effect_type: "instant"
+      use_message: "You sip the wine, savoring its complex flavor. A pleasant warmth spreads through you."
+
+  - id: cheese
+    name: "Wedge of Cheese"
+    description: "A thick wedge of aged yellow cheese with a sharp, tangy flavor. The rind is slightly waxed to preserve freshness. A common accompaniment to bread and ale in taverns throughout the Commonwealth."
+    type: consumable
+    slot: none
+    weight: 0.3
+    value: 4
+    stackable: true
+    unique: false
+    quest_item: false
+    properties:
+      effect: "heal:3"
+      effect_type: "instant"
+      use_message: "You bite into the cheese. It's sharp and satisfying."
+
+  - id: meat_pie
+    name: "Meat Pie"
+    description: "A hearty pie filled with seasoned meat, potatoes, and gravy, all wrapped in a flaky golden crust. Still warm from the kitchen, this is proper tavern fare - the kind of meal that sticks to your ribs."
+    type: consumable
+    slot: none
+    weight: 0.6
+    value: 8
+    stackable: true
+    unique: false
+    quest_item: false
+    properties:
+      effect: "heal:15"
+      effect_type: "instant"
+      use_message: "You devour the meat pie hungrily. The filling is hot and savory."
+
   - id: water_flask
     name: "Water Flask"
     description: "A leather-wrapped glass flask filled with clean water. The cork stopper is sealed with wax to prevent spills. Once emptied, it would need to be refilled at a well or stream."
@@ -385,3 +445,386 @@ items:
       crafting_material: true
       category: "rare_alchemy"
       dangerous: true
+
+  # ============================================================================
+  # ADDITIONAL WEAPONS (for blacksmith inventory)
+  # ============================================================================
+
+  - id: steel_sword
+    name: "Steel Sword"
+    description: "A finely crafted steel longsword, superior in quality to common iron blades. The steel holds a keener edge and the balance is excellent. A weapon fit for a serious warrior or wealthy traveler."
+    type: weapon
+    slot: main_hand
+    weight: 3.0
+    value: 150
+    stackable: false
+    unique: false
+    quest_item: false
+    properties:
+      damage: "1d10"
+      damage_type: "slashing"
+
+  - id: buckler
+    name: "Buckler"
+    description: "A small round shield designed to be gripped rather than strapped. It's light enough to use with agility, perfect for parrying and deflecting blows in close combat. Common among duelists and fencers."
+    type: armor
+    slot: off_hand
+    weight: 2.0
+    value: 30
+    stackable: false
+    unique: false
+    quest_item: false
+    properties:
+      armor: 1
+      armor_type: "shield"
+
+  # ============================================================================
+  # ADDITIONAL CONSUMABLES (for apothecary and general stores)
+  # ============================================================================
+
+  - id: mana_potion
+    name: "Alar Restorative"
+    description: "A shimmering blue tincture that helps restore mental focus and Alar. Brewed using University-sanctioned methods, this potion is popular among students before examinations and sympathy duels."
+    type: consumable
+    slot: none
+    weight: 0.5
+    value: 30
+    stackable: true
+    unique: false
+    quest_item: false
+    properties:
+      effect: "restore_alar:25"
+      effect_type: "instant"
+      use_message: "You drink the restorative, feeling clarity return to your thoughts."
+
+  - id: antidote
+    name: "Antidote"
+    description: "A small vial of milky liquid that neutralizes common poisons. The Medica produces these in quantity, as poisoning accidents are surprisingly common among alchemy students."
+    type: consumable
+    slot: none
+    weight: 0.3
+    value: 20
+    stackable: true
+    unique: false
+    quest_item: false
+    properties:
+      effect: "cure_poison"
+      effect_type: "instant"
+      use_message: "You drink the antidote. The bitter taste is unpleasant, but your body feels cleansed."
+
+  - id: healing_salve
+    name: "Healing Salve"
+    description: "A thick, greenish ointment with the sharp smell of medicinal herbs. Applied to wounds, it promotes healing over time. A staple of the Medica's treatments."
+    type: consumable
+    slot: none
+    weight: 0.4
+    value: 15
+    stackable: true
+    unique: false
+    quest_item: false
+    properties:
+      effect: "heal_over_time:3:5"
+      effect_type: "duration"
+      use_message: "You apply the salve to your wounds. It tingles slightly as it begins to work."
+
+  # ============================================================================
+  # SYMPATHY & ARTIFICING MATERIALS
+  # ============================================================================
+
+  - id: sympathy_candle
+    name: "Sympathy Candle"
+    description: "A special candle made with precise portions of wax and a carefully prepared wick. Used for basic sympathy practice, providing a controlled heat source for bindings. Required equipment for Sympathist students."
+    type: misc
+    slot: none
+    weight: 0.2
+    value: 3
+    stackable: true
+    unique: false
+    quest_item: false
+    properties:
+      sympathy_source: true
+      heat_output: "low"
+      burn_time: 30
+
+  - id: sympathy_torch
+    name: "Sympathy Torch"
+    description: "An enhanced torch designed specifically for sympathy work. Burns hotter and more steadily than an ordinary torch, providing a reliable heat differential for bindings. Marked with the Artificery seal."
+    type: misc
+    slot: off_hand
+    weight: 1.2
+    value: 12
+    stackable: true
+    unique: false
+    quest_item: false
+    properties:
+      sympathy_source: true
+      heat_output: "medium"
+      burn_time: 90
+      light_radius: 18
+
+  - id: iron_drab
+    name: "Iron Drab"
+    description: "A small iron coin, the most common currency in the Four Corners. More importantly for arcanists, iron drabs are perfect for sympathy practice - easy to link, common enough to be expendable, and excellent conductors of heat."
+    type: misc
+    slot: none
+    weight: 0.02
+    value: 1
+    stackable: true
+    unique: false
+    quest_item: false
+    properties:
+      currency: true
+      denomination: "drab"
+      sympathy_material: true
+      material: "iron"
+
+  - id: copper_wire
+    name: "Copper Wire"
+    description: "A coil of thin copper wire, useful for both sympathy work and artificing. Copper is an excellent conductor, making it valuable for creating sympathetic links involving electricity or heat."
+    type: misc
+    slot: none
+    weight: 0.3
+    value: 8
+    stackable: true
+    unique: false
+    quest_item: false
+    properties:
+      crafting_material: true
+      category: "artificing"
+      material: "copper"
+      sympathy_material: true
+
+  # ============================================================================
+  # ADVENTURING GEAR
+  # ============================================================================
+
+  - id: rope
+    name: "Hemp Rope"
+    description: "A sturdy coil of hemp rope, about 50 feet in length. Useful for climbing, securing loads, or any number of other practical purposes. Every traveler should have one."
+    type: misc
+    slot: none
+    weight: 5.0
+    value: 8
+    stackable: false
+    unique: false
+    quest_item: false
+    properties:
+      length: 50
+      unit: "feet"
+
+  - id: backpack
+    name: "Leather Backpack"
+    description: "A sturdy leather pack with adjustable straps and several pockets. It can hold a considerable amount of gear while distributing the weight comfortably across the shoulders."
+    type: misc
+    slot: none
+    weight: 2.0
+    value: 25
+    stackable: false
+    unique: false
+    quest_item: false
+    properties:
+      container: true
+      capacity: 50
+      weight_reduction: 0.2
+
+  # ============================================================================
+  # UNIVERSITY BOOKSHOP ITEMS
+  # ============================================================================
+
+  - id: basic_alchemy_tome
+    name: "Principles of Alchemy"
+    description: "A well-worn textbook covering the fundamentals of alchemy. It explains the basic principles of combining reagents, proper laboratory procedures, and safety precautions. Required reading for first-term students in the Fishery."
+    type: misc
+    slot: none
+    weight: 2.5
+    value: 40
+    stackable: false
+    unique: false
+    quest_item: false
+    properties:
+      readable: true
+      skill_bonus: "alchemy"
+      skill_level: "basic"
+
+  - id: rhetoric_manual
+    name: "The Art of Rhetoric"
+    description: "A comprehensive guide to the art of persuasion and debate, required reading in Master Brandeur's courses. Covers logical argumentation, common fallacies, and techniques for winning arguments in the Eolian or the Masters' chambers alike."
+    type: misc
+    slot: none
+    weight: 1.8
+    value: 35
+    stackable: false
+    unique: false
+    quest_item: false
+    properties:
+      readable: true
+      skill_bonus: "rhetoric"
+      skill_level: "basic"
+
+  - id: history_book
+    name: "History of the Commonwealth"
+    description: "A scholarly tome detailing the history of the Commonwealth from its founding to the present day. Dry but informative, it's useful for understanding the political landscape and ancient events that shaped the current world."
+    type: misc
+    slot: none
+    weight: 2.0
+    value: 25
+    stackable: false
+    unique: false
+    quest_item: false
+    properties:
+      readable: true
+      lore: "commonwealth_history"
+
+  - id: blank_journal
+    name: "Blank Journal"
+    description: "A leather-bound journal with cream-colored pages, waiting to be filled. Students use these for notes, personal observations, and recording their experiments."
+    type: misc
+    slot: none
+    weight: 0.5
+    value: 10
+    stackable: false
+    unique: false
+    quest_item: false
+    properties:
+      writable: true
+      pages: 100
+
+  - id: quill_and_ink
+    name: "Quill and Ink Set"
+    description: "A goose-feather quill and a small pot of black ink. Essential writing supplies for any University student. The quill is reasonably well-cut and the ink flows smoothly."
+    type: misc
+    slot: none
+    weight: 0.2
+    value: 5
+    stackable: true
+    unique: false
+    quest_item: false
+    properties:
+      writing_implement: true
+      uses: 50
+
+  # ============================================================================
+  # LOOT DROP ITEMS (for NPCs)
+  # ============================================================================
+
+  - id: wolf_pelt
+    name: "Wolf Pelt"
+    description: "A thick grey wolf pelt, carefully skinned. The fur is dense and in good condition. Valuable to leather workers and clothiers."
+    type: misc
+    slot: none
+    weight: 3.0
+    value: 15
+    stackable: true
+    unique: false
+    quest_item: false
+    properties:
+      crafting_material: true
+      category: "leatherworking"
+
+  - id: wolf_meat
+    name: "Wolf Meat"
+    description: "Raw wolf meat, tough but edible if cooked properly. Best prepared as stew with plenty of seasoning to mask the gamey flavor."
+    type: misc
+    slot: none
+    weight: 1.0
+    value: 3
+    stackable: true
+    unique: false
+    quest_item: false
+    properties:
+      food: true
+      requires_cooking: true
+
+  - id: rat_tail
+    name: "Rat Tail"
+    description: "A severed rat tail, greasy and unpleasant. Some apothecaries will buy these for use in folk remedies, though most respectable alchemists scoff at the practice."
+    type: misc
+    slot: none
+    weight: 0.1
+    value: 1
+    stackable: true
+    unique: false
+    quest_item: false
+    properties:
+      vendor_trash: true
+
+  - id: rusty_sword
+    name: "Rusty Sword"
+    description: "A crude iron sword in poor condition. The blade is pitted with rust and the edge is dull. Barely better than a club, but it's still sharp enough to hurt someone."
+    type: weapon
+    slot: main_hand
+    weight: 3.0
+    value: 10
+    stackable: false
+    unique: false
+    quest_item: false
+    properties:
+      damage: "1d6"
+      damage_type: "slashing"
+      condition: "poor"
+
+  # ============================================================================
+  # RARE & BOSS LOOT
+  # ============================================================================
+
+  - id: legendary_sword
+    name: "Folly"
+    description: "A legendary blade of exquisite craftsmanship. The metal has an unusual quality, holding an edge far keener than common steel. Strange patterns swirl within the blade, and it seems to sing softly when drawn. Few such weapons exist in the world."
+    type: weapon
+    slot: main_hand
+    weight: 2.5
+    value: 2000
+    stackable: false
+    unique: true
+    quest_item: false
+    properties:
+      damage: "2d8"
+      damage_type: "slashing"
+      magical: true
+      special: "keen_edge"
+
+  - id: enchanted_armor
+    name: "Gram's Mail"
+    description: "A suit of chainmail inscribed with delicate sygaldry. The runes protect against both physical and magical harm, making this armor highly sought after. Such items are the pinnacle of the Artificery's craft."
+    type: armor
+    slot: body
+    weight: 15.0
+    value: 1500
+    stackable: false
+    unique: true
+    quest_item: false
+    properties:
+      armor: 5
+      armor_type: "medium"
+      magical: true
+      special: "spell_resistance"
+
+  - id: steel_armor
+    name: "Steel Plate"
+    description: "A finely crafted suit of steel plate armor. Heavy but offering excellent protection. The craftsmanship is evident in every joint and rivet."
+    type: armor
+    slot: body
+    weight: 25.0
+    value: 400
+    stackable: false
+    unique: false
+    quest_item: false
+    properties:
+      armor: 4
+      armor_type: "heavy"
+
+  - id: rare_gem
+    name: "Flawless Ruby"
+    description: "A large, flawless ruby that catches and holds the light. Such gems are exceedingly rare and valuable, often used in both jewelry and artificing."
+    type: misc
+    slot: none
+    weight: 0.1
+    value: 500
+    stackable: true
+    unique: false
+    quest_item: false
+    properties:
+      gem: true
+      quality: "flawless"
+      crafting_material: true
+      category: "precious_gems"

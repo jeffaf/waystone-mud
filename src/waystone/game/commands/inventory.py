@@ -8,6 +8,14 @@ from sqlalchemy.orm import joinedload
 
 from waystone.database.engine import get_session
 from waystone.database.models import Character, ItemInstance, ItemSlot
+from waystone.game.systems.corpse import (
+    find_corpse_by_name,
+    format_corpse_contents,
+    get_corpse_contents,
+    get_corpses_in_room,
+    take_all_from_corpse,
+    take_from_corpse,
+)
 from waystone.game.systems.npc_display import (
     display_npc_equipment,
     find_npc_by_keywords,
@@ -100,11 +108,11 @@ class InventoryCommand(Command):
 
 
 class GetCommand(Command):
-    """Pick up an item from the current room."""
+    """Pick up an item from the current room or from a corpse."""
 
     name = "get"
     aliases = ["take", "pickup", "g"]
-    help_text = "get <item> - Pick up an item from the room"
+    help_text = "get <item> [from corpse] - Pick up an item from the room or corpse"
     min_args = 1
 
     async def execute(self, ctx: CommandContext) -> None:
@@ -113,7 +121,22 @@ class GetCommand(Command):
             await ctx.connection.send_line(colorize("You must be playing a character.", "RED"))
             return
 
-        item_name = " ".join(ctx.args).lower()
+        # Parse for "from corpse" or "corpse" syntax
+        # e.g., "get sword from corpse", "get sword corpse", "get all corpse"
+        args = ctx.args
+        from_corpse = False
+        corpse_search = None
+
+        if len(args) >= 2 and args[-1].lower() == "corpse":
+            from_corpse = True
+            corpse_search = "corpse"
+            args = args[:-1]
+        elif len(args) >= 3 and args[-2].lower() == "from" and "corpse" in args[-1].lower():
+            from_corpse = True
+            corpse_search = args[-1]
+            args = args[:-2]
+
+        item_name = " ".join(args).lower()
 
         try:
             async with get_session() as session:
@@ -129,6 +152,84 @@ class GetCommand(Command):
                     await ctx.connection.send_line(colorize("Character not found.", "RED"))
                     return
 
+                # Handle getting from corpse
+                if from_corpse:
+                    corpse = find_corpse_by_name(character.current_room_id, corpse_search or "corpse")
+                    if not corpse:
+                        await ctx.connection.send_line(
+                            colorize("You don't see any corpse here.", "YELLOW")
+                        )
+                        return
+
+                    # Handle "get all corpse"
+                    if item_name == "all":
+                        taken_items = await take_all_from_corpse(
+                            corpse.corpse_id,
+                            UUID(ctx.session.character_id),
+                        )
+                        if not taken_items:
+                            await ctx.connection.send_line(
+                                colorize(f"The {corpse.name} is empty.", "YELLOW")
+                            )
+                            return
+
+                        for item_instance in taken_items:
+                            await ctx.connection.send_line(
+                                colorize(f"You take {item_instance.template.name} from the {corpse.name}.", "GREEN")
+                            )
+
+                        ctx.engine.broadcast_to_room(
+                            character.current_room_id,
+                            colorize(f"{character.name} loots the {corpse.name}.", "CYAN"),
+                            exclude=ctx.session.id,
+                        )
+
+                        logger.info(
+                            "items_looted_from_corpse",
+                            character_id=ctx.session.character_id,
+                            corpse_id=corpse.corpse_id,
+                            item_count=len(taken_items),
+                        )
+                        return
+
+                    # Get specific item from corpse
+                    corpse_contents = await get_corpse_contents(corpse.corpse_id)
+                    target_item = None
+                    for item_instance in corpse_contents:
+                        if item_name in item_instance.template.name.lower():
+                            target_item = item_instance
+                            break
+
+                    if not target_item:
+                        await ctx.connection.send_line(
+                            colorize(f"You don't see '{item_name}' in the {corpse.name}.", "YELLOW")
+                        )
+                        return
+
+                    taken = await take_from_corpse(
+                        corpse.corpse_id,
+                        str(target_item.id),
+                        UUID(ctx.session.character_id),
+                    )
+
+                    if taken:
+                        await ctx.connection.send_line(
+                            colorize(f"You take {target_item.template.name} from the {corpse.name}.", "GREEN")
+                        )
+                        ctx.engine.broadcast_to_room(
+                            character.current_room_id,
+                            colorize(f"{character.name} takes something from the {corpse.name}.", "CYAN"),
+                            exclude=ctx.session.id,
+                        )
+                        logger.info(
+                            "item_looted_from_corpse",
+                            character_id=ctx.session.character_id,
+                            item_id=str(target_item.id),
+                            corpse_id=corpse.corpse_id,
+                        )
+                    return
+
+                # Standard room item pickup
                 # Find items in current room
                 room_result = await session.execute(
                     select(ItemInstance)
@@ -295,7 +396,7 @@ class ExamineCommand(Command):
     """View detailed information about an item."""
 
     name = "examine"
-    aliases = ["ex", "inspect", "x"]
+    aliases = ["ex", "exa", "inspect", "x"]
     help_text = "examine <item> - View detailed item information"
     min_args = 1
 
@@ -861,4 +962,77 @@ class EquipmentCommand(Command):
             logger.error("equipment_command_failed", error=str(e), exc_info=True)
             await ctx.connection.send_line(
                 colorize("Failed to display equipment. Please try again.", "RED")
+            )
+
+
+class LootCommand(Command):
+    """Look at a corpse or loot all items from it."""
+
+    name = "loot"
+    aliases = ["search"]
+    help_text = "loot [corpse] - Look at or loot a corpse"
+    min_args = 0
+
+    async def execute(self, ctx: CommandContext) -> None:
+        """Execute the loot command."""
+        if not ctx.session.character_id:
+            await ctx.connection.send_line(colorize("You must be playing a character.", "RED"))
+            return
+
+        corpse_search = " ".join(ctx.args).lower() if ctx.args else "corpse"
+
+        try:
+            async with get_session() as session:
+                # Get character
+                result = await session.execute(
+                    select(Character).where(Character.id == UUID(ctx.session.character_id))
+                )
+                character = result.unique().scalar_one_or_none()
+
+                if not character:
+                    await ctx.connection.send_line(colorize("Character not found.", "RED"))
+                    return
+
+                # Find corpse in room
+                corpse = find_corpse_by_name(character.current_room_id, corpse_search)
+                if not corpse:
+                    # List all corpses if none specified
+                    corpses = get_corpses_in_room(character.current_room_id)
+                    if not corpses:
+                        await ctx.connection.send_line(
+                            colorize("You don't see any corpses here.", "YELLOW")
+                        )
+                    else:
+                        await ctx.connection.send_line(colorize("Corpses here:", "CYAN"))
+                        for c in corpses:
+                            item_count = len(c.contents)
+                            if item_count > 0:
+                                await ctx.connection.send_line(
+                                    f"  {c.name} ({item_count} item{'s' if item_count != 1 else ''})"
+                                )
+                            else:
+                                await ctx.connection.send_line(f"  {c.name} (empty)")
+                    return
+
+                # Get corpse contents and display
+                contents = await get_corpse_contents(corpse.corpse_id)
+                await ctx.connection.send_line(format_corpse_contents(corpse, contents))
+
+                if contents:
+                    await ctx.connection.send_line("")
+                    await ctx.connection.send_line(
+                        colorize("Use 'get <item> corpse' or 'get all corpse' to loot.", "DIM")
+                    )
+
+                logger.debug(
+                    "corpse_examined",
+                    character_id=ctx.session.character_id,
+                    corpse_id=corpse.corpse_id,
+                    item_count=len(contents),
+                )
+
+        except Exception as e:
+            logger.error("loot_command_failed", error=str(e), exc_info=True)
+            await ctx.connection.send_line(
+                colorize("Failed to examine corpse. Please try again.", "RED")
             )

@@ -468,15 +468,48 @@ class Combat:
             total_roll = flee_roll + dex_modifier
 
             if total_roll >= 12:
-                # Success
+                # Get current room and find a random exit
+                room = self.engine.world.get(self.room_id)
+                if not room or not room.exits:
+                    return False, "There's nowhere to flee!"
+
+                # Pick a random exit
+                direction = random.choice(list(room.exits.keys()))
+                destination_id = room.exits[direction]
+                destination_room = self.engine.world.get(destination_id)
+
+                if not destination_room:
+                    return False, "There's nowhere to flee!"
+
+                # Success - broadcast flee message
                 flee_msg = colorize(
-                    f"{character.name} flees from combat!",
+                    f"{character.name} flees {direction}!",
                     "YELLOW",
                 )
                 self.engine.broadcast_to_room(self.room_id, flee_msg)
 
                 # Remove from combat
                 self.participants = [p for p in self.participants if p.character_id != character_id]
+
+                # Move the player
+                room.remove_player(character_id)
+                character.current_room_id = destination_id
+                await session.commit()
+                destination_room.add_player(character_id)
+
+                # Notify new room
+                arrive_msg = colorize(f"{character.name} arrives in a panic!", "CYAN")
+                self.engine.broadcast_to_room(
+                    destination_id, arrive_msg, exclude=UUID(character_id)
+                )
+
+                # Show new room to the fleeing player
+                player_session = self.engine.character_to_session.get(character_id)
+                if player_session:
+                    await player_session.connection.send_line(
+                        colorize(f"\nYou flee {direction}!\n", "YELLOW")
+                    )
+                    await player_session.connection.send_line(destination_room.format_description())
 
                 # Check if combat should end
                 if len(self.participants) <= 1:
@@ -485,7 +518,7 @@ class Combat:
                     self.next_turn()
                     await self._notify_current_turn()
 
-                return True, "You successfully flee from combat!"
+                return True, ""  # Message already sent
             else:
                 # Failure
                 fail_msg = colorize(

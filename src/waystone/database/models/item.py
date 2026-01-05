@@ -21,6 +21,7 @@ class ItemType(enum.Enum):
     CONSUMABLE = "consumable"
     QUEST = "quest"
     MISC = "misc"
+    CONTAINER = "container"  # For corpses and other containers
 
 
 class ItemSlot(enum.Enum):

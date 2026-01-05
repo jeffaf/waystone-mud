@@ -528,7 +528,8 @@ async def test_attempt_flee_success(test_engine: GameEngine, test_characters: tu
         success, message = await combat.attempt_flee(current.character_id)
 
     assert success is True
-    assert "successfully flee" in message.lower()
+    # Message is empty on success - notification is sent directly to player via send_line
+    assert message == "" or "flee" in message.lower() or "escape" in message.lower()
     assert len(combat.participants) == initial_count - 1
 
 

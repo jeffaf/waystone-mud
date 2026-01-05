@@ -9,11 +9,10 @@ from sqlalchemy import select
 from waystone.config import get_settings
 from waystone.database.engine import get_session
 from waystone.database.models import Character, CharacterBackground
+from waystone.database.models.item import ItemInstance
 from waystone.game.systems.npc_combat import get_npcs_in_room
 from waystone.game.systems.npc_display import (
-    format_npc_room_presence,
-    get_npc_color,
-    group_npcs_by_template,
+    format_npcs_for_room,
 )
 from waystone.network import SessionState, colorize
 
@@ -23,6 +22,37 @@ logger = structlog.get_logger(__name__)
 
 # Character name validation
 CHARACTER_NAME_PATTERN = re.compile(r"^[A-Z][a-zA-Z]{1,29}$")
+
+# Starter items by background
+# Each background gets thematically appropriate gear
+STARTER_ITEMS_BY_BACKGROUND: dict[CharacterBackground, list[str]] = {
+    CharacterBackground.SCHOLAR: [
+        "wooden_staff",      # Walking stick / defensive weapon
+        "bread",             # Basic provisions
+    ],
+    CharacterBackground.MERCHANT: [
+        "steel_dagger",      # Self-defense weapon
+        "bread",             # Basic provisions
+    ],
+    CharacterBackground.PERFORMER: [
+        "steel_dagger",      # Quick, light weapon
+        "bread",             # Basic provisions
+    ],
+    CharacterBackground.WAYFARER: [
+        "iron_sword",        # Road warrior weapon
+        "leather_armor",     # Basic protection
+        "bread",             # Basic provisions
+    ],
+    CharacterBackground.NOBLE: [
+        "iron_sword",        # Trained with weapons
+        "leather_armor",     # Quality gear
+        "health_potion",     # Emergency supplies
+    ],
+    CharacterBackground.COMMONER: [
+        "wooden_staff",      # Simple tool/weapon
+        "bread",             # Basic provisions
+    ],
+}
 
 
 class CharactersCommand(Command):
@@ -266,11 +296,36 @@ class CreateCommand(Command):
                 session.add(new_character)
                 await session.commit()
 
+                # Give starter items based on background
+                starter_items = STARTER_ITEMS_BY_BACKGROUND.get(background, [])
+                items_given = []
+                for template_id in starter_items:
+                    item_instance = ItemInstance(
+                        template_id=template_id,
+                        owner_id=new_character.id,
+                    )
+                    session.add(item_instance)
+                    items_given.append(template_id)
+
+                if items_given:
+                    await session.commit()
+
                 await ctx.connection.send_line(
                     colorize(f"\n✨ {name} has been created! ✨", "GREEN")
                 )
+
+                # Show starter items
+                if items_given:
+                    await ctx.connection.send_line(
+                        colorize("\nYou begin your journey with:", "YELLOW")
+                    )
+                    for item_id in items_given:
+                        # Convert template_id to readable name
+                        item_name = item_id.replace("_", " ").title()
+                        await ctx.connection.send_line(f"  - {item_name}")
+
                 await ctx.connection.send_line(
-                    "To start playing, type: " + colorize(f"play {name}", "CYAN")
+                    "\nTo start playing, type: " + colorize(f"play {name}", "CYAN")
                 )
 
                 logger.info(
@@ -369,17 +424,12 @@ class PlayCommand(Command):
                 if room:
                     await ctx.connection.send_line(room.format_description())
 
-                    # Show NPCs in room
+                    # Show NPCs in room with numbered targeting
                     npcs = get_npcs_in_room(character.current_room_id)
                     if npcs:
                         await ctx.connection.send_line("")
-                        npc_groups = group_npcs_by_template(npcs)
-                        for _template_id, npc_list in npc_groups.items():
-                            representative_npc = npc_list[0]
-                            count = len(npc_list)
-                            presence_text = format_npc_room_presence(representative_npc, count)
-                            npc_color = get_npc_color(representative_npc)
-                            await ctx.connection.send_line(colorize(presence_text, npc_color))
+                        for text, color in format_npcs_for_room(npcs):
+                            await ctx.connection.send_line(colorize(text, color))
 
                     # Show other players in room
                     other_players = [

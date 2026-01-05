@@ -56,6 +56,19 @@ class GameEngine:
         logger.info("initializing_database")
         await init_db()
 
+        # Load item templates into database
+        logger.info("loading_item_templates")
+        try:
+            from waystone.database.engine import get_session as get_db_session
+            from waystone.game.world.item_loader import load_all_items
+
+            async with get_db_session() as session:
+                item_count = await load_all_items(session)
+                logger.info("item_templates_loaded", total=item_count)
+        except Exception as e:
+            logger.error("item_template_load_failed", error=str(e), exc_info=True)
+            raise
+
         # Load world
         logger.info("loading_world")
         try:
@@ -209,6 +222,7 @@ class GameEngine:
             GetCommand,
             GiveCommand,
             InventoryCommand,
+            LootCommand,
             UnequipCommand,
         )
         from waystone.game.commands.movement import (
@@ -260,6 +274,10 @@ class GameEngine:
             RankCommand,
             TuitionCommand,
             WorkCommand,
+        )
+        from waystone.game.commands.alchemy import (
+            BrewCommand,
+            RecipesCommand,
         )
 
         registry = get_registry()
@@ -329,6 +347,7 @@ class GameEngine:
         registry.register(EquipCommand())
         registry.register(UnequipCommand())
         registry.register(EquipmentCommand())
+        registry.register(LootCommand())
 
         # NPC commands
         registry.register(ConsiderCommand())
@@ -372,6 +391,10 @@ class GameEngine:
         registry.register(RestCommand())
         registry.register(StandCommand())
         registry.register(RecallCommand())
+
+        # Alchemy commands
+        registry.register(BrewCommand())
+        registry.register(RecipesCommand())
 
         logger.info(
             "commands_registered",
@@ -668,6 +691,10 @@ class GameEngine:
             "university_alchemy_lab": ["master_mandrag"],
             "university_rhetoric_hall": ["master_brandeur"],
             "university_mains": ["master_herma"],
+            # Imre merchants
+            "imre_main_square": ["merchant_imre"],
+            "imre_blacksmith": ["blacksmith_imre"],
+            "imre_apothecary": ["apothecary_imre"],
             # Imre combat areas
             "imre_training_yard": ["training_dummy"],
             "imre_sewers_entrance": ["sewer_rat"],
@@ -733,6 +760,7 @@ class GameEngine:
                 # Check for NPC respawns every tick
                 from waystone.game.systems.death import check_respawns
                 from waystone.game.systems.npc_combat import check_npc_respawns
+                from waystone.game.systems.corpse import check_corpse_decay
 
                 try:
                     # Check death system respawns
@@ -746,6 +774,14 @@ class GameEngine:
                         logger.debug(
                             "respawn_check_completed",
                             respawned_count=respawned_count,
+                        )
+
+                    # Check for corpse decay
+                    decayed_count = await check_corpse_decay(self)
+                    if decayed_count > 0:
+                        logger.debug(
+                            "corpse_decay_check_completed",
+                            decayed_count=decayed_count,
                         )
 
                 except Exception as e:
