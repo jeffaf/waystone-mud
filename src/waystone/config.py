@@ -38,8 +38,8 @@ class Settings(BaseSettings):
         alias="SESSION_SECRET",
     )
     session_timeout_minutes: int = Field(
-        default=480,
-        description="Session timeout in minutes (default 8 hours)",
+        default=60,
+        description="Session timeout in minutes (default 1 hour)",
         alias="SESSION_TIMEOUT_MINUTES",
     )
 
