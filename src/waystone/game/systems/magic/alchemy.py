@@ -183,8 +183,8 @@ def get_character_alchemy_skill(character: Character) -> int:
 
     skill_data = character.skills.get(ALCHEMY_SKILL, {})
     # Skill level is rank * 10 + xp/10 (approximate)
-    rank = skill_data.get("rank", 0)
-    xp = skill_data.get("xp", 0)
+    rank: int = skill_data.get("rank", 0)
+    xp: int = skill_data.get("xp", 0)
     return rank * 10 + min(xp // 10, 9)
 
 

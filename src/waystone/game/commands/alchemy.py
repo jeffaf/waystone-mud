@@ -8,6 +8,7 @@ from sqlalchemy import select
 from waystone.database.engine import get_session
 from waystone.database.models import Character
 from waystone.game.systems.magic.alchemy import (
+    AlchemyRecipe,
     brew_potion,
     calculate_success_chance,
     check_medica_location,
@@ -95,7 +96,12 @@ Example:
                     return
 
                 # Group by difficulty
-                by_difficulty = {"easy": [], "medium": [], "hard": [], "master": []}
+                by_difficulty: dict[str, list[AlchemyRecipe]] = {
+                    "easy": [],
+                    "medium": [],
+                    "hard": [],
+                    "master": [],
+                }
                 for recipe in recipes.values():
                     difficulty = recipe.difficulty
                     if difficulty in by_difficulty:
