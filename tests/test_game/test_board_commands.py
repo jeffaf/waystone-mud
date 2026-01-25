@@ -421,7 +421,7 @@ class TestListCommand:
         """Test list command aliases."""
         cmd = ListCommand()
         assert cmd.name == "list"
-        assert "l" in cmd.aliases
+        # Note: 'l' alias removed due to conflict with 'look' command
 
 
 class TestReadCommand:
@@ -715,8 +715,7 @@ class TestRemoveCommand:
     def test_command_aliases(self):
         """Test remove command aliases."""
         cmd = RemoveCommand()
-        assert cmd.name == "remove"
-        assert "delete" in cmd.aliases
+        assert cmd.name == "delmsg"  # Changed from "remove" -> "delete" -> "delmsg" to avoid conflicts
         assert "del" in cmd.aliases
 
 
@@ -883,7 +882,7 @@ class TestNextPrevCommands:
         """Test next command aliases."""
         cmd = NextCommand()
         assert cmd.name == "next"
-        assert "n" in cmd.aliases
+        # Note: 'n' alias removed due to conflict with 'north' movement command
 
     def test_prev_command_aliases(self):
         """Test prev command aliases."""
