@@ -2,7 +2,7 @@
 
 Commands:
 - board/boards/bb: List boards in room or select a board
-- list/l: List messages on current board
+- list: List messages on current board
 - read/r: Read a message
 - post/p/write: Post a new message
 - reply/re: Reply to a message
@@ -197,7 +197,7 @@ class ListCommand(Command):
     """List messages on the current board."""
 
     name = "list"
-    aliases = ["l"]
+    aliases = []
     help_text = "list [new] - List messages on current board"
     extended_help = """
 List messages on the currently selected bulletin board.
@@ -205,7 +205,6 @@ List messages on the currently selected bulletin board.
 Usage:
   list      - List all messages
   list new  - List only unread messages
-  l         - Same as 'list'
 
 You must first select a board using 'board <name>'.
 """
