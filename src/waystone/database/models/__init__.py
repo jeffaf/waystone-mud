@@ -1,6 +1,12 @@
 """SQLAlchemy models for Waystone MUD."""
 
 from waystone.database.models.base import Base, TimestampMixin
+from waystone.database.models.bulletin import (
+    BoardAccessLevel,
+    BoardMessage,
+    BulletinBoard,
+    MessageRead,
+)
 from waystone.database.models.character import Character, CharacterBackground
 from waystone.database.models.item import ItemInstance, ItemSlot, ItemTemplate, ItemType
 from waystone.database.models.npc import NPC, NPCTemplate
@@ -23,4 +29,8 @@ __all__ = [
     "NPCTemplate",
     "Quest",
     "QuestStatus",
+    "BulletinBoard",
+    "BoardMessage",
+    "MessageRead",
+    "BoardAccessLevel",
 ]
