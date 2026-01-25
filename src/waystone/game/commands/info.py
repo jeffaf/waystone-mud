@@ -82,6 +82,11 @@ class HelpCommand(Command):
             await ctx.connection.send_line(colorize("\n Information:", "YELLOW"))
             await ctx.connection.send_line("  score, who, time, help [command]")
 
+            await ctx.connection.send_line(colorize("\n Bulletin Boards:", "YELLOW"))
+            await ctx.connection.send_line("  board - Select board, list - List messages")
+            await ctx.connection.send_line("  read/post/reply/delmsg - Message commands")
+            await ctx.connection.send_line("  Type 'guide bbs' for detailed help")
+
             await ctx.connection.send_line(colorize("\n Character:", "YELLOW"))
             await ctx.connection.send_line("  characters, logout")
 
@@ -692,14 +697,15 @@ Type 'guide topics' to see all guide topics.
 ╔═══ Guide Topics ═══╗
 
 Available topics:
-  guide start        - Getting started
-  guide movement     - Navigation
-  guide combat       - Fighting
-  guide sympathy     - Magic system
-  guide inventory    - Items & equipment
+  guide start         - Getting started
+  guide movement      - Navigation
+  guide combat        - Fighting
+  guide sympathy      - Magic system
+  guide inventory     - Items & equipment
   guide communication - Chat commands
-  guide fae          - The Fae realm
-  guide tips         - Helpful advice
+  guide bbs           - Bulletin Board System
+  guide fae           - The Fae realm
+  guide tips          - Helpful advice
 
 Just type 'guide' for a quick overview.
 """,
@@ -735,6 +741,77 @@ The Curse:
 Type 'curse' anytime to view your curse status.
 WARNING: The Sithe hunt those who speak with the Cthaeh!
 """,
+        "bbs": """
+╔═══ Bulletin Board System ═══╗
+
+Bulletin boards are vintage-style message boards found throughout
+the world. Read announcements, post messages, and communicate
+asynchronously with other players and NPCs!
+
+Finding Boards:
+  Look for bulletin boards in room descriptions
+  Common locations:
+    - University Courtyard (University Notice Board)
+    - The Hollows (Admissions Board)
+    - Archives (Research Requests)
+    - Imre Main Square (Marketplace Board)
+
+Basic Commands:
+  board              - List all boards in your current room
+  board <name>       - Select a board (e.g., 'board university')
+  list               - List messages on selected board
+  list new           - List only unread messages
+  read               - Read next unread message
+  read <number>      - Read specific message (e.g., 'read 5')
+  read new           - Read all unread messages
+  read all           - Read all messages
+
+Posting Messages:
+  post <subject>     - Start composing a new message
+                       Opens multi-line editor
+
+  In the Editor:
+    .send     - Post the message
+    .cancel   - Abort without posting
+    .show     - Preview your message
+    .clear    - Clear all lines
+    .help     - Show editor commands
+
+  reply <number>     - Reply to a message (e.g., 'reply 5')
+                       Subject auto-set to 'Re: <original>'
+
+Message Navigation:
+  next               - Read next message in sequence
+  prev               - Read previous message
+
+Managing Messages:
+  delmsg <number>    - Delete a message (your own only)
+  del <number>       - Short form of delmsg
+  pin <number>       - Pin message to top (moderators only)
+
+Access Levels:
+  Different boards have different access requirements:
+    PUBLIC    - Anyone can read/post
+    STUDENT   - Requires University E'lir rank
+    ADVANCED  - Requires Re'lar or higher
+    MASTER    - Masters only
+
+Special Features:
+  - Unread message tracking
+  - Message threading (replies)
+  - ANSI-style borders and formatting
+  - NPC posts from Masters and staff
+  - Anonymous posting on some boards
+
+Tips:
+  - Check boards regularly for new posts
+  - Some boards require specific ranks or stats
+  - Masters and NPCs post announcements
+  - Use 'read new' to catch up quickly
+  - Pinned messages stay at the top
+
+Type 'help board' to see board command details.
+""",
     }
 
     async def execute(self, ctx: CommandContext) -> None:
@@ -761,6 +838,7 @@ Quick Commands:
   Combat:    attack, defend, flee
   Info:      score, who, help
   Magic:     bind, sympathy, cast
+  Boards:    board, list, read, post
 
 Guide Topics:
   guide start      - Getting started
@@ -768,6 +846,7 @@ Guide Topics:
   guide combat     - Fighting
   guide sympathy   - Magic system
   guide inventory  - Items & equipment
+  guide bbs        - Bulletin boards
   guide fae        - The Fae realm
   guide tips       - Helpful advice
 
