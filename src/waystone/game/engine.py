@@ -837,6 +837,26 @@ class GameEngine:
                         exc_info=True,
                     )
 
+                # Check for NPC bulletin board posts (every 60 ticks = 30 minutes)
+                if tick_count % 60 == 0:
+                    from waystone.game.systems.npc_poster import check_npc_posts
+
+                    try:
+                        posts_created = await check_npc_posts()
+
+                        if posts_created > 0:
+                            logger.info(
+                                "npc_posts_created",
+                                posts_created=posts_created,
+                            )
+
+                    except Exception as e:
+                        logger.error(
+                            "npc_poster_error",
+                            error=str(e),
+                            exc_info=True,
+                        )
+
             except asyncio.CancelledError:
                 break
             except Exception as e:
