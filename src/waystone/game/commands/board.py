@@ -8,7 +8,7 @@ Commands:
 - reply/re: Reply to a message
 - delmsg/del: Delete a message
 - pin: Pin a message (moderators only)
-- next/n: Read next message
+- next: Read next message
 - prev/previous: Read previous message
 """
 
@@ -714,14 +714,13 @@ class NextCommand(Command):
     """Read the next message in sequence."""
 
     name = "next"
-    aliases = ["n"]
+    aliases = []
     help_text = "next - Read next message"
     extended_help = """
 Read the next message after the one you just read.
 
 Usage:
   next  - Read next message
-  n     - Same as 'next'
 
 If you haven't read a message yet, reads the first message.
 """
