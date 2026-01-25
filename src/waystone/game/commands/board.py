@@ -6,7 +6,7 @@ Commands:
 - read/r: Read a message
 - post/p/write: Post a new message
 - reply/re: Reply to a message
-- remove/delete/del: Delete a message
+- delete/del: Delete a message
 - pin: Pin a message (moderators only)
 - next/n: Read next message
 - prev/previous: Read previous message
@@ -584,16 +584,15 @@ will automatically be set to 'Re: <original subject>'.
 class RemoveCommand(Command):
     """Remove a message from the board."""
 
-    name = "remove"
-    aliases = ["delete", "del"]
-    help_text = "remove <number> - Delete a message"
+    name = "delete"
+    aliases = ["del"]
+    help_text = "delete <number> - Delete a message"
     extended_help = """
 Delete a message from the current board.
 
 Usage:
-  remove 5   - Delete message #5
-  delete 5   - Same as 'remove 5'
-  del 5      - Same as 'remove 5'
+  delete 5   - Delete message #5
+  del 5      - Same as 'delete 5'
 
 You can only delete your own messages, unless you are a moderator
 (El'the rank or higher).
