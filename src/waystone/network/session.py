@@ -46,6 +46,8 @@ class Session:
         self.state = SessionState.CONNECTED
         self.created_at = datetime.now(UTC)
         self.last_activity = datetime.now(UTC)
+        # General purpose session data storage (for commands, editor state, etc.)
+        self.data: dict[str, object] = {}
 
         logger.info(
             "session_created",

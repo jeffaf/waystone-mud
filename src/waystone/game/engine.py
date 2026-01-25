@@ -279,6 +279,17 @@ class GameEngine:
             TuitionCommand,
             WorkCommand,
         )
+        from waystone.game.commands.board import (
+            BoardListCommand,
+            ListCommand,
+            NextCommand,
+            PinCommand,
+            PostCommand,
+            PrevCommand,
+            ReadCommand,
+            RemoveCommand,
+            ReplyCommand,
+        )
 
         registry = get_registry()
 
@@ -395,6 +406,17 @@ class GameEngine:
         # Alchemy commands
         registry.register(BrewCommand())
         registry.register(RecipesCommand())
+
+        # Bulletin board commands
+        registry.register(BoardListCommand())
+        registry.register(ListCommand())
+        registry.register(ReadCommand())
+        registry.register(PostCommand())
+        registry.register(ReplyCommand())
+        registry.register(RemoveCommand())
+        registry.register(PinCommand())
+        registry.register(NextCommand())
+        registry.register(PrevCommand())
 
         logger.info(
             "commands_registered",
