@@ -356,7 +356,9 @@ class TestBoardMessage:
         assert reply.parent.id == parent.id
         assert reply.parent.subject == "Original Post"
 
-    async def test_message_foreign_key_board(self, db_session: AsyncSession, sample_character: Character):
+    async def test_message_foreign_key_board(
+        self, db_session: AsyncSession, sample_character: Character
+    ):
         """Test that message requires valid board_id."""
         message = BoardMessage(
             board_id="nonexistent_board",
@@ -455,9 +457,7 @@ class TestBoardMessage:
         message_id = message.id
 
         # Verify the message exists with author_name
-        result = await db_session.execute(
-            select(BoardMessage).where(BoardMessage.id == message_id)
-        )
+        result = await db_session.execute(select(BoardMessage).where(BoardMessage.id == message_id))
         reloaded_message = result.scalar_one()
 
         # Author name should be preserved regardless of author_id
@@ -470,9 +470,7 @@ class TestBoardMessage:
         await db_session.commit()
 
         # Reload again to verify
-        result = await db_session.execute(
-            select(BoardMessage).where(BoardMessage.id == message_id)
-        )
+        result = await db_session.execute(select(BoardMessage).where(BoardMessage.id == message_id))
         final_message = result.scalar_one()
         assert final_message.author_name == "DeletedChar"
         assert final_message.author_id is None
@@ -508,9 +506,7 @@ class TestBoardMessage:
         await db_session.commit()
 
         # Message should be deleted
-        result = await db_session.execute(
-            select(BoardMessage).where(BoardMessage.id == message_id)
-        )
+        result = await db_session.execute(select(BoardMessage).where(BoardMessage.id == message_id))
         assert result.scalar_one_or_none() is None
 
     async def test_message_repr(
@@ -840,9 +836,7 @@ class TestBoardMessagesRelationship:
         await db_session.commit()
 
         # Fetch board fresh with messages
-        result = await db_session.execute(
-            select(BulletinBoard).where(BulletinBoard.id == board.id)
-        )
+        result = await db_session.execute(select(BulletinBoard).where(BulletinBoard.id == board.id))
         loaded_board = result.scalar_one()
         await db_session.refresh(loaded_board, ["messages"])
 

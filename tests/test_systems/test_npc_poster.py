@@ -183,6 +183,6 @@ async def test_npc_posts_respect_board_ids(db_session):
     }
 
     for schedule in NPC_POSTING_SCHEDULES:
-        assert (
-            schedule.board_id in valid_board_ids
-        ), f"{schedule.npc_name} posts to invalid board: {schedule.board_id}"
+        assert schedule.board_id in valid_board_ids, (
+            f"{schedule.npc_name} posts to invalid board: {schedule.board_id}"
+        )

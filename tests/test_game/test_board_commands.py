@@ -184,6 +184,7 @@ def mock_connection() -> MagicMock:
 @pytest.fixture
 def mock_session_factory(sample_character: Character):
     """Factory for creating mock sessions with proper data dict."""
+
     def _create_session(character: Character | None = None) -> MagicMock:
         char = character or sample_character
         session = MagicMock(spec=Session)
@@ -191,6 +192,7 @@ def mock_session_factory(sample_character: Character):
         session.state = SessionState.PLAYING
         session.data = {}  # Session state storage
         return session
+
     return _create_session
 
 
@@ -214,9 +216,13 @@ class TestBoardListCommand:
     """Tests for the board/boards/bb command."""
 
     async def test_list_boards_in_room(
-        self, mock_connection: MagicMock, mock_session: MagicMock,
-        mock_engine: MagicMock, student_board: BulletinBoard,
-        db_session: AsyncSession, sample_character: Character
+        self,
+        mock_connection: MagicMock,
+        mock_session: MagicMock,
+        mock_engine: MagicMock,
+        student_board: BulletinBoard,
+        db_session: AsyncSession,
+        sample_character: Character,
     ):
         """Test listing boards in current room."""
         cmd = BoardListCommand()
@@ -240,8 +246,12 @@ class TestBoardListCommand:
         mock_connection.send_line.assert_called()
 
     async def test_list_boards_empty_room(
-        self, mock_connection: MagicMock, mock_session: MagicMock,
-        mock_engine: MagicMock, db_session: AsyncSession, sample_character: Character
+        self,
+        mock_connection: MagicMock,
+        mock_session: MagicMock,
+        mock_engine: MagicMock,
+        db_session: AsyncSession,
+        sample_character: Character,
     ):
         """Test listing boards in room with no boards."""
         cmd = BoardListCommand()
@@ -274,9 +284,13 @@ class TestBoardSelectCommand:
     """Tests for selecting a board."""
 
     async def test_select_board_by_name(
-        self, mock_connection: MagicMock, mock_session: MagicMock,
-        mock_engine: MagicMock, student_board: BulletinBoard,
-        db_session: AsyncSession, sample_character: Character
+        self,
+        mock_connection: MagicMock,
+        mock_session: MagicMock,
+        mock_engine: MagicMock,
+        student_board: BulletinBoard,
+        db_session: AsyncSession,
+        sample_character: Character,
     ):
         """Test selecting a board by its name."""
         cmd = BoardListCommand()  # BoardListCommand handles selection
@@ -298,8 +312,12 @@ class TestBoardSelectCommand:
         mock_connection.send_line.assert_called()
 
     async def test_select_board_not_found(
-        self, mock_connection: MagicMock, mock_session: MagicMock,
-        mock_engine: MagicMock, db_session: AsyncSession, sample_character: Character
+        self,
+        mock_connection: MagicMock,
+        mock_session: MagicMock,
+        mock_engine: MagicMock,
+        db_session: AsyncSession,
+        sample_character: Character,
     ):
         """Test selecting a non-existent board."""
         cmd = BoardListCommand()
@@ -325,8 +343,12 @@ class TestListCommand:
     """Tests for the list command."""
 
     async def test_list_requires_selected_board(
-        self, mock_connection: MagicMock, mock_session: MagicMock,
-        mock_engine: MagicMock, db_session: AsyncSession, sample_character: Character
+        self,
+        mock_connection: MagicMock,
+        mock_session: MagicMock,
+        mock_engine: MagicMock,
+        db_session: AsyncSession,
+        sample_character: Character,
     ):
         """Test that list requires a selected board."""
         mock_session.data["selected_board_id"] = None
@@ -353,9 +375,13 @@ class TestListCommand:
         assert "selected" in call_args.lower() or mock_connection.send_line.called
 
     async def test_list_messages(
-        self, mock_connection: MagicMock, mock_session: MagicMock,
-        mock_engine: MagicMock, student_board: BulletinBoard,
-        sample_character: Character, db_session: AsyncSession
+        self,
+        mock_connection: MagicMock,
+        mock_session: MagicMock,
+        mock_engine: MagicMock,
+        student_board: BulletinBoard,
+        sample_character: Character,
+        db_session: AsyncSession,
     ):
         """Test listing messages on selected board."""
         # Post a message first using the manager
@@ -388,9 +414,13 @@ class TestListCommand:
         mock_connection.send_line.assert_called()
 
     async def test_list_new_only(
-        self, mock_connection: MagicMock, mock_session: MagicMock,
-        mock_engine: MagicMock, student_board: BulletinBoard,
-        db_session: AsyncSession, sample_character: Character
+        self,
+        mock_connection: MagicMock,
+        mock_session: MagicMock,
+        mock_engine: MagicMock,
+        student_board: BulletinBoard,
+        db_session: AsyncSession,
+        sample_character: Character,
     ):
         """Test listing only new messages."""
         mock_session.data["selected_board_id"] = "university_main"
@@ -424,8 +454,12 @@ class TestReadCommand:
     """Tests for the read command."""
 
     async def test_read_requires_selected_board(
-        self, mock_connection: MagicMock, mock_session: MagicMock,
-        mock_engine: MagicMock, db_session: AsyncSession, sample_character: Character
+        self,
+        mock_connection: MagicMock,
+        mock_session: MagicMock,
+        mock_engine: MagicMock,
+        db_session: AsyncSession,
+        sample_character: Character,
     ):
         """Test that read requires a selected board."""
         mock_session.data["selected_board_id"] = None
@@ -449,9 +483,13 @@ class TestReadCommand:
         mock_connection.send_line.assert_called()
 
     async def test_read_specific_message(
-        self, mock_connection: MagicMock, mock_session: MagicMock,
-        mock_engine: MagicMock, student_board: BulletinBoard,
-        sample_character: Character, db_session: AsyncSession
+        self,
+        mock_connection: MagicMock,
+        mock_session: MagicMock,
+        mock_engine: MagicMock,
+        student_board: BulletinBoard,
+        sample_character: Character,
+        db_session: AsyncSession,
     ):
         """Test reading a specific message by number."""
         manager = BoardManager(db_session)
@@ -485,9 +523,13 @@ class TestReadCommand:
         assert mock_session.data.get("current_message_sequence") == 1
 
     async def test_read_next_unread(
-        self, mock_connection: MagicMock, mock_session: MagicMock,
-        mock_engine: MagicMock, student_board: BulletinBoard,
-        sample_character: Character, db_session: AsyncSession
+        self,
+        mock_connection: MagicMock,
+        mock_session: MagicMock,
+        mock_engine: MagicMock,
+        student_board: BulletinBoard,
+        sample_character: Character,
+        db_session: AsyncSession,
     ):
         """Test reading next unread message."""
         manager = BoardManager(db_session)
@@ -529,8 +571,12 @@ class TestPostCommand:
     """Tests for the post command."""
 
     async def test_post_requires_selected_board(
-        self, mock_connection: MagicMock, mock_session: MagicMock,
-        mock_engine: MagicMock, db_session: AsyncSession, sample_character: Character
+        self,
+        mock_connection: MagicMock,
+        mock_session: MagicMock,
+        mock_engine: MagicMock,
+        db_session: AsyncSession,
+        sample_character: Character,
     ):
         """Test that post requires a selected board."""
         mock_session.data["selected_board_id"] = None
@@ -554,9 +600,13 @@ class TestPostCommand:
         mock_connection.send_line.assert_called()
 
     async def test_post_access_denied(
-        self, mock_connection: MagicMock, mock_session_factory,
-        mock_engine: MagicMock, student_board: BulletinBoard,
-        non_student_character: Character, db_session: AsyncSession
+        self,
+        mock_connection: MagicMock,
+        mock_session_factory,
+        mock_engine: MagicMock,
+        student_board: BulletinBoard,
+        non_student_character: Character,
+        db_session: AsyncSession,
     ):
         """Test that posting is denied for unauthorized users."""
         mock_session = mock_session_factory(non_student_character)
@@ -593,9 +643,13 @@ class TestReplyCommand:
     """Tests for the reply command."""
 
     async def test_reply_to_message(
-        self, mock_connection: MagicMock, mock_session: MagicMock,
-        mock_engine: MagicMock, student_board: BulletinBoard,
-        sample_character: Character, db_session: AsyncSession
+        self,
+        mock_connection: MagicMock,
+        mock_session: MagicMock,
+        mock_engine: MagicMock,
+        student_board: BulletinBoard,
+        sample_character: Character,
+        db_session: AsyncSession,
     ):
         """Test replying to an existing message."""
         manager = BoardManager(db_session)
@@ -640,9 +694,13 @@ class TestRemoveCommand:
     """Tests for the remove/delete command."""
 
     async def test_remove_own_message(
-        self, mock_connection: MagicMock, mock_session: MagicMock,
-        mock_engine: MagicMock, student_board: BulletinBoard,
-        sample_character: Character, db_session: AsyncSession
+        self,
+        mock_connection: MagicMock,
+        mock_session: MagicMock,
+        mock_engine: MagicMock,
+        student_board: BulletinBoard,
+        sample_character: Character,
+        db_session: AsyncSession,
     ):
         """Test removing own message."""
         manager = BoardManager(db_session)
@@ -674,10 +732,14 @@ class TestRemoveCommand:
         mock_connection.send_line.assert_called()
 
     async def test_remove_others_message_denied(
-        self, mock_connection: MagicMock, mock_session: MagicMock,
-        mock_engine: MagicMock, student_board: BulletinBoard,
-        sample_character: Character, master_character: Character,
-        db_session: AsyncSession
+        self,
+        mock_connection: MagicMock,
+        mock_session: MagicMock,
+        mock_engine: MagicMock,
+        student_board: BulletinBoard,
+        sample_character: Character,
+        master_character: Character,
+        db_session: AsyncSession,
     ):
         """Test that non-authors cannot delete others' messages."""
         manager = BoardManager(db_session)
@@ -711,7 +773,9 @@ class TestRemoveCommand:
     def test_command_aliases(self):
         """Test remove command aliases."""
         cmd = RemoveCommand()
-        assert cmd.name == "delmsg"  # Changed from "remove" -> "delete" -> "delmsg" to avoid conflicts
+        assert (
+            cmd.name == "delmsg"
+        )  # Changed from "remove" -> "delete" -> "delmsg" to avoid conflicts
         assert "del" in cmd.aliases
 
 
@@ -719,10 +783,14 @@ class TestPinCommand:
     """Tests for the pin command."""
 
     async def test_pin_by_master(
-        self, mock_connection: MagicMock, mock_session_factory,
-        mock_engine: MagicMock, student_board: BulletinBoard,
-        sample_character: Character, master_character: Character,
-        db_session: AsyncSession
+        self,
+        mock_connection: MagicMock,
+        mock_session_factory,
+        mock_engine: MagicMock,
+        student_board: BulletinBoard,
+        sample_character: Character,
+        master_character: Character,
+        db_session: AsyncSession,
     ):
         """Test pinning by El'the."""
         manager = BoardManager(db_session)
@@ -755,9 +823,13 @@ class TestPinCommand:
         mock_connection.send_line.assert_called()
 
     async def test_pin_by_non_master_denied(
-        self, mock_connection: MagicMock, mock_session: MagicMock,
-        mock_engine: MagicMock, student_board: BulletinBoard,
-        sample_character: Character, db_session: AsyncSession
+        self,
+        mock_connection: MagicMock,
+        mock_session: MagicMock,
+        mock_engine: MagicMock,
+        student_board: BulletinBoard,
+        sample_character: Character,
+        db_session: AsyncSession,
     ):
         """Test that non-masters cannot pin."""
         manager = BoardManager(db_session)
@@ -793,9 +865,13 @@ class TestNextPrevCommands:
     """Tests for next and prev navigation commands."""
 
     async def test_next_message(
-        self, mock_connection: MagicMock, mock_session: MagicMock,
-        mock_engine: MagicMock, student_board: BulletinBoard,
-        sample_character: Character, db_session: AsyncSession
+        self,
+        mock_connection: MagicMock,
+        mock_session: MagicMock,
+        mock_engine: MagicMock,
+        student_board: BulletinBoard,
+        sample_character: Character,
+        db_session: AsyncSession,
     ):
         """Test navigating to next message."""
         manager = BoardManager(db_session)
@@ -834,9 +910,13 @@ class TestNextPrevCommands:
         mock_connection.send_line.assert_called()
 
     async def test_prev_message(
-        self, mock_connection: MagicMock, mock_session: MagicMock,
-        mock_engine: MagicMock, student_board: BulletinBoard,
-        sample_character: Character, db_session: AsyncSession
+        self,
+        mock_connection: MagicMock,
+        mock_session: MagicMock,
+        mock_engine: MagicMock,
+        student_board: BulletinBoard,
+        sample_character: Character,
+        db_session: AsyncSession,
     ):
         """Test navigating to previous message."""
         manager = BoardManager(db_session)
@@ -891,11 +971,16 @@ class TestFullWorkflow:
     """Integration tests for the complete BBS workflow."""
 
     async def test_complete_workflow(
-        self, mock_connection: MagicMock, mock_session: MagicMock,
-        mock_engine: MagicMock, student_board: BulletinBoard,
-        sample_character: Character, db_session: AsyncSession
+        self,
+        mock_connection: MagicMock,
+        mock_session: MagicMock,
+        mock_engine: MagicMock,
+        student_board: BulletinBoard,
+        sample_character: Character,
+        db_session: AsyncSession,
     ):
         """Test complete workflow: list -> select -> post -> read."""
+
         @asynccontextmanager
         async def mock_get_session() -> AsyncGenerator[AsyncSession, None]:
             yield db_session

@@ -104,7 +104,9 @@ class BoardManager:
         for board in boards:
             # Count messages
             msg_count_result = await self._session.execute(
-                select(func.count()).select_from(BoardMessage).where(BoardMessage.board_id == board.id)
+                select(func.count())
+                .select_from(BoardMessage)
+                .where(BoardMessage.board_id == board.id)
             )
             message_count = msg_count_result.scalar() or 0
 
@@ -282,9 +284,7 @@ class BoardManager:
 
         return len(all_message_ids - read_ids)
 
-    async def get_message_by_sequence(
-        self, board_id: str, sequence: int
-    ) -> MessageInfo | None:
+    async def get_message_by_sequence(self, board_id: str, sequence: int) -> MessageInfo | None:
         """Get a specific message by its sequence number."""
         result = await self._session.execute(
             select(BoardMessage).where(
@@ -468,9 +468,7 @@ class BoardManager:
             reply_to_sequence=None,
         )
 
-    async def delete_message(
-        self, message_id: uuid.UUID, character_id: uuid.UUID
-    ) -> bool:
+    async def delete_message(self, message_id: uuid.UUID, character_id: uuid.UUID) -> bool:
         """Delete a message. Returns True if deleted, False if denied."""
         from waystone.database.models import Character
 
@@ -513,9 +511,7 @@ class BoardManager:
 
         return False
 
-    async def pin_message(
-        self, message_id: uuid.UUID, character_id: uuid.UUID
-    ) -> bool:
+    async def pin_message(self, message_id: uuid.UUID, character_id: uuid.UUID) -> bool:
         """Pin a message. Only El'the or Master can pin."""
         from waystone.database.models import Character
 
@@ -552,9 +548,7 @@ class BoardManager:
 
         return True
 
-    async def mark_as_read(
-        self, message_id: uuid.UUID, character_id: uuid.UUID
-    ) -> None:
+    async def mark_as_read(self, message_id: uuid.UUID, character_id: uuid.UUID) -> None:
         """Mark a message as read for a character."""
         # Check if already read
         existing = await self._session.execute(
@@ -657,7 +651,9 @@ class MessageFormatter:
         return "\n".join(lines)
 
     @staticmethod
-    def format_message_list(messages: list[MessageInfo], character: "Character | None" = None) -> str:
+    def format_message_list(
+        messages: list[MessageInfo], character: "Character | None" = None
+    ) -> str:
         """Format a list of messages for display."""
         # character parameter reserved for future personalization features
         _ = character

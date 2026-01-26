@@ -52,7 +52,9 @@ def _check_post_rate_limit(ctx: CommandContext) -> tuple[bool, str]:
     recent_timestamps = [ts for ts in timestamps if ts > window_start]
 
     if len(recent_timestamps) >= MAX_POSTS_PER_HOUR:
-        minutes_until_reset = int((recent_timestamps[0] + RATE_LIMIT_WINDOW_SECONDS - current_time) / 60)
+        minutes_until_reset = int(
+            (recent_timestamps[0] + RATE_LIMIT_WINDOW_SECONDS - current_time) / 60
+        )
         return (False, f"Rate limit exceeded. You can post again in {minutes_until_reset} minutes.")
 
     return (True, "")
@@ -81,9 +83,7 @@ async def _get_selected_board(ctx: CommandContext) -> BulletinBoard | None:
         return None
 
     async with get_session() as db:
-        result = await db.execute(
-            select(BulletinBoard).where(BulletinBoard.id == board_id)
-        )
+        result = await db.execute(select(BulletinBoard).where(BulletinBoard.id == board_id))
         return result.scalar_one_or_none()
 
 
@@ -134,16 +134,12 @@ Examples:
 
             # Get unread counts for each board
             for board in boards:
-                board.unread_count = await manager.get_unread_count(
-                    board.id, character.id
-                )
+                board.unread_count = await manager.get_unread_count(board.id, character.id)
 
             output = MessageFormatter.format_board_list(boards, character)
             await ctx.connection.send_line(output)
 
-    async def _select_board(
-        self, ctx: CommandContext, character: Character, search: str
-    ) -> None:
+    async def _select_board(self, ctx: CommandContext, character: Character, search: str) -> None:
         """Select a board by name."""
         async with get_session() as db:
             manager = BoardManager(db)
@@ -357,22 +353,23 @@ You must first select a board using 'board <name>'.
             try:
                 seq_num = int(arg)
             except ValueError:
-                await ctx.connection.send_line(
-                    colorize(f"Invalid message number: {arg}", "YELLOW")
-                )
+                await ctx.connection.send_line(colorize(f"Invalid message number: {arg}", "YELLOW"))
                 return
 
             message_result = await manager.get_message_by_sequence(board.id, seq_num)
             if not message_result:
-                await ctx.connection.send_line(
-                    colorize(f"Message #{seq_num} not found.", "YELLOW")
-                )
+                await ctx.connection.send_line(colorize(f"Message #{seq_num} not found.", "YELLOW"))
                 return
 
             await self._display_message(ctx, manager, message_result, character, total_messages)
 
     async def _display_message(
-        self, ctx: CommandContext, manager: BoardManager, message: MessageInfo, character: Character, total: int
+        self,
+        ctx: CommandContext,
+        manager: BoardManager,
+        message: MessageInfo,
+        character: Character,
+        total: int,
     ) -> None:
         """Display a message and mark as read."""
         output = MessageFormatter.format_message(message, character, total)
@@ -442,9 +439,7 @@ You must have permission to post to the board.
         subject = " ".join(ctx.args)
 
         # Start editor mode
-        await ctx.connection.send_line(
-            colorize(f"Composing message: {subject}", "CYAN")
-        )
+        await ctx.connection.send_line(colorize(f"Composing message: {subject}", "CYAN"))
         await ctx.connection.send_line(
             "Enter your message. Use '.send' to post, '.cancel' to abort, '.help' for help."
         )
@@ -459,8 +454,12 @@ You must have permission to post to the board.
         await self._run_editor(ctx, character, board, subject, None)
 
     async def _run_editor(
-        self, ctx: CommandContext, character: Character, board: BulletinBoard,
-        subject: str, reply_to: int | None
+        self,
+        ctx: CommandContext,
+        character: Character,
+        board: BulletinBoard,
+        subject: str,
+        reply_to: int | None,
     ) -> None:
         """Run the multi-line editor."""
         lines: list[str] = []
@@ -477,9 +476,7 @@ You must have permission to post to the board.
             # Editor commands
             if line.lower() == ".send":
                 if not lines:
-                    await ctx.connection.send_line(
-                        colorize("Cannot send empty message.", "YELLOW")
-                    )
+                    await ctx.connection.send_line(colorize("Cannot send empty message.", "YELLOW"))
                     continue
 
                 # Post the message - sanitize input for security
@@ -515,6 +512,7 @@ You must have permission to post to the board.
                 # Record post timestamp for rate limiting
                 import time
                 from typing import cast
+
                 rate_key = "board_post_timestamps"
                 timestamps = cast(list[float], ctx.session.data.get(rate_key, []))
                 timestamps.append(time.time())
@@ -625,9 +623,7 @@ will automatically be set to 'Re: <original subject>'.
             # Get the original message
             original = await manager.get_message_by_sequence(board.id, seq_num)
             if not original:
-                await ctx.connection.send_line(
-                    colorize(f"Message #{seq_num} not found.", "YELLOW")
-                )
+                await ctx.connection.send_line(colorize(f"Message #{seq_num} not found.", "YELLOW"))
                 return
 
         # Create reply subject
@@ -638,9 +634,7 @@ will automatically be set to 'Re: <original subject>'.
         await ctx.connection.send_line(
             colorize(f"Replying to message #{seq_num}: {original.subject}", "CYAN")
         )
-        await ctx.connection.send_line(
-            "Enter your reply. Use '.send' to post, '.cancel' to abort."
-        )
+        await ctx.connection.send_line("Enter your reply. Use '.send' to post, '.cancel' to abort.")
         await ctx.connection.send_line("-" * 40)
 
         # Run editor with reply_to set
@@ -695,18 +689,14 @@ You can only delete your own messages, unless you are a moderator
             # Get the message
             message = await manager.get_message_by_sequence(board.id, seq_num)
             if not message:
-                await ctx.connection.send_line(
-                    colorize(f"Message #{seq_num} not found.", "YELLOW")
-                )
+                await ctx.connection.send_line(colorize(f"Message #{seq_num} not found.", "YELLOW"))
                 return
 
             # Try to delete
             deleted = await manager.delete_message(message.id, character.id)
 
             if deleted:
-                await ctx.connection.send_line(
-                    colorize(f"Message #{seq_num} deleted.", "GREEN")
-                )
+                await ctx.connection.send_line(colorize(f"Message #{seq_num} deleted.", "GREEN"))
             else:
                 await ctx.connection.send_line(
                     colorize("You do not have permission to delete this message.", "RED")
@@ -759,18 +749,14 @@ This command requires moderator status (El'the rank or higher).
             # Get the message
             message = await manager.get_message_by_sequence(board.id, seq_num)
             if not message:
-                await ctx.connection.send_line(
-                    colorize(f"Message #{seq_num} not found.", "YELLOW")
-                )
+                await ctx.connection.send_line(colorize(f"Message #{seq_num} not found.", "YELLOW"))
                 return
 
             # Try to pin
             pinned = await manager.pin_message(message.id, character.id)
 
             if pinned:
-                await ctx.connection.send_line(
-                    colorize(f"Message #{seq_num} pinned.", "GREEN")
-                )
+                await ctx.connection.send_line(colorize(f"Message #{seq_num} pinned.", "GREEN"))
             else:
                 await ctx.connection.send_line(
                     colorize("Only moderators (El'the or higher) can pin messages.", "RED")
@@ -822,9 +808,7 @@ If you haven't read a message yet, reads the first message.
 
             message = await manager.get_message_by_sequence(board.id, next_seq)
             if not message:
-                await ctx.connection.send_line(
-                    colorize("No more messages.", "YELLOW")
-                )
+                await ctx.connection.send_line(colorize("No more messages.", "YELLOW"))
                 return
 
             output = MessageFormatter.format_message(message, character, len(messages))
@@ -870,9 +854,7 @@ Usage:
         prev_seq = current_seq - 1
 
         if prev_seq < 1:
-            await ctx.connection.send_line(
-                colorize("No previous messages.", "YELLOW")
-            )
+            await ctx.connection.send_line(colorize("No previous messages.", "YELLOW"))
             return
 
         async with get_session() as db:
@@ -885,9 +867,7 @@ Usage:
 
             message = await manager.get_message_by_sequence(board.id, prev_seq)
             if not message:
-                await ctx.connection.send_line(
-                    colorize("No previous messages.", "YELLOW")
-                )
+                await ctx.connection.send_line(colorize("No previous messages.", "YELLOW"))
                 return
 
             output = MessageFormatter.format_message(message, character, len(messages))

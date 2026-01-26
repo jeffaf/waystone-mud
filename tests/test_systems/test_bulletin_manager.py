@@ -276,21 +276,30 @@ class TestBoardManagerAccessControl:
     """Tests for BoardManager access control."""
 
     async def test_public_board_read_access_for_anyone(
-        self, board_manager: BoardManager, public_board: BulletinBoard, non_student_character: Character
+        self,
+        board_manager: BoardManager,
+        public_board: BulletinBoard,
+        non_student_character: Character,
     ):
         """Test that anyone can read public boards."""
         can_read = await board_manager.can_read_board(non_student_character, public_board)
         assert can_read is True
 
     async def test_public_board_post_access_for_anyone(
-        self, board_manager: BoardManager, public_board: BulletinBoard, non_student_character: Character
+        self,
+        board_manager: BoardManager,
+        public_board: BulletinBoard,
+        non_student_character: Character,
     ):
         """Test that anyone can post to public boards."""
         can_post = await board_manager.can_post_to_board(non_student_character, public_board)
         assert can_post is True
 
     async def test_student_board_post_denied_for_non_student(
-        self, board_manager: BoardManager, student_board: BulletinBoard, non_student_character: Character
+        self,
+        board_manager: BoardManager,
+        student_board: BulletinBoard,
+        non_student_character: Character,
     ):
         """Test that non-students cannot post to student boards."""
         can_post = await board_manager.can_post_to_board(non_student_character, student_board)
@@ -304,35 +313,50 @@ class TestBoardManagerAccessControl:
         assert can_post is True
 
     async def test_advanced_board_read_denied_for_non_student(
-        self, board_manager: BoardManager, advanced_board: BulletinBoard, non_student_character: Character
+        self,
+        board_manager: BoardManager,
+        advanced_board: BulletinBoard,
+        non_student_character: Character,
     ):
         """Test that non-students cannot read advanced boards."""
         can_read = await board_manager.can_read_board(non_student_character, advanced_board)
         assert can_read is False
 
     async def test_advanced_board_read_allowed_for_elir(
-        self, board_manager: BoardManager, advanced_board: BulletinBoard, sample_character: Character
+        self,
+        board_manager: BoardManager,
+        advanced_board: BulletinBoard,
+        sample_character: Character,
     ):
         """Test that E'lir can read advanced boards (STUDENT read level)."""
         can_read = await board_manager.can_read_board(sample_character, advanced_board)
         assert can_read is True
 
     async def test_advanced_board_post_denied_for_elir(
-        self, board_manager: BoardManager, advanced_board: BulletinBoard, sample_character: Character
+        self,
+        board_manager: BoardManager,
+        advanced_board: BulletinBoard,
+        sample_character: Character,
     ):
         """Test that E'lir cannot post to advanced boards (ADVANCED post level)."""
         can_post = await board_manager.can_post_to_board(sample_character, advanced_board)
         assert can_post is False
 
     async def test_advanced_board_post_allowed_for_relar(
-        self, board_manager: BoardManager, advanced_board: BulletinBoard, advanced_character: Character
+        self,
+        board_manager: BoardManager,
+        advanced_board: BulletinBoard,
+        advanced_character: Character,
     ):
         """Test that Re'lar can post to advanced boards."""
         can_post = await board_manager.can_post_to_board(advanced_character, advanced_board)
         assert can_post is True
 
     async def test_charisma_requirement_met(
-        self, board_manager: BoardManager, charisma_board: BulletinBoard, sample_character: Character
+        self,
+        board_manager: BoardManager,
+        charisma_board: BulletinBoard,
+        sample_character: Character,
     ):
         """Test posting allowed when charisma requirement is met."""
         # sample_character has charisma 14, requirement is 12
@@ -340,7 +364,10 @@ class TestBoardManagerAccessControl:
         assert can_post is True
 
     async def test_charisma_requirement_not_met(
-        self, board_manager: BoardManager, charisma_board: BulletinBoard, non_student_character: Character
+        self,
+        board_manager: BoardManager,
+        charisma_board: BulletinBoard,
+        non_student_character: Character,
     ):
         """Test posting denied when charisma requirement is not met."""
         # non_student_character has charisma 8, requirement is 12
@@ -485,7 +512,11 @@ class TestBoardManagerCRUD:
         assert message.subject == "Target Message"
 
     async def test_delete_message_by_author(
-        self, board_manager: BoardManager, student_board: BulletinBoard, sample_character: Character, db_session: AsyncSession
+        self,
+        board_manager: BoardManager,
+        student_board: BulletinBoard,
+        sample_character: Character,
+        db_session: AsyncSession,
     ):
         """Test that message author can delete their own message."""
         msg = await board_manager.post_message(
@@ -503,8 +534,12 @@ class TestBoardManagerCRUD:
         assert len(messages) == 0
 
     async def test_delete_message_by_non_author_denied(
-        self, board_manager: BoardManager, student_board: BulletinBoard,
-        sample_character: Character, advanced_character: Character, db_session: AsyncSession
+        self,
+        board_manager: BoardManager,
+        student_board: BulletinBoard,
+        sample_character: Character,
+        advanced_character: Character,
+        db_session: AsyncSession,
     ):
         """Test that non-author cannot delete message (unless moderator)."""
         msg = await board_manager.post_message(
@@ -541,8 +576,12 @@ class TestBoardManagerReadTracking:
         assert messages[0].is_read is True
 
     async def test_get_unread_count(
-        self, board_manager: BoardManager, student_board: BulletinBoard,
-        sample_character: Character, advanced_character: Character, db_session: AsyncSession
+        self,
+        board_manager: BoardManager,
+        student_board: BulletinBoard,
+        sample_character: Character,
+        advanced_character: Character,
+        db_session: AsyncSession,
     ):
         """Test counting unread messages."""
         # Post messages as different character
@@ -563,8 +602,11 @@ class TestBoardManagerReadTracking:
         assert unread == 2
 
     async def test_unread_count_decreases_after_read(
-        self, board_manager: BoardManager, student_board: BulletinBoard,
-        sample_character: Character, advanced_character: Character
+        self,
+        board_manager: BoardManager,
+        student_board: BulletinBoard,
+        sample_character: Character,
+        advanced_character: Character,
     ):
         """Test that unread count decreases after reading."""
         msg = await board_manager.post_message(
@@ -623,8 +665,11 @@ class TestBoardManagerPruning:
         assert "Message 5" in subjects
 
     async def test_prune_preserves_pinned_messages(
-        self, board_manager: BoardManager, db_session: AsyncSession,
-        sample_character: Character, master_character: Character
+        self,
+        board_manager: BoardManager,
+        db_session: AsyncSession,
+        sample_character: Character,
+        master_character: Character,
     ):
         """Test that pruning preserves pinned messages."""
         board = BulletinBoard(
@@ -670,8 +715,11 @@ class TestBoardManagerPinning:
     """Tests for message pinning."""
 
     async def test_pin_message_by_master(
-        self, board_manager: BoardManager, student_board: BulletinBoard,
-        sample_character: Character, master_character: Character
+        self,
+        board_manager: BoardManager,
+        student_board: BulletinBoard,
+        sample_character: Character,
+        master_character: Character,
     ):
         """Test that El'the can pin messages."""
         msg = await board_manager.post_message(
