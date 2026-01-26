@@ -1,10 +1,11 @@
 """Tests for the NPC Poster system."""
 
-import pytest
 from datetime import UTC, datetime, timedelta
 
+import pytest
+
 from waystone.database.engine import get_session
-from waystone.database.models.bulletin import BulletinBoard, BoardMessage, BoardAccessLevel
+from waystone.database.models.bulletin import BoardMessage, BulletinBoard
 from waystone.database.seed_boards import seed_bulletin_boards
 from waystone.game.systems.npc_poster import (
     NPCPostingSchedule,
@@ -55,16 +56,19 @@ def test_npc_posting_schedule_should_post():
         templates=[template],
     )
 
+    # Create a base time for consistent testing
+    base_time = datetime.now(UTC)
+
     # Test during active hours - should post
-    active_time = datetime.now(UTC).replace(hour=12, minute=0)
+    active_time = base_time.replace(hour=12, minute=0, second=0, microsecond=0)
     assert schedule.should_post(active_time) is True
 
     # Test outside active hours - should not post
-    inactive_time = datetime.now(UTC).replace(hour=22, minute=0)
+    inactive_time = base_time.replace(hour=22, minute=0, second=0, microsecond=0)
     assert schedule.should_post(inactive_time) is False
 
     # Test with next_post_after in future - should not post
-    schedule.next_post_after = datetime.now(UTC) + timedelta(hours=1)
+    schedule.next_post_after = active_time + timedelta(hours=1)
     assert schedule.should_post(active_time) is False
 
 
@@ -127,7 +131,7 @@ async def test_check_npc_posts_integration(db_session):
     # Check that the database structure is correct
     async with get_session() as session:
         # Verify boards exist
-        from sqlalchemy import select, func
+        from sqlalchemy import func, select
 
         board_count = await session.execute(select(func.count(BulletinBoard.id)))
         assert board_count.scalar() == 7

@@ -9,9 +9,8 @@ These tests verify:
 - Multi-line editor
 """
 
-import uuid
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
-from typing import Any, AsyncGenerator
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -22,14 +21,11 @@ from sqlalchemy.orm import sessionmaker
 from waystone.database.models import Base, Character, CharacterBackground, User
 from waystone.database.models.bulletin import (
     BoardAccessLevel,
-    BoardMessage,
     BulletinBoard,
-    MessageRead,
 )
 from waystone.game.commands.base import CommandContext
 from waystone.game.commands.board import (
     BoardListCommand,
-    BoardSelectCommand,
     ListCommand,
     NextCommand,
     PinCommand,

@@ -179,6 +179,17 @@ class GameEngine:
             QuitCommand,
             RegisterCommand,
         )
+        from waystone.game.commands.board import (
+            BoardListCommand,
+            ListCommand,
+            NextCommand,
+            PinCommand,
+            PostCommand,
+            PrevCommand,
+            ReadCommand,
+            RemoveCommand,
+            ReplyCommand,
+        )
         from waystone.game.commands.character import (
             CharactersCommand,
             CreateCommand,
@@ -278,17 +289,6 @@ class GameEngine:
             RankCommand,
             TuitionCommand,
             WorkCommand,
-        )
-        from waystone.game.commands.board import (
-            BoardListCommand,
-            ListCommand,
-            NextCommand,
-            PinCommand,
-            PostCommand,
-            PrevCommand,
-            ReadCommand,
-            RemoveCommand,
-            ReplyCommand,
         )
 
         registry = get_registry()

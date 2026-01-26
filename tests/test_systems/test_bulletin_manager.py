@@ -9,10 +9,9 @@ These tests verify:
 - Message formatting
 """
 
-import json
 import uuid
-from datetime import datetime, timezone
-from unittest.mock import AsyncMock, MagicMock, patch
+from datetime import UTC, datetime
+from unittest.mock import MagicMock
 
 import pytest
 from sqlalchemy import text
@@ -22,9 +21,7 @@ from sqlalchemy.orm import sessionmaker
 from waystone.database.models import Base, Character, CharacterBackground, User
 from waystone.database.models.bulletin import (
     BoardAccessLevel,
-    BoardMessage,
     BulletinBoard,
-    MessageRead,
 )
 from waystone.game.systems.bulletin import (
     BoardInfo,
@@ -32,7 +29,6 @@ from waystone.game.systems.bulletin import (
     MessageFormatter,
     MessageInfo,
 )
-from waystone.game.systems.university import ArcanumRank
 
 
 @pytest.fixture
@@ -256,7 +252,7 @@ class TestMessageInfo:
     def test_message_info_creation(self):
         """Test creating a MessageInfo."""
         msg_id = uuid.uuid4()
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         info = MessageInfo(
             id=msg_id,
             board_id="test_board",
@@ -662,7 +658,7 @@ class TestBoardManagerPruning:
             )
 
         # Prune
-        pruned = await board_manager.prune_old_messages("pinned_board")
+        await board_manager.prune_old_messages("pinned_board")
 
         # Verify pinned message is still there
         messages = await board_manager.get_messages("pinned_board", sample_character.id)
@@ -752,7 +748,7 @@ class TestMessageFormatter:
 
     def test_format_message_list(self):
         """Test formatting a list of messages."""
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         messages = [
             MessageInfo(
                 id=uuid.uuid4(),
@@ -794,7 +790,7 @@ class TestMessageFormatter:
 
     def test_format_message(self):
         """Test formatting a single message."""
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         message = MessageInfo(
             id=uuid.uuid4(),
             board_id="test",
@@ -821,7 +817,7 @@ class TestMessageFormatter:
 
     def test_format_message_anonymous(self):
         """Test formatting an anonymous message."""
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         message = MessageInfo(
             id=uuid.uuid4(),
             board_id="test",

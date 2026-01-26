@@ -753,7 +753,8 @@ async def check_npc_posts() -> int:
         Number of posts created
     """
     # Import here to avoid circular imports
-    from waystone.game.systems.bulletin import post_message
+    from waystone.database.engine import get_session
+    from waystone.game.systems.bulletin import BoardManager
 
     posts_created = 0
     current_time = datetime.now(UTC)
@@ -779,16 +780,17 @@ async def check_npc_posts() -> int:
         body = template.generate_body(**variables)
 
         # Post message to the board
-        success, msg, _ = await post_message(
-            board_id=schedule.board_id,
-            author_id=None,
-            author_name=schedule.npc_name,
-            subject=subject,
-            body=body,
-            npc_author_id=schedule.npc_template_id,
-        )
+        try:
+            async with get_session() as db:
+                manager = BoardManager(db)
+                await manager.post_npc_message(
+                    board_id=schedule.board_id,
+                    npc_author_id=schedule.npc_template_id,
+                    author_name=schedule.npc_name,
+                    subject=subject,
+                    body=body,
+                )
 
-        if success:
             schedule.record_post(current_time)
             posts_created += 1
 
@@ -798,12 +800,12 @@ async def check_npc_posts() -> int:
                 board=schedule.board_id,
                 subject=subject,
             )
-        else:
+        except Exception as e:
             logger.error(
                 "npc_poster.post_failed",
                 npc=schedule.npc_name,
                 board=schedule.board_id,
-                error=msg,
+                error=str(e),
             )
 
     return posts_created

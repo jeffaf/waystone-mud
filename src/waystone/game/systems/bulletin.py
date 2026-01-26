@@ -400,6 +400,74 @@ class BoardManager:
             reply_to_sequence=reply_to,
         )
 
+    async def post_npc_message(
+        self,
+        board_id: str,
+        npc_author_id: str,
+        author_name: str,
+        subject: str,
+        body: str,
+    ) -> MessageInfo:
+        """Post a message from an NPC to a board.
+
+        Args:
+            board_id: Board to post to
+            npc_author_id: NPC template ID (e.g., "elodin", "kilvin")
+            author_name: Display name of the NPC (e.g., "Master Elodin")
+            subject: Message subject
+            body: Message body
+
+        Returns:
+            MessageInfo for the created message
+        """
+        # Get next sequence number
+        seq_result = await self._session.execute(
+            select(func.max(BoardMessage.board_sequence)).where(BoardMessage.board_id == board_id)
+        )
+        max_seq = seq_result.scalar() or 0
+        next_seq = max_seq + 1
+
+        # Create the message
+        message = BoardMessage(
+            board_id=board_id,
+            author_id=None,  # NPCs don't have character IDs
+            author_name=author_name,
+            npc_author_id=npc_author_id,
+            subject=subject,
+            body=body,
+            board_sequence=next_seq,
+            is_pinned=False,
+            is_anonymous=False,
+            reply_to=None,  # NPCs don't reply to messages
+        )
+
+        self._session.add(message)
+        await self._session.commit()
+        await self._session.refresh(message)
+
+        logger.info(
+            "npc_message_posted",
+            board_id=board_id,
+            npc_author_id=npc_author_id,
+            message_id=str(message.id),
+            sequence=next_seq,
+        )
+
+        return MessageInfo(
+            id=message.id,
+            board_id=message.board_id,
+            author_name=message.author_name,
+            subject=message.subject,
+            body=message.body,
+            board_sequence=message.board_sequence,
+            is_pinned=message.is_pinned,
+            is_anonymous=message.is_anonymous,
+            is_read=False,  # NPCs don't read their own messages
+            created_at=message.created_at,
+            reply_to=None,
+            reply_to_sequence=None,
+        )
+
     async def delete_message(
         self, message_id: uuid.UUID, character_id: uuid.UUID
     ) -> bool:

@@ -35,25 +35,26 @@ logger = structlog.get_logger(__name__)
 def _check_post_rate_limit(ctx: CommandContext) -> tuple[bool, str]:
     """
     Check if character has exceeded post rate limit.
-    
+
     Returns (allowed, message) tuple.
     """
     import time
-    
+    from typing import cast
+
     current_time = time.time()
     rate_key = "board_post_timestamps"
-    
+
     # Get existing timestamps
-    timestamps: list[float] = ctx.session.data.get(rate_key, [])
-    
+    timestamps = cast(list[float], ctx.session.data.get(rate_key, []))
+
     # Filter to only timestamps within the window
     window_start = current_time - RATE_LIMIT_WINDOW_SECONDS
     recent_timestamps = [ts for ts in timestamps if ts > window_start]
-    
+
     if len(recent_timestamps) >= MAX_POSTS_PER_HOUR:
         minutes_until_reset = int((recent_timestamps[0] + RATE_LIMIT_WINDOW_SECONDS - current_time) / 60)
         return (False, f"Rate limit exceeded. You can post again in {minutes_until_reset} minutes.")
-    
+
     return (True, "")
 
 
@@ -483,16 +484,16 @@ You must have permission to post to the board.
 
                 # Post the message - sanitize input for security
                 body = "\n".join(lines)
-                
+
                 # Strip ANSI escape sequences to prevent terminal injection attacks
                 sanitized_subject = strip_ansi(subject)[:MAX_SUBJECT_LENGTH]
                 sanitized_body = strip_ansi(body)[:MAX_BODY_LENGTH]
-                
+
                 if len(body) > MAX_BODY_LENGTH:
                     await ctx.connection.send_line(
                         colorize(f"Message truncated to {MAX_BODY_LENGTH} characters.", "YELLOW")
                     )
-                
+
                 # Use sanitized values
                 subject = sanitized_subject
                 body = sanitized_body
@@ -513,8 +514,9 @@ You must have permission to post to the board.
 
                 # Record post timestamp for rate limiting
                 import time
+                from typing import cast
                 rate_key = "board_post_timestamps"
-                timestamps = ctx.session.data.get(rate_key, [])
+                timestamps = cast(list[float], ctx.session.data.get(rate_key, []))
                 timestamps.append(time.time())
                 # Keep only recent timestamps to avoid memory bloat
                 window_start = time.time() - RATE_LIMIT_WINDOW_SECONDS

@@ -9,7 +9,7 @@ These tests verify:
 """
 
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime
 
 import pytest
 from sqlalchemy import select, text
