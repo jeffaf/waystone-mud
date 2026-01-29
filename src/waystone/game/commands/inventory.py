@@ -474,7 +474,7 @@ class ExamineCommand(Command):
                 logger.debug(
                     "npc_examined",
                     character_id=ctx.session.character_id,
-                    npc_id=npc.instance_id,
+                    npc_id=npc.id,
                 )
                 return
 

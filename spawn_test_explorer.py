@@ -18,9 +18,9 @@ async def main():
     world = await load_world()
 
     # Get starting room (University Gates)
-    starting_room = world.rooms.get("university_gates")
+    starting_room = world.rooms.get("university_main_gates")
     if not starting_room:
-        print("ERROR: Could not find university_gates room")
+        print("ERROR: Could not find university_main_gates room")
         return
 
     print(f"Starting room: {starting_room.name}")
@@ -35,7 +35,7 @@ async def main():
         bartle_type=BartleType.EXPLORER,
         background="A curious traveler exploring the University.",
         active_hours=(0, 23),  # Always active for testing
-        starting_room_id="university_gates",
+        starting_room_id="university_main_gates",
     )
 
     # Add config

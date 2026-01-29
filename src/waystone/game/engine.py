@@ -877,7 +877,7 @@ class GameEngine:
                                 bartle_type=BartleType.EXPLORER,
                                 background="A curious traveler exploring the University.",
                                 active_hours=(0, 23),  # Always active
-                                starting_room_id="university_gates",
+                                starting_room_id="university_main_gates",
                             )
                             sim_manager.add_config(explorer_config)
 
@@ -885,7 +885,7 @@ class GameEngine:
                             from waystone.database.engine import get_session
 
                             async with get_session() as db:
-                                starting_room = self.world.rooms.get("university_gates")
+                                starting_room = self.world.rooms.get("university_main_gates")
                                 if starting_room:
                                     await sim_manager.login_player(
                                         sim_id="test_explorer_wanderer",
