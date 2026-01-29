@@ -859,10 +859,41 @@ class GameEngine:
 
                 # Simulated player actions (every 2 ticks = 60 seconds)
                 if tick_count % 2 == 0:
-                    from waystone.game.systems.simulated_players import get_sim_manager
+                    from waystone.game.systems.simulated_players import (
+                        BartleType,
+                        SimulatedPlayerConfig,
+                        get_sim_manager,
+                    )
 
                     try:
                         sim_manager = get_sim_manager()
+
+                        # Auto-spawn test Explorer on first tick if no configs loaded
+                        if sim_manager.enabled and tick_count == 2 and not sim_manager.configs:
+                            logger.info("auto_spawning_test_explorer")
+                            explorer_config = SimulatedPlayerConfig(
+                                id="test_explorer_wanderer",
+                                name="Wanderer",
+                                bartle_type=BartleType.EXPLORER,
+                                background="A curious traveler exploring the University.",
+                                active_hours=(0, 23),  # Always active
+                                starting_room_id="university_gates",
+                            )
+                            sim_manager.add_config(explorer_config)
+
+                            # Login the Explorer
+                            from waystone.database.engine import get_session
+
+                            async with get_session() as db:
+                                starting_room = self.world.rooms.get("university_gates")
+                                if starting_room:
+                                    await sim_manager.login_player(
+                                        sim_id="test_explorer_wanderer",
+                                        db_session=db,
+                                        room=starting_room,
+                                    )
+                                    logger.info("test_explorer_spawned", name="Wanderer")
+
                         if sim_manager.enabled:
                             actions_taken = await sim_manager.tick(self)
 
