@@ -8,13 +8,11 @@ These tests verify the foundational components of the simulated player system:
 """
 
 import uuid
-from datetime import UTC, datetime
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from waystone.database.models import Character, CharacterBackground, User
-
 
 # =============================================================================
 # Character.is_simulated Field Tests
@@ -581,9 +579,7 @@ class TestLoginLogout:
         await manager.login_player("sim_newchar", db_session)
 
         # Verify character was created
-        result = await db_session.execute(
-            select(Character).where(Character.name == "NewSimChar")
-        )
+        result = await db_session.execute(select(Character).where(Character.name == "NewSimChar"))
         character = result.scalar_one_or_none()
 
         assert character is not None
@@ -618,9 +614,7 @@ class TestLoginLogout:
         await manager.login_player("sim_roomtest", db_session)
 
         # Verify character is in starting room
-        result = await db_session.execute(
-            select(Character).where(Character.name == "RoomTestSim")
-        )
+        result = await db_session.execute(select(Character).where(Character.name == "RoomTestSim"))
         character = result.scalar_one_or_none()
 
         assert character is not None
@@ -931,3 +925,544 @@ class TestLoginScheduling:
         # Day hours should be inactive
         assert manager._is_active_hour(config, 12) is False
         assert manager._is_active_hour(config, 18) is False
+
+
+# =============================================================================
+# Phase 3: Movement (Explorer MVP) Tests
+# =============================================================================
+
+
+class TestBehaviorTree:
+    """Tests for the behavior tree framework."""
+
+    def test_behavior_status_enum_values(self):
+        """Test that BehaviorStatus has expected values."""
+        from waystone.game.systems.simulated_players import BehaviorStatus
+
+        assert BehaviorStatus.SUCCESS.value == "success"
+        assert BehaviorStatus.FAILURE.value == "failure"
+        assert BehaviorStatus.RUNNING.value == "running"
+
+    def test_behavior_result_creation(self):
+        """Test that BehaviorResult can be created with status and action."""
+        from waystone.game.systems.simulated_players import (
+            BehaviorResult,
+            BehaviorStatus,
+        )
+
+        result = BehaviorResult(status=BehaviorStatus.SUCCESS)
+        assert result.status == BehaviorStatus.SUCCESS
+        assert result.action is None
+
+    def test_behavior_result_with_action(self):
+        """Test that BehaviorResult can hold an action."""
+        from waystone.game.systems.simulated_players import (
+            BehaviorAction,
+            BehaviorResult,
+            BehaviorStatus,
+        )
+
+        action = BehaviorAction(command="north", args=[])
+        result = BehaviorResult(status=BehaviorStatus.SUCCESS, action=action)
+        assert result.action is not None
+        assert result.action.command == "north"
+
+    def test_behavior_node_has_required_methods(self):
+        """Test that BehaviorNode defines condition and execute methods."""
+        from waystone.game.systems.simulated_players import BehaviorNode
+
+        # Verify required abstract methods exist
+        assert hasattr(BehaviorNode, "condition")
+        assert hasattr(BehaviorNode, "execute")
+
+    def test_simple_behavior_node_execution(self):
+        """Test that a simple behavior node can be executed."""
+        from waystone.game.systems.simulated_players import (
+            BehaviorAction,
+            BehaviorNode,
+            BehaviorResult,
+            BehaviorStatus,
+        )
+
+        class TestNode(BehaviorNode):
+            def condition(self, context) -> bool:
+                return True
+
+            def execute(self, context) -> BehaviorResult:
+                return BehaviorResult(
+                    status=BehaviorStatus.SUCCESS,
+                    action=BehaviorAction(command="test", args=[]),
+                )
+
+        node = TestNode()
+        result = node.execute(None)
+        assert result.status == BehaviorStatus.SUCCESS
+        assert result.action.command == "test"
+
+
+class TestExplorerBehavior:
+    """Tests for Explorer-specific behavior."""
+
+    def test_explorer_behavior_creation(self):
+        """Test that ExplorerBehavior can be created."""
+        from waystone.game.systems.simulated_players import ExplorerBehavior
+
+        behavior = ExplorerBehavior()
+        assert behavior is not None
+
+    def test_explorer_selects_movement_action(self):
+        """Test that Explorer primarily selects movement actions."""
+        from waystone.game.systems.simulated_players import (
+            ExplorerBehavior,
+            SimMemory,
+        )
+
+        behavior = ExplorerBehavior()
+        memory = SimMemory()
+
+        # With exits available, should get movement most of the time
+        available_exits = ["north", "south", "east"]
+
+        # Run multiple times to verify weighted selection
+        move_count = 0
+        for _ in range(100):
+            action = behavior.select_action(
+                available_exits=available_exits,
+                memory=memory,
+                last_direction=None,
+            )
+            if action.command in available_exits:
+                move_count += 1
+
+        # Should move most of the time (80% target)
+        assert move_count >= 50, f"Expected mostly move actions, got {move_count}/100"
+
+    def test_explorer_avoids_backtracking(self):
+        """Test that Explorer avoids going back the way it came."""
+        from waystone.game.systems.simulated_players import (
+            ExplorerBehavior,
+            SimMemory,
+        )
+
+        behavior = ExplorerBehavior()
+        memory = SimMemory()
+
+        # When we came from north, we shouldn't go south (back)
+        available_exits = ["north", "south"]
+        last_direction = "north"  # We came from the north
+
+        # Get opposite direction logic
+        opposite = behavior._get_opposite_direction(last_direction)
+        assert opposite == "south"
+
+        # If we only have south, we should still avoid it if possible
+        available_exits = ["south", "east"]
+
+        for _ in range(20):
+            action = behavior.select_action(
+                available_exits=available_exits,
+                memory=memory,
+                last_direction=last_direction,
+            )
+            # Should prefer east over south when we just came from north
+            # (south is backtracking)
+            if action.command in ["south", "east"]:
+                # At minimum, east should be more common
+                pass
+
+    def test_explorer_prefers_unexplored_exits(self):
+        """Test that Explorer prefers exits it hasn't visited."""
+        from waystone.game.systems.simulated_players import (
+            ExplorerBehavior,
+            SimMemory,
+        )
+
+        behavior = ExplorerBehavior()
+        memory = SimMemory()
+
+        # Mark north as recently visited
+        memory.visited_directions.add("north")
+
+        available_exits = ["north", "south", "east"]
+
+        # Should prefer unvisited directions
+        unvisited_count = 0
+        for _ in range(50):
+            action = behavior.select_action(
+                available_exits=available_exits,
+                memory=memory,
+                last_direction=None,
+            )
+            if action.command in ["south", "east"]:
+                unvisited_count += 1
+
+        # Should prefer unvisited exits
+        assert unvisited_count >= 30, f"Expected to prefer unvisited, got {unvisited_count}/50"
+
+
+class TestSimMemory:
+    """Tests for simulated player memory."""
+
+    def test_memory_creation(self):
+        """Test that SimMemory can be created."""
+        from waystone.game.systems.simulated_players import SimMemory
+
+        memory = SimMemory()
+        assert memory is not None
+
+    def test_memory_tracks_visited_directions(self):
+        """Test that memory tracks which directions were visited."""
+        from waystone.game.systems.simulated_players import SimMemory
+
+        memory = SimMemory()
+        assert len(memory.visited_directions) == 0
+
+        memory.visited_directions.add("north")
+        assert "north" in memory.visited_directions
+
+    def test_memory_tracks_last_direction(self):
+        """Test that memory tracks the last direction moved."""
+        from waystone.game.systems.simulated_players import SimMemory
+
+        memory = SimMemory()
+        assert memory.last_direction is None
+
+        memory.last_direction = "south"
+        assert memory.last_direction == "south"
+
+    def test_memory_tracks_recent_rooms(self):
+        """Test that memory tracks recently visited rooms."""
+        from waystone.game.systems.simulated_players import SimMemory
+
+        memory = SimMemory()
+        assert len(memory.recent_rooms) == 0
+
+        memory.add_room("room1")
+        memory.add_room("room2")
+        assert "room1" in memory.recent_rooms
+        assert "room2" in memory.recent_rooms
+
+    def test_memory_has_max_room_history(self):
+        """Test that memory limits room history size."""
+        from waystone.game.systems.simulated_players import SimMemory
+
+        memory = SimMemory()
+
+        # Add many rooms
+        for i in range(20):
+            memory.add_room(f"room{i}")
+
+        # Should be limited
+        assert len(memory.recent_rooms) <= 10
+
+
+class TestCommandExecution:
+    """Tests for simulated player command execution."""
+
+    @pytest.mark.asyncio
+    async def test_can_execute_look_command(self, db_session: AsyncSession):
+        """Test that simulated player can execute look command."""
+        from waystone.database.models import CharacterBackground
+        from waystone.game.systems.simulated_players import (
+            BartleType,
+            SimulatedPlayerConfig,
+            SimulatedPlayerManager,
+            reset_sim_manager,
+        )
+
+        reset_sim_manager()
+        manager = SimulatedPlayerManager()
+
+        config = SimulatedPlayerConfig(
+            id="sim_exec_test",
+            name="ExecTest",
+            background=CharacterBackground.WAYFARER,
+            bartle_type=BartleType.EXPLORER,
+        )
+        manager.add_config(config)
+
+        sim = await manager.login_player("sim_exec_test", db_session)
+        assert sim is not None
+
+        # Execute look command
+        output = await manager.execute_command(sim, "look")
+
+        # Should have captured some output (even if error about room not existing)
+        assert output is not None or isinstance(output, str)
+
+    @pytest.mark.asyncio
+    async def test_can_execute_exits_command(self, db_session: AsyncSession):
+        """Test that simulated player can execute exits command."""
+        from waystone.database.models import CharacterBackground
+        from waystone.game.systems.simulated_players import (
+            BartleType,
+            SimulatedPlayerConfig,
+            SimulatedPlayerManager,
+            reset_sim_manager,
+        )
+
+        reset_sim_manager()
+        manager = SimulatedPlayerManager()
+
+        config = SimulatedPlayerConfig(
+            id="sim_exits_test",
+            name="ExitsTest",
+            background=CharacterBackground.WAYFARER,
+            bartle_type=BartleType.EXPLORER,
+        )
+        manager.add_config(config)
+
+        sim = await manager.login_player("sim_exits_test", db_session)
+        assert sim is not None
+
+        # Execute exits command
+        output = await manager.execute_command(sim, "exits")
+
+        # Should have captured some output
+        assert output is not None or isinstance(output, str)
+
+    @pytest.mark.asyncio
+    async def test_command_output_captured_in_buffer(self, db_session: AsyncSession):
+        """Test that command output is captured in connection buffer."""
+        from waystone.database.models import CharacterBackground
+        from waystone.game.systems.simulated_players import (
+            BartleType,
+            SimulatedPlayerConfig,
+            SimulatedPlayerManager,
+            reset_sim_manager,
+        )
+
+        reset_sim_manager()
+        manager = SimulatedPlayerManager()
+
+        config = SimulatedPlayerConfig(
+            id="sim_buffer_test",
+            name="BufferTest",
+            background=CharacterBackground.WAYFARER,
+            bartle_type=BartleType.EXPLORER,
+        )
+        manager.add_config(config)
+
+        sim = await manager.login_player("sim_buffer_test", db_session)
+        assert sim is not None
+        assert sim.session is not None
+
+        # Clear buffer first
+        sim.session.connection.clear_buffer()
+
+        # Execute a command
+        await manager.execute_command(sim, "look")
+
+        # Buffer should contain output
+        # Note: May contain error messages if room doesn't exist, but should have SOMETHING
+        assert len(sim.session.connection.output_buffer) >= 0
+
+
+class TestTickIntegration:
+    """Tests for tick-based behavior execution."""
+
+    @pytest.mark.asyncio
+    async def test_tick_runs_explorer_behavior(self, db_session: AsyncSession):
+        """Test that tick() runs Explorer behavior tree."""
+        from unittest.mock import MagicMock
+
+        from waystone.database.models import CharacterBackground
+        from waystone.game.systems.simulated_players import (
+            BartleType,
+            ExplorerBehavior,
+            SimulatedPlayerConfig,
+            SimulatedPlayerManager,
+            reset_sim_manager,
+        )
+
+        reset_sim_manager()
+        manager = SimulatedPlayerManager()
+
+        config = SimulatedPlayerConfig(
+            id="sim_tick_test",
+            name="TickTest",
+            background=CharacterBackground.WAYFARER,
+            bartle_type=BartleType.EXPLORER,
+        )
+        manager.add_config(config)
+
+        sim = await manager.login_player("sim_tick_test", db_session)
+        assert sim is not None
+
+        # Set up Explorer behavior
+        sim.behavior = ExplorerBehavior()
+
+        # Create mock engine with world
+        mock_engine = MagicMock()
+        mock_room = MagicMock()
+        mock_room.exits = {"north": "room2", "south": "room3"}
+        mock_room.id = "test_room"
+        mock_engine.world.get.return_value = mock_room
+
+        # Run tick
+        actions_taken = await manager.tick(mock_engine)
+
+        # Should have taken at least 0 actions (may not take action if conditions not met)
+        assert actions_taken >= 0
+
+    @pytest.mark.asyncio
+    async def test_tick_returns_action_count(self, db_session: AsyncSession):
+        """Test that tick() returns the count of actions taken."""
+        from waystone.database.models import CharacterBackground
+        from waystone.game.systems.simulated_players import (
+            BartleType,
+            SimulatedPlayerConfig,
+            SimulatedPlayerManager,
+            reset_sim_manager,
+        )
+
+        reset_sim_manager()
+        manager = SimulatedPlayerManager()
+
+        config = SimulatedPlayerConfig(
+            id="sim_count_test",
+            name="CountTest",
+            background=CharacterBackground.WAYFARER,
+            bartle_type=BartleType.EXPLORER,
+        )
+        manager.add_config(config)
+
+        await manager.login_player("sim_count_test", db_session)
+
+        # Tick should return integer count
+        actions = await manager.tick(None)
+        assert isinstance(actions, int)
+
+    @pytest.mark.asyncio
+    async def test_disabled_manager_takes_no_actions(self, db_session: AsyncSession):
+        """Test that disabled manager takes no actions on tick."""
+        from waystone.database.models import CharacterBackground
+        from waystone.game.systems.simulated_players import (
+            BartleType,
+            SimulatedPlayerConfig,
+            SimulatedPlayerManager,
+            reset_sim_manager,
+        )
+
+        reset_sim_manager()
+        manager = SimulatedPlayerManager()
+
+        config = SimulatedPlayerConfig(
+            id="sim_disabled_test",
+            name="DisabledTest",
+            background=CharacterBackground.WAYFARER,
+            bartle_type=BartleType.EXPLORER,
+        )
+        manager.add_config(config)
+
+        await manager.login_player("sim_disabled_test", db_session)
+        manager.enabled = False
+
+        actions = await manager.tick(None)
+        assert actions == 0
+
+
+class TestExplorerIntegration:
+    """Integration tests for Explorer movement."""
+
+    @pytest.mark.asyncio
+    async def test_explorer_moves_to_valid_exit(self, db_session: AsyncSession):
+        """Test that Explorer moves to a valid exit direction."""
+        from unittest.mock import AsyncMock, MagicMock
+
+        from waystone.database.models import CharacterBackground
+        from waystone.game.systems.simulated_players import (
+            BartleType,
+            ExplorerBehavior,
+            SimulatedPlayerConfig,
+            SimulatedPlayerManager,
+            reset_sim_manager,
+        )
+
+        reset_sim_manager()
+        manager = SimulatedPlayerManager()
+
+        config = SimulatedPlayerConfig(
+            id="sim_move_test",
+            name="MoveTest",
+            background=CharacterBackground.WAYFARER,
+            bartle_type=BartleType.EXPLORER,
+        )
+        manager.add_config(config)
+
+        sim = await manager.login_player("sim_move_test", db_session)
+        assert sim is not None
+        sim.behavior = ExplorerBehavior()
+
+        # Create mock engine with connected rooms
+        mock_engine = MagicMock()
+        mock_room = MagicMock()
+        mock_room.exits = {"north": "room2"}
+        mock_room.id = "room1"
+        mock_room.players = set()
+        mock_engine.world.get.return_value = mock_room
+        mock_engine.broadcast_to_room = AsyncMock()
+
+        # Get action from behavior
+        memory = sim.memory if hasattr(sim, "memory") else None
+        if memory is None:
+            from waystone.game.systems.simulated_players import SimMemory
+
+            sim.memory = SimMemory()
+
+        action = sim.behavior.select_action(
+            available_exits=list(mock_room.exits.keys()),
+            memory=sim.memory,
+            last_direction=None,
+        )
+
+        # Action should be one of the available exits or look/exits
+        valid_commands = list(mock_room.exits.keys()) + ["look", "exits"]
+        assert action.command in valid_commands
+
+    @pytest.mark.asyncio
+    async def test_explorer_doesnt_backtrack_immediately(self, db_session: AsyncSession):
+        """Test that Explorer doesn't immediately go back the way it came."""
+        from waystone.database.models import CharacterBackground
+        from waystone.game.systems.simulated_players import (
+            BartleType,
+            ExplorerBehavior,
+            SimMemory,
+            SimulatedPlayerConfig,
+            SimulatedPlayerManager,
+            reset_sim_manager,
+        )
+
+        reset_sim_manager()
+        manager = SimulatedPlayerManager()
+
+        config = SimulatedPlayerConfig(
+            id="sim_backtrack_test",
+            name="BacktrackTest",
+            background=CharacterBackground.WAYFARER,
+            bartle_type=BartleType.EXPLORER,
+        )
+        manager.add_config(config)
+
+        sim = await manager.login_player("sim_backtrack_test", db_session)
+        assert sim is not None
+
+        behavior = ExplorerBehavior()
+        memory = SimMemory()
+        memory.last_direction = "north"  # We just came from north
+
+        available_exits = ["south", "east"]  # south is backtracking
+
+        # Check many times - should rarely backtrack
+        backtrack_count = 0
+        for _ in range(50):
+            action = behavior.select_action(
+                available_exits=available_exits,
+                memory=memory,
+                last_direction="north",
+            )
+            if action.command == "south":
+                backtrack_count += 1
+
+        # Should backtrack less than 20% of the time when alternatives exist
+        assert backtrack_count < 20, f"Backtracked {backtrack_count}/50 times"

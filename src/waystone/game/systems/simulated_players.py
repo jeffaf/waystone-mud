@@ -15,14 +15,25 @@ Phase 2 Implementation - Lifecycle Management:
 - SimulatedPlayer: Runtime instance of a simulated player
 - Login/Logout mechanics with database integration
 - Room presence and who list integration
+
+Phase 3 Implementation - Movement (Explorer MVP):
+- BehaviorStatus/BehaviorResult/BehaviorAction: Behavior tree primitives
+- BehaviorNode: Abstract base for behavior nodes
+- SimMemory: Short-term memory for tracking visited rooms/directions
+- ExplorerBehavior: Movement behavior for Explorer personality
+- Command execution through SimulatedCommandContext
+- tick() with behavior execution
 """
 
 from __future__ import annotations
 
+import random
+from abc import ABC, abstractmethod
+from collections import deque
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from enum import Enum
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 from uuid import UUID, uuid4
 
 import structlog
@@ -37,6 +48,254 @@ if TYPE_CHECKING:
     from waystone.game.world import Room
 
 logger = structlog.get_logger(__name__)
+
+
+# =============================================================================
+# Phase 3: Behavior Tree Framework
+# =============================================================================
+
+
+class BehaviorStatus(str, Enum):
+    """Status returned by behavior nodes."""
+
+    SUCCESS = "success"
+    FAILURE = "failure"
+    RUNNING = "running"
+
+
+@dataclass
+class BehaviorAction:
+    """An action to be executed by a simulated player."""
+
+    command: str  # The command to execute (e.g., "north", "look")
+    args: list[str] = field(default_factory=list)  # Arguments for the command
+
+
+@dataclass
+class BehaviorResult:
+    """Result from evaluating a behavior node."""
+
+    status: BehaviorStatus
+    action: BehaviorAction | None = None
+
+
+class BehaviorNode(ABC):
+    """
+    Abstract base class for behavior tree nodes.
+
+    Each node can check a condition and execute to produce a result.
+    """
+
+    @abstractmethod
+    def condition(self, context: Any) -> bool:
+        """
+        Check if this node should execute.
+
+        Args:
+            context: Context information for the check
+
+        Returns:
+            True if the node should execute
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def execute(self, context: Any) -> BehaviorResult:
+        """
+        Execute this node's behavior.
+
+        Args:
+            context: Context information for execution
+
+        Returns:
+            BehaviorResult with status and optional action
+        """
+        raise NotImplementedError
+
+
+# =============================================================================
+# Phase 3: SimMemory - Short-term memory for simulated players
+# =============================================================================
+
+
+@dataclass
+class SimMemory:
+    """
+    Short-term memory for a simulated player.
+
+    Tracks recently visited rooms and directions to inform
+    behavior decisions like avoiding backtracking.
+    """
+
+    # Directions we've gone from the current room
+    visited_directions: set[str] = field(default_factory=set)
+
+    # Last direction we moved
+    last_direction: str | None = None
+
+    # Recent room IDs (limited history)
+    recent_rooms: deque[str] = field(default_factory=lambda: deque(maxlen=10))
+
+    # Current room ID
+    current_room_id: str | None = None
+
+    def add_room(self, room_id: str) -> None:
+        """
+        Add a room to the recent history.
+
+        Args:
+            room_id: The room ID to record
+        """
+        if room_id not in self.recent_rooms:
+            self.recent_rooms.append(room_id)
+
+    def clear_visited_directions(self) -> None:
+        """Clear visited directions when entering a new room."""
+        self.visited_directions.clear()
+
+
+# =============================================================================
+# Phase 3: ExplorerBehavior - Movement behavior for Explorer personality
+# =============================================================================
+
+
+class ExplorerBehavior:
+    """
+    Behavior implementation for Explorer personality type.
+
+    Explorers primarily want to move around and discover new areas.
+    They prefer unexplored exits, avoid immediate backtracking,
+    and occasionally look around or check exits.
+
+    Weighted action selection:
+    - 80% move to an exit
+    - 15% look at current room
+    - 5% check exits
+    """
+
+    # Direction opposites for backtrack detection
+    OPPOSITES = {
+        "north": "south",
+        "south": "north",
+        "east": "west",
+        "west": "east",
+        "up": "down",
+        "down": "up",
+        "northeast": "southwest",
+        "southwest": "northeast",
+        "northwest": "southeast",
+        "southeast": "northwest",
+        "in": "out",
+        "out": "in",
+    }
+
+    def select_action(
+        self,
+        available_exits: list[str],
+        memory: SimMemory,
+        last_direction: str | None,
+    ) -> BehaviorAction:
+        """
+        Select the next action for the Explorer.
+
+        Uses weighted randomness:
+        - 80% chance to move (if exits available)
+        - 15% chance to look
+        - 5% chance to check exits
+
+        Args:
+            available_exits: List of valid exit directions
+            memory: The player's short-term memory
+            last_direction: The direction we last moved (to avoid backtracking)
+
+        Returns:
+            BehaviorAction to execute
+        """
+        # Weight-based selection
+        roll = random.random()
+
+        # 5% check exits
+        if roll < 0.05:
+            return BehaviorAction(command="exits", args=[])
+
+        # 15% look
+        if roll < 0.20:
+            return BehaviorAction(command="look", args=[])
+
+        # 80% move (if exits available)
+        if available_exits:
+            direction = self._choose_direction(available_exits, memory, last_direction)
+            return BehaviorAction(command=direction, args=[])
+
+        # No exits - look instead
+        return BehaviorAction(command="look", args=[])
+
+    def _choose_direction(
+        self,
+        available_exits: list[str],
+        memory: SimMemory,
+        last_direction: str | None,
+    ) -> str:
+        """
+        Choose a direction to move, avoiding backtracking when possible.
+
+        Priorities:
+        1. Unvisited exits (not in memory.visited_directions)
+        2. Any exit that's not backtracking
+        3. Backtrack (only if no other option)
+
+        Args:
+            available_exits: List of valid exit directions
+            memory: The player's short-term memory
+            last_direction: The direction we last moved
+
+        Returns:
+            Direction to move
+        """
+        if not available_exits:
+            raise ValueError("No available exits")
+
+        # Identify backtrack direction
+        backtrack_direction = None
+        if last_direction:
+            backtrack_direction = self._get_opposite_direction(last_direction)
+
+        # Categorize exits
+        unvisited = []
+        non_backtrack = []
+        backtrack = []
+
+        for exit_dir in available_exits:
+            if exit_dir not in memory.visited_directions:
+                unvisited.append(exit_dir)
+
+            if exit_dir == backtrack_direction:
+                backtrack.append(exit_dir)
+            else:
+                non_backtrack.append(exit_dir)
+
+        # Preference order: unvisited non-backtrack > non-backtrack > backtrack
+        unvisited_non_backtrack = [d for d in unvisited if d in non_backtrack]
+        if unvisited_non_backtrack:
+            return random.choice(unvisited_non_backtrack)
+
+        if non_backtrack:
+            return random.choice(non_backtrack)
+
+        # Only backtracking available
+        return random.choice(available_exits)
+
+    def _get_opposite_direction(self, direction: str) -> str | None:
+        """
+        Get the opposite direction for backtrack detection.
+
+        Args:
+            direction: The direction to get opposite of
+
+        Returns:
+            Opposite direction, or None if unknown
+        """
+        return self.OPPOSITES.get(direction.lower())
 
 
 # =============================================================================
@@ -115,6 +374,10 @@ class SimulatedPlayer:
     session: SimulatedSession | None = None
     logged_in_at: datetime | None = None
     will_logout_at: datetime | None = None
+
+    # Phase 3: Behavior and memory
+    behavior: ExplorerBehavior | None = None
+    memory: SimMemory = field(default_factory=SimMemory)
 
     @property
     def is_logged_in(self) -> bool:
@@ -469,9 +732,7 @@ class SimulatedPlayerManager:
         from waystone.database.models import Character, User
 
         # Look for existing character by name
-        result = await db_session.execute(
-            select(Character).where(Character.name == config.name)
-        )
+        result = await db_session.execute(select(Character).where(Character.name == config.name))
         character = result.scalar_one_or_none()
 
         if character is not None:
@@ -481,10 +742,10 @@ class SimulatedPlayerManager:
             return character
 
         # Need to create a simulated user first (or use a shared system user)
-        result = await db_session.execute(
+        user_result = await db_session.execute(
             select(User).where(User.username == "system_simulated")
         )
-        system_user = result.scalar_one_or_none()
+        system_user = user_result.scalar_one_or_none()
 
         if system_user is None:
             # Create system user for simulated players
@@ -497,7 +758,7 @@ class SimulatedPlayerManager:
             await db_session.commit()
             await db_session.refresh(system_user)
 
-        # Create the character
+        # Create the character (system_user is guaranteed to exist here)
         character = Character(
             user_id=system_user.id,
             name=config.name,
@@ -539,11 +800,87 @@ class SimulatedPlayerManager:
             # Wraps around midnight (e.g., 22 to 6)
             return hour >= start_hour or hour < end_hour
 
+    async def execute_command(
+        self,
+        sim_player: SimulatedPlayer,
+        command_str: str,
+        engine: GameEngine | None = None,
+    ) -> str:
+        """
+        Execute a command for a simulated player.
+
+        Uses the command registry to find and execute the command,
+        capturing output in the connection buffer.
+
+        Args:
+            sim_player: The simulated player executing the command
+            command_str: The command string to execute
+            engine: The game engine (for world access)
+
+        Returns:
+            The captured output as a string
+        """
+        if sim_player.session is None:
+            logger.warning(
+                "simulated_player_execute_no_session",
+                character_id=sim_player.character_id,
+                command=command_str,
+            )
+            return ""
+
+        # Parse command and args
+        parts = command_str.strip().split()
+        if not parts:
+            return ""
+
+        cmd_name = parts[0].lower()
+        args = parts[1:] if len(parts) > 1 else []
+
+        # Get command from registry
+        from waystone.game.commands.base import get_registry
+
+        registry = get_registry()
+        command = registry.get(cmd_name)
+
+        if command is None:
+            logger.debug(
+                "simulated_player_unknown_command",
+                character_id=sim_player.character_id,
+                command=cmd_name,
+            )
+            return ""
+
+        # Clear buffer before execution
+        sim_player.session.connection.clear_buffer()
+
+        # Create context and execute
+        # Note: SimulatedCommandContext is duck-typed to be compatible with CommandContext
+        ctx = SimulatedCommandContext(
+            session=sim_player.session,
+            engine=engine,
+            args=args,
+            raw_input=command_str,
+        )
+
+        try:
+            await command.execute(ctx)  # type: ignore[arg-type]
+        except Exception as e:
+            logger.error(
+                "simulated_player_command_error",
+                character_id=sim_player.character_id,
+                command=cmd_name,
+                error=str(e),
+            )
+
+        # Return captured output
+        return "\n".join(sim_player.session.connection.output_buffer)
+
     async def tick(self, engine: GameEngine | None) -> int:
         """
         Process a tick for all active simulated players.
 
         Called from the game engine's periodic cleanup loop.
+        Runs behavior trees and executes selected actions.
 
         Args:
             engine: The game engine instance
@@ -554,8 +891,84 @@ class SimulatedPlayerManager:
         if not self.enabled:
             return 0
 
-        # Phase 2: Track actions but don't do behavior yet
         actions_taken = 0
+
+        for sim_id, sim_player in self.active_sims.items():
+            if not sim_player.is_logged_in:
+                continue
+
+            # Ensure behavior is set for Explorer types
+            if sim_player.behavior is None:
+                if sim_player.config.bartle_type == BartleType.EXPLORER:
+                    sim_player.behavior = ExplorerBehavior()
+                else:
+                    # Skip non-Explorer types for now (Phase 3 is Explorer MVP)
+                    continue
+
+            if sim_player.behavior is None:
+                continue
+
+            # Get current room and available exits
+            if engine is None or not hasattr(engine, "world"):
+                continue
+
+            # Get character's current room from database
+            from sqlalchemy import select
+
+            from waystone.database.engine import get_session as get_db_session
+            from waystone.database.models import Character
+
+            try:
+                async with get_db_session() as db_session:
+                    result = await db_session.execute(
+                        select(Character).where(Character.id == UUID(sim_player.character_id))
+                    )
+                    character = result.scalar_one_or_none()
+
+                    if character is None:
+                        continue
+
+                    room = engine.world.get(character.current_room_id)
+                    if room is None:
+                        continue
+
+                    # Get available exits
+                    available_exits = list(room.exits.keys())
+
+                    # Select action using behavior
+                    action = sim_player.behavior.select_action(
+                        available_exits=available_exits,
+                        memory=sim_player.memory,
+                        last_direction=sim_player.memory.last_direction,
+                    )
+
+                    # Execute the action
+                    command_str = action.command
+                    if action.args:
+                        command_str += " " + " ".join(action.args)
+
+                    await self.execute_command(sim_player, command_str, engine)
+
+                    # Update memory if we moved
+                    if action.command in available_exits:
+                        sim_player.memory.last_direction = action.command
+                        sim_player.memory.visited_directions.add(action.command)
+
+                    actions_taken += 1
+
+                    logger.debug(
+                        "simulated_player_action",
+                        sim_id=sim_id,
+                        character_name=sim_player.config.name,
+                        action=command_str,
+                    )
+
+            except Exception as e:
+                logger.error(
+                    "simulated_player_tick_error",
+                    sim_id=sim_id,
+                    error=str(e),
+                )
 
         if actions_taken > 0:
             logger.debug(
