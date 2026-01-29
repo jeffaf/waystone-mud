@@ -4,7 +4,7 @@ import enum
 import uuid
 from typing import TYPE_CHECKING, Any
 
-from sqlalchemy import JSON, Enum, ForeignKey, Integer, String, Uuid
+from sqlalchemy import JSON, Boolean, Enum, ForeignKey, Integer, String, Uuid
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base, TimestampMixin
@@ -260,6 +260,15 @@ class Character(Base, TimestampMixin):
         default="standing",
         server_default="standing",
         comment="Character position (standing, resting, sleeping)",
+    )
+
+    # Simulated player flag - marks this character as a bot/simulated player
+    is_simulated: Mapped[bool] = mapped_column(
+        Boolean,
+        nullable=False,
+        default=False,
+        server_default="false",
+        comment="Whether this is a simulated player character",
     )
 
     # Relationships
