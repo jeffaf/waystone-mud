@@ -137,12 +137,15 @@ class WhoCommand(Command):
 
     async def execute(self, ctx: CommandContext) -> None:
         """Execute the who command."""
+        from waystone.game.systems.simulated_players import get_sim_manager
+
         sessions = ctx.engine.session_manager.get_all_sessions()
-        playing_chars = []
+        playing_chars: list[Character] = []
+        simulated_chars: list[Character] = []
 
         try:
             async with get_session() as session:
-                # Get all characters that are playing
+                # Get all characters that are playing (real players)
                 for sess in sessions:
                     if sess.character_id and sess.state == SessionState.PLAYING:
                         result = await session.execute(
@@ -152,19 +155,40 @@ class WhoCommand(Command):
                         if character:
                             playing_chars.append(character)
 
+                # Get simulated players
+                sim_manager = get_sim_manager()
+                for sim_player in sim_manager.get_active():
+                    if sim_player.is_logged_in:
+                        result = await session.execute(
+                            select(Character).where(
+                                Character.id == UUID(sim_player.character_id)
+                            )
+                        )
+                        character = result.scalar_one_or_none()
+                        if character:
+                            simulated_chars.append(character)
+
                 total_online = len(sessions)
-                total_playing = len(playing_chars)
+                total_playing = len(playing_chars) + len(simulated_chars)
 
                 await ctx.connection.send_line(
                     colorize(f"\n╔═══ Players Online: {total_playing} ═══╗", "CYAN")
                 )
 
-                if not playing_chars:
+                if not playing_chars and not simulated_chars:
                     await ctx.connection.send_line(
                         colorize("  No players currently in the world.", "YELLOW")
                     )
                 else:
+                    # Show real players first
                     for char in playing_chars:
+                        level_str = colorize(f"Level {char.level}", "GREEN")
+                        bg_str = colorize(char.background.value, "YELLOW")
+                        await ctx.connection.send_line(
+                            f"  {colorize(char.name, 'BOLD')} - {level_str} {bg_str}"
+                        )
+                    # Then simulated players (they look the same to other players)
+                    for char in simulated_chars:
                         level_str = colorize(f"Level {char.level}", "GREEN")
                         bg_str = colorize(char.background.value, "YELLOW")
                         await ctx.connection.send_line(
@@ -173,8 +197,8 @@ class WhoCommand(Command):
 
                 await ctx.connection.send_line(colorize("╚═════════════════════════╝", "CYAN"))
 
-                if total_online > total_playing:
-                    idle = total_online - total_playing
+                if total_online > len(playing_chars):
+                    idle = total_online - len(playing_chars)
                     await ctx.connection.send_line(
                         colorize(f"({idle} connection(s) at login screen)", "DIM")
                     )
