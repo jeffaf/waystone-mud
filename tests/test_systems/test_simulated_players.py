@@ -367,3 +367,567 @@ def test_get_sim_manager_returns_same_instance():
     manager2 = get_sim_manager()
 
     assert manager1 is manager2
+
+
+# =============================================================================
+# Phase 2: Lifecycle Management Tests
+# =============================================================================
+
+
+class TestSimulatedPlayerConfig:
+    """Tests for SimulatedPlayerConfig dataclass."""
+
+    def test_config_creation_with_required_fields(self):
+        """Test that config can be created with required fields."""
+        from waystone.database.models import CharacterBackground
+        from waystone.game.systems.simulated_players import (
+            BartleType,
+            SimulatedPlayerConfig,
+        )
+
+        config = SimulatedPlayerConfig(
+            id="sim_explorer_lyra",
+            name="Lyra",
+            background=CharacterBackground.WAYFARER,
+            bartle_type=BartleType.EXPLORER,
+        )
+
+        assert config.id == "sim_explorer_lyra"
+        assert config.name == "Lyra"
+        assert config.background == CharacterBackground.WAYFARER
+        assert config.bartle_type == BartleType.EXPLORER
+
+    def test_config_default_values(self):
+        """Test that config has sensible default values."""
+        from waystone.database.models import CharacterBackground
+        from waystone.game.systems.simulated_players import (
+            BartleType,
+            SimulatedPlayerConfig,
+        )
+
+        config = SimulatedPlayerConfig(
+            id="sim_test",
+            name="Test",
+            background=CharacterBackground.SCHOLAR,
+            bartle_type=BartleType.ACHIEVER,
+        )
+
+        # Should have default active hours and session duration
+        assert config.active_hours == (8, 22)
+        assert config.session_duration_minutes == (60, 240)
+        assert config.starting_room == "university_main_gates"
+
+    def test_config_custom_schedule(self):
+        """Test that config can have custom schedule."""
+        from waystone.database.models import CharacterBackground
+        from waystone.game.systems.simulated_players import (
+            BartleType,
+            SimulatedPlayerConfig,
+        )
+
+        config = SimulatedPlayerConfig(
+            id="sim_night_owl",
+            name="NightOwl",
+            background=CharacterBackground.PERFORMER,
+            bartle_type=BartleType.SOCIALIZER,
+            active_hours=(22, 6),  # Night hours
+            session_duration_minutes=(30, 120),
+        )
+
+        assert config.active_hours == (22, 6)
+        assert config.session_duration_minutes == (30, 120)
+
+
+class TestBartleType:
+    """Tests for BartleType enum."""
+
+    def test_all_bartle_types_exist(self):
+        """Test that all four Bartle types are defined."""
+        from waystone.game.systems.simulated_players import BartleType
+
+        assert hasattr(BartleType, "ACHIEVER")
+        assert hasattr(BartleType, "EXPLORER")
+        assert hasattr(BartleType, "SOCIALIZER")
+        assert hasattr(BartleType, "KILLER")
+
+    def test_bartle_type_values(self):
+        """Test that Bartle types have string values."""
+        from waystone.game.systems.simulated_players import BartleType
+
+        assert BartleType.ACHIEVER.value == "achiever"
+        assert BartleType.EXPLORER.value == "explorer"
+        assert BartleType.SOCIALIZER.value == "socializer"
+        assert BartleType.KILLER.value == "killer"
+
+
+class TestSimulatedPlayer:
+    """Tests for SimulatedPlayer runtime class."""
+
+    def test_simulated_player_creation(self):
+        """Test that SimulatedPlayer can be created with config and character."""
+        from waystone.database.models import CharacterBackground
+        from waystone.game.systems.simulated_players import (
+            BartleType,
+            SimulatedPlayer,
+            SimulatedPlayerConfig,
+        )
+
+        config = SimulatedPlayerConfig(
+            id="sim_test",
+            name="TestSim",
+            background=CharacterBackground.SCHOLAR,
+            bartle_type=BartleType.EXPLORER,
+        )
+
+        sim = SimulatedPlayer(
+            config=config,
+            character_id="test-char-id",
+        )
+
+        assert sim.config == config
+        assert sim.character_id == "test-char-id"
+        assert sim.is_logged_in is False
+
+    def test_simulated_player_has_session(self):
+        """Test that logged-in SimulatedPlayer has a session."""
+        from waystone.database.models import CharacterBackground
+        from waystone.game.systems.simulated_players import (
+            BartleType,
+            SimulatedPlayer,
+            SimulatedPlayerConfig,
+            SimulatedSession,
+        )
+
+        config = SimulatedPlayerConfig(
+            id="sim_test",
+            name="TestSim",
+            background=CharacterBackground.SCHOLAR,
+            bartle_type=BartleType.EXPLORER,
+        )
+
+        sim = SimulatedPlayer(
+            config=config,
+            character_id="test-char-id",
+        )
+
+        # Before login, no session
+        assert sim.session is None
+
+        # After setting session, should have one
+        session = SimulatedSession(character_id="test-char-id")
+        sim.session = session
+        assert sim.session is not None
+        assert sim.is_logged_in is True
+
+
+class TestLoginLogout:
+    """Tests for login/logout lifecycle management."""
+
+    @pytest.mark.asyncio
+    async def test_login_player_creates_session(self, db_session: AsyncSession):
+        """Test that login_player creates a proper session."""
+        from waystone.database.models import CharacterBackground
+        from waystone.game.systems.simulated_players import (
+            BartleType,
+            SimulatedPlayerConfig,
+            SimulatedPlayerManager,
+            reset_sim_manager,
+        )
+
+        reset_sim_manager()
+        manager = SimulatedPlayerManager()
+
+        config = SimulatedPlayerConfig(
+            id="sim_lyra",
+            name="Lyra",
+            background=CharacterBackground.WAYFARER,
+            bartle_type=BartleType.EXPLORER,
+        )
+        manager.add_config(config)
+
+        # Login the player
+        sim = await manager.login_player("sim_lyra", db_session)
+
+        assert sim is not None
+        assert sim.is_logged_in is True
+        assert sim.session is not None
+        assert "sim_lyra" in manager.active_sims
+
+    @pytest.mark.asyncio
+    async def test_login_player_creates_character_in_db(self, db_session: AsyncSession):
+        """Test that login_player creates a Character record if needed."""
+        from sqlalchemy import select
+
+        from waystone.database.models import Character, CharacterBackground
+        from waystone.game.systems.simulated_players import (
+            BartleType,
+            SimulatedPlayerConfig,
+            SimulatedPlayerManager,
+            reset_sim_manager,
+        )
+
+        reset_sim_manager()
+        manager = SimulatedPlayerManager()
+
+        config = SimulatedPlayerConfig(
+            id="sim_newchar",
+            name="NewSimChar",
+            background=CharacterBackground.SCHOLAR,
+            bartle_type=BartleType.ACHIEVER,
+        )
+        manager.add_config(config)
+
+        # Login should create character
+        await manager.login_player("sim_newchar", db_session)
+
+        # Verify character was created
+        result = await db_session.execute(
+            select(Character).where(Character.name == "NewSimChar")
+        )
+        character = result.scalar_one_or_none()
+
+        assert character is not None
+        assert character.is_simulated is True
+        assert character.background == CharacterBackground.SCHOLAR
+
+    @pytest.mark.asyncio
+    async def test_login_player_places_in_starting_room(self, db_session: AsyncSession):
+        """Test that login_player places simulated player in starting room."""
+        from sqlalchemy import select
+
+        from waystone.database.models import Character, CharacterBackground
+        from waystone.game.systems.simulated_players import (
+            BartleType,
+            SimulatedPlayerConfig,
+            SimulatedPlayerManager,
+            reset_sim_manager,
+        )
+
+        reset_sim_manager()
+        manager = SimulatedPlayerManager()
+
+        config = SimulatedPlayerConfig(
+            id="sim_roomtest",
+            name="RoomTestSim",
+            background=CharacterBackground.WAYFARER,
+            bartle_type=BartleType.EXPLORER,
+            starting_room="imre_square",
+        )
+        manager.add_config(config)
+
+        await manager.login_player("sim_roomtest", db_session)
+
+        # Verify character is in starting room
+        result = await db_session.execute(
+            select(Character).where(Character.name == "RoomTestSim")
+        )
+        character = result.scalar_one_or_none()
+
+        assert character is not None
+        assert character.current_room_id == "imre_square"
+
+    @pytest.mark.asyncio
+    async def test_logout_player_removes_from_active(self, db_session: AsyncSession):
+        """Test that logout_player removes sim from active_sims."""
+        from waystone.database.models import CharacterBackground
+        from waystone.game.systems.simulated_players import (
+            BartleType,
+            SimulatedPlayerConfig,
+            SimulatedPlayerManager,
+            reset_sim_manager,
+        )
+
+        reset_sim_manager()
+        manager = SimulatedPlayerManager()
+
+        config = SimulatedPlayerConfig(
+            id="sim_logout",
+            name="LogoutTest",
+            background=CharacterBackground.MERCHANT,
+            bartle_type=BartleType.SOCIALIZER,
+        )
+        manager.add_config(config)
+
+        # Login then logout
+        await manager.login_player("sim_logout", db_session)
+        assert "sim_logout" in manager.active_sims
+
+        await manager.logout_player("sim_logout")
+        assert "sim_logout" not in manager.active_sims
+
+    @pytest.mark.asyncio
+    async def test_logout_player_cleans_up_session(self, db_session: AsyncSession):
+        """Test that logout_player properly cleans up session state."""
+        from waystone.database.models import CharacterBackground
+        from waystone.game.systems.simulated_players import (
+            BartleType,
+            SimulatedPlayerConfig,
+            SimulatedPlayerManager,
+            reset_sim_manager,
+        )
+
+        reset_sim_manager()
+        manager = SimulatedPlayerManager()
+
+        config = SimulatedPlayerConfig(
+            id="sim_cleanup",
+            name="CleanupTest",
+            background=CharacterBackground.NOBLE,
+            bartle_type=BartleType.KILLER,
+        )
+        manager.add_config(config)
+
+        sim = await manager.login_player("sim_cleanup", db_session)
+        assert sim.is_logged_in is True
+
+        await manager.logout_player("sim_cleanup")
+
+        # Sim should no longer be logged in
+        assert sim.is_logged_in is False
+        assert sim.session is None
+
+    @pytest.mark.asyncio
+    async def test_login_nonexistent_config_returns_none(self, db_session: AsyncSession):
+        """Test that login_player returns None for unknown config."""
+        from waystone.game.systems.simulated_players import (
+            SimulatedPlayerManager,
+            reset_sim_manager,
+        )
+
+        reset_sim_manager()
+        manager = SimulatedPlayerManager()
+
+        result = await manager.login_player("nonexistent", db_session)
+        assert result is None
+
+
+class TestWhoListIntegration:
+    """Tests for simulated player appearance in who list."""
+
+    @pytest.mark.asyncio
+    async def test_sim_appears_in_who_list(self, db_session: AsyncSession):
+        """Test that logged-in simulated players appear in who list."""
+        from waystone.database.models import CharacterBackground
+        from waystone.game.systems.simulated_players import (
+            BartleType,
+            SimulatedPlayerConfig,
+            SimulatedPlayerManager,
+            reset_sim_manager,
+        )
+
+        reset_sim_manager()
+        manager = SimulatedPlayerManager()
+
+        config = SimulatedPlayerConfig(
+            id="sim_who",
+            name="WhoTestSim",
+            background=CharacterBackground.PERFORMER,
+            bartle_type=BartleType.SOCIALIZER,
+        )
+        manager.add_config(config)
+
+        await manager.login_player("sim_who", db_session)
+
+        # get_active should return logged in sims
+        active = manager.get_active()
+        assert len(active) == 1
+        assert active[0].config.name == "WhoTestSim"
+
+    @pytest.mark.asyncio
+    async def test_logged_out_sim_not_in_who_list(self, db_session: AsyncSession):
+        """Test that logged-out simulated players don't appear in who list."""
+        from waystone.database.models import CharacterBackground
+        from waystone.game.systems.simulated_players import (
+            BartleType,
+            SimulatedPlayerConfig,
+            SimulatedPlayerManager,
+            reset_sim_manager,
+        )
+
+        reset_sim_manager()
+        manager = SimulatedPlayerManager()
+
+        config = SimulatedPlayerConfig(
+            id="sim_nowho",
+            name="NoWhoTest",
+            background=CharacterBackground.COMMONER,
+            bartle_type=BartleType.ACHIEVER,
+        )
+        manager.add_config(config)
+
+        await manager.login_player("sim_nowho", db_session)
+        await manager.logout_player("sim_nowho")
+
+        active = manager.get_active()
+        assert len(active) == 0
+
+
+class TestRoomPresence:
+    """Tests for simulated player presence in rooms."""
+
+    @pytest.mark.asyncio
+    async def test_sim_added_to_room_on_login(self, db_session: AsyncSession):
+        """Test that simulated player is added to room.players on login."""
+        from waystone.database.models import CharacterBackground
+        from waystone.game.systems.simulated_players import (
+            BartleType,
+            SimulatedPlayerConfig,
+            SimulatedPlayerManager,
+            reset_sim_manager,
+        )
+        from waystone.game.world import Room
+
+        reset_sim_manager()
+        manager = SimulatedPlayerManager()
+
+        # Create a mock room
+        room = Room(
+            id="test_room",
+            name="Test Room",
+            area="test",
+            description="A test room.",
+        )
+
+        config = SimulatedPlayerConfig(
+            id="sim_room",
+            name="RoomSim",
+            background=CharacterBackground.WAYFARER,
+            bartle_type=BartleType.EXPLORER,
+            starting_room="test_room",
+        )
+        manager.add_config(config)
+
+        # Login with room reference
+        sim = await manager.login_player("sim_room", db_session, room=room)
+
+        assert sim is not None
+        # Character ID should be in room.players
+        assert sim.character_id in room.players
+
+    @pytest.mark.asyncio
+    async def test_sim_removed_from_room_on_logout(self, db_session: AsyncSession):
+        """Test that simulated player is removed from room.players on logout."""
+        from waystone.database.models import CharacterBackground
+        from waystone.game.systems.simulated_players import (
+            BartleType,
+            SimulatedPlayerConfig,
+            SimulatedPlayerManager,
+            reset_sim_manager,
+        )
+        from waystone.game.world import Room
+
+        reset_sim_manager()
+        manager = SimulatedPlayerManager()
+
+        room = Room(
+            id="test_room2",
+            name="Test Room 2",
+            area="test",
+            description="Another test room.",
+        )
+
+        config = SimulatedPlayerConfig(
+            id="sim_room2",
+            name="RoomSim2",
+            background=CharacterBackground.SCHOLAR,
+            bartle_type=BartleType.ACHIEVER,
+            starting_room="test_room2",
+        )
+        manager.add_config(config)
+
+        sim = await manager.login_player("sim_room2", db_session, room=room)
+        char_id = sim.character_id
+
+        # Verify in room
+        assert char_id in room.players
+
+        # Logout with room reference
+        await manager.logout_player("sim_room2", room=room)
+
+        # Should be removed
+        assert char_id not in room.players
+
+
+class TestLoginScheduling:
+    """Tests for login/logout scheduling."""
+
+    def test_is_active_hour_within_range(self):
+        """Test that is_active_hour returns True within active hours."""
+        from waystone.database.models import CharacterBackground
+        from waystone.game.systems.simulated_players import (
+            BartleType,
+            SimulatedPlayerConfig,
+            SimulatedPlayerManager,
+            reset_sim_manager,
+        )
+
+        reset_sim_manager()
+        manager = SimulatedPlayerManager()
+
+        config = SimulatedPlayerConfig(
+            id="sim_schedule",
+            name="ScheduleSim",
+            background=CharacterBackground.SCHOLAR,
+            bartle_type=BartleType.ACHIEVER,
+            active_hours=(8, 22),  # 8am to 10pm
+        )
+
+        # Test hours within range
+        assert manager._is_active_hour(config, 10) is True
+        assert manager._is_active_hour(config, 8) is True
+        assert manager._is_active_hour(config, 21) is True
+
+    def test_is_active_hour_outside_range(self):
+        """Test that is_active_hour returns False outside active hours."""
+        from waystone.database.models import CharacterBackground
+        from waystone.game.systems.simulated_players import (
+            BartleType,
+            SimulatedPlayerConfig,
+            SimulatedPlayerManager,
+            reset_sim_manager,
+        )
+
+        reset_sim_manager()
+        manager = SimulatedPlayerManager()
+
+        config = SimulatedPlayerConfig(
+            id="sim_schedule2",
+            name="ScheduleSim2",
+            background=CharacterBackground.MERCHANT,
+            bartle_type=BartleType.SOCIALIZER,
+            active_hours=(8, 22),
+        )
+
+        # Test hours outside range
+        assert manager._is_active_hour(config, 3) is False
+        assert manager._is_active_hour(config, 23) is False
+
+    def test_is_active_hour_wraps_around_midnight(self):
+        """Test that is_active_hour handles midnight wrap correctly."""
+        from waystone.database.models import CharacterBackground
+        from waystone.game.systems.simulated_players import (
+            BartleType,
+            SimulatedPlayerConfig,
+            SimulatedPlayerManager,
+            reset_sim_manager,
+        )
+
+        reset_sim_manager()
+        manager = SimulatedPlayerManager()
+
+        config = SimulatedPlayerConfig(
+            id="sim_night",
+            name="NightSim",
+            background=CharacterBackground.PERFORMER,
+            bartle_type=BartleType.KILLER,
+            active_hours=(22, 6),  # 10pm to 6am (night owl)
+        )
+
+        # Night hours should be active
+        assert manager._is_active_hour(config, 23) is True
+        assert manager._is_active_hour(config, 0) is True
+        assert manager._is_active_hour(config, 3) is True
+
+        # Day hours should be inactive
+        assert manager._is_active_hour(config, 12) is False
+        assert manager._is_active_hour(config, 18) is False
