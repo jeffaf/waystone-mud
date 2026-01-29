@@ -857,6 +857,28 @@ class GameEngine:
                             exc_info=True,
                         )
 
+                # Simulated player actions (every 2 ticks = 60 seconds)
+                if tick_count % 2 == 0:
+                    from waystone.game.systems.simulated_players import get_sim_manager
+
+                    try:
+                        sim_manager = get_sim_manager()
+                        if sim_manager.enabled:
+                            actions_taken = await sim_manager.tick(self)
+
+                            if actions_taken > 0:
+                                logger.debug(
+                                    "simulated_player_tick",
+                                    actions=actions_taken,
+                                )
+
+                    except Exception as e:
+                        logger.error(
+                            "simulated_player_error",
+                            error=str(e),
+                            exc_info=True,
+                        )
+
             except asyncio.CancelledError:
                 break
             except Exception as e:
